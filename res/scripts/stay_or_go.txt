@@ -1,0 +1,45 @@
+lock
+align
+ask "What should we do?" "Go away" "Go" "Garden" "Unblock"
+flag 0
+unlock
+end
+
+branch Go away
+@goto 8 8
+goto 5 9
+
+branch Go
+fadeout
+load Bigger_Town
+pause 50
+fadein
+
+branch Garden
+say Ok.\nLet's go!
+simulrunbranch test2
+runbranch test1
+
+branch Unblock
+unblock 4 2
+say Done!
+
+branch test1
+walk left left left left down down down down down down
+turn left
+pause 30
+retile 64 0 0
+pause 30
+walk up
+turn left
+pause 30
+retile 64 0 1
+pause 100
+
+branch test2
+@walk left left left left left
+@walk down down down down down
+@turn left
+pause 62
+@walk up
+@turn left

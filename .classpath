@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="src/komorebi/projsoul/audio/|src/komorebi/projsoul/editor/" kind="src" path=""/>
+	<classpathentry kind="src" path="src/komorebi/projsoul/audio"/>
+	<classpathentry kind="src" path="src/komorebi/projsoul/editor"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

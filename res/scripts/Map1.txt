@@ -1,0 +1,4 @@
+npc joe 2 2 NESS
+npc vin 5 5 POKEMON
+script surprise_attack 1 1 joe
+script stay_or_go 4 4 vin

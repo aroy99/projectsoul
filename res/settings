@@ -1,0 +1,6 @@
+#The scale of the game, as an integer, resolution is 224x256,
+#so you can scale it by changing the number below.
+2
+
+#The location of the game to test, no quotes
+Some Town V3.map

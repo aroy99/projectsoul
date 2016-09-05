@@ -1,0 +1,6 @@
+lock
+align
+if 0, say Blah blah.
+else, say Go talk to Vin first.
+unlock
+end

@@ -1,0 +1,4 @@
+lock
+jog right right right right right right
+say Boo!
+unlock

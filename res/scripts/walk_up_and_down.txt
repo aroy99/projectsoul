@@ -1,0 +1,4 @@
+walk right
+pause 50
+walk left
+pause 50
