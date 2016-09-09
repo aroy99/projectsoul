@@ -4,7 +4,7 @@
 
 package komorebi.projsoul.states;
 
-import komorebi.projsoul.entities.Clyde;
+import komorebi.projsoul.entities.Player;
 import komorebi.projsoul.map.Map;
 
 /**

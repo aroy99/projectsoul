@@ -143,9 +143,6 @@ public class Game extends State{
 
     //TODO Debug
     map.getInput();
-  
-
-
 
     if (KeyHandler.keyClick(Key.LEFT))
     {

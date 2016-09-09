@@ -36,7 +36,7 @@ public class Draw {
   private static final int RIGHT_ANGLE = 90;
 
   /** Holds all of the textures for this class.*/
-  private static Texture[] tex = new Texture[11];
+  private static Texture[] tex = new Texture[12];
 
   /** Determines whether textures are loaded.*/
   private static boolean texLoaded;
@@ -56,6 +56,7 @@ public class Draw {
    *    8: Fader<br>
    *    9: Clyde's Tiles<br>
    *    10: Miscellaneous Items<br>
+   *    11: Fillers for Project Soul<br>
    */
   public static void loadTextures() {
     try {
@@ -88,6 +89,8 @@ public class Draw {
           new File("res/ClydeTiles.png")));
       tex[10] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/Items.png")));
+      tex[11] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/Fillers.png")));
 
     } catch (Exception e) {
       e.printStackTrace();

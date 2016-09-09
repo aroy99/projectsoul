@@ -18,9 +18,10 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.entities.Clyde;
+import komorebi.projsoul.entities.Enemy;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.Player;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.Script;
 import komorebi.projsoul.script.TalkingScript;
@@ -43,7 +44,10 @@ public class Map implements Playable{
 
   private ArrayList<NPC> npcs;
   private ArrayList<AreaScript> scripts;
-  private static Clyde play;
+  private static Player play;
+  
+  //TODO Debug
+  private Enemy enemy;
 
   //Debug
   private boolean isHitBox;
@@ -174,13 +178,15 @@ public class Map implements Playable{
 
       reader.close();
       
-      play = new Clyde(tiles[0].length/2*16,0);
+      play = new Player(tiles[0].length/2*16,0);
       Camera.center(play.getX(), play.getY(), tiles[0].length*16, tiles.length*16);
 
 
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
     }
+    
+    enemy = new Enemy(100, 100, 16, 21);
 
 
   }
@@ -288,6 +294,7 @@ public class Map implements Playable{
 
     play.render();
 
+    enemy.render();
     //TODO Debug
     if(isHitBox){
       Draw.rectCam((int)play.getX(), (int)play.getY(), 16, 16, 18, 16, 18, 16, 2);
@@ -464,7 +471,7 @@ public class Map implements Playable{
     tiles[x][y] = tile;
   }
 
-  public static Clyde getClyde()
+  public static Player getClyde()
   {
     return play;
   }

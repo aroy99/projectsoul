@@ -4,7 +4,7 @@
 package komorebi.projsoul.script;
 
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.entities.Clyde;
+import komorebi.projsoul.entities.Player;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.map.EditorMap;
 
@@ -72,7 +72,7 @@ public class AreaScript extends Script{
 
   }
 
-  public boolean isLocationIntersected(Clyde clyde)
+  public boolean isLocationIntersected(Player clyde)
   {
     return (clyde.getTileX()==getTileX() && clyde.getTileY()==getTileY());
   }

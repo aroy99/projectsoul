@@ -103,7 +103,7 @@ public class Main {
     //create display
     try {
       Display.setDisplayMode(new DisplayMode(WIDTH*scale,HEIGHT*scale));
-      Display.setTitle("Clyde\'s");
+      Display.setTitle("Project Soul");
       Display.create();
       Display.setVSyncEnabled(true);
 
