@@ -66,6 +66,8 @@ public class Animation {
     }
 
   }
+  
+  
 
   /**
    * Creates a playable animation
@@ -438,6 +440,11 @@ public class Animation {
   public boolean playing()
   {
     return playing;
+  }
+  
+  public boolean lastFrame()
+  {
+    return (currFrame+1==frames);
   }
 
 

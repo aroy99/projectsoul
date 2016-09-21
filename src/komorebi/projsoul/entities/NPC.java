@@ -4,6 +4,9 @@
  **/
 package komorebi.projsoul.entities;
 
+import java.awt.Rectangle;
+import java.util.ArrayList;
+
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Main;
@@ -14,9 +17,6 @@ import komorebi.projsoul.script.Lock;
 import komorebi.projsoul.script.SpeechHandler;
 import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.WalkingScript;
-
-import java.awt.Rectangle;
-import java.util.ArrayList;
 
 
 /**
@@ -32,18 +32,16 @@ public class NPC extends Entity {
   private boolean started;
 
   public Face direction = Face.DOWN;
+  private SpeechHandler text;
+  
+  private Rectangle[] surround = new Rectangle[4];
   
   private boolean isVisible, isMoving, isRunning, isWaiting;
   private boolean hasInstructions;
 
-  private String[] options;
-
   private Execution instructor;
-  private Lock lock;
 
   private NPCType type;
-
-  private SpeechHandler text;
 
   private int dx, dy;
   private int framesToGo;
@@ -51,8 +49,7 @@ public class NPC extends Entity {
   private int xTravelled;
   private int yTravelled;
 
-  private Rectangle[] surround = new Rectangle[4];
-  private Rectangle future;
+  public Rectangle future;
 
   private String[] names = new String[4];
   private TalkingScript talkScript;
@@ -60,11 +57,12 @@ public class NPC extends Entity {
   private boolean isTalking, isWalking;
 
   private WalkingScript walkScript;
-  private String answerToQuestion;
 
   Animation rightAni, leftAni, downAni, upAni;
 
   private int prevdx, prevdy;
+  
+  private Lock lock;
 
   boolean hangOn;
   
@@ -75,17 +73,13 @@ public class NPC extends Entity {
    * @param y The y location (in pixels) of the bottom left corner of the NPC
    */
   public NPC(String name, float x, float y, NPCType type) {
-    super(x, y, 16, 24);
+    super(x,y,16,24);
     tx = (int)(x-EditorMap.getX())/16;
     ty = (int)(y-EditorMap.getY())/16;
     
     area = new Rectangle((int) x, (int) y, 16, 24);
-    
-    rx = (int) x;
-    ry = (int) y;
 
     this.name = name;
-    ent=Entities.NPC;
 
     setAttributes(type);
 
@@ -602,33 +596,6 @@ public class NPC extends Entity {
   }
 
   /**
-   * Says a string, creating a message box, and pausing movement
-   * 
-   * @param s The string to say
-   * @param ex The new thread to run the command
-   */
-  @Deprecated
-  public void say(String s, Execution ex)
-  {
-    text.write(s, 20, 58, 8);
-    this.instructor = ex;
-
-    Main.getGame().setSpeaker(this);
-    instructor.getLock().pauseThread();
-  }
-
-  public void say(String s, Lock lock)
-  {
-
-    text.write(s, 20, 58, 8);
-    this.lock = lock;
-    Main.getGame().setSpeaker(this);
-    lock.pauseThread();
-
-  }
-
-
-  /**
    * Asks a question, creating a message box and pausing the thread
    * 
    * @param args The options to write
@@ -645,13 +612,15 @@ public class NPC extends Entity {
     this.instructor = ex;
     this.lock = lock;
 
-    options = args;
+    //options = args;
+    text.setOptions(args);
     text.drawPicker(1);
+    
     Main.getGame().setMaxOptions(args.length-1);
-    Main.getGame().setAsker(this);
-    this.lock.pauseThread();
-    return answerToQuestion;
-
+    Main.getGame().setAsker(text);
+    
+    text.setLockAndPause(lock);
+    return text.getAnswer();
   }
 
   public int getTileX()
@@ -677,24 +646,6 @@ public class NPC extends Entity {
   public int getOrigTY(){
     return ty;
   }
-
-  public void clearText()
-  {
-    text.clear();
-    lock.resumeThread();
-  }
-
-  public void resumeThread()
-  {
-    lock.resumeThread();
-  }
-
-  public void branch(int i)
-  {
-    answerToQuestion = options[i];
-    this.lock.resumeThread();
-  }
-
 
   public void setPickerIndex(int i)
   {
@@ -755,22 +706,7 @@ public class NPC extends Entity {
     return yTravelled;
   }
 
-  /**
-   * 
-   * @param clydeX
-   * @param clydeY
-   * @return
-   */
-  public boolean isApproached(Rectangle clyde, Face direction)
-  {
-   
-    
-    return ((surround[0].intersects(clyde) && direction == Face.DOWN) ||
-        (surround[1].intersects(clyde) && direction == Face.LEFT) ||
-        (surround[2].intersects(clyde) && direction == Face.UP) ||
-        (surround[3].intersects(clyde) && direction == Face.RIGHT)) && !isTalking;
-
-  }
+  
 
   /**
    * Runs the NPC's talking script when Clyde prompts them
@@ -865,25 +801,6 @@ public class NPC extends Entity {
     surround[3].setLocation((int) x-16, (int) y);
   }
 
-  public boolean doneAsking()
-  {
-    return text.alreadyAsked();
-  }
-
-  public void skipScroll()
-  {
-    text.skipScroll();
-  }
-
-  public boolean isWaitingOnParagraph()
-  {
-    return text.isWaitingOnParagraph();
-  }
-
-  public void nextParagraph()
-  {
-    text.nextParagraph();
-  }
 
   public boolean started()
   {
@@ -984,5 +901,31 @@ public class NPC extends Entity {
   {
     return area;
   }
+  
+  /**
+   * 
+   * @param clydeX
+   * @param clydeY
+   * @return
+   */
+  public boolean isApproached(Rectangle clyde, Face direction)
+  {
+    return ((surround[0].intersects(clyde) && direction == Face.DOWN) ||
+        (surround[1].intersects(clyde) && direction == Face.LEFT) ||
+        (surround[2].intersects(clyde) && direction == Face.UP) ||
+        (surround[3].intersects(clyde) && direction == Face.RIGHT)) && !isTalking;
+  }
+  
+  public void say(String s, Lock lock)
+  {
+
+    text.write(s, 20, 58, 8);
+    this.lock = lock;
+    Main.getGame().setSpeaker(text);
+    lock.pauseThread();
+
+  }
+
+
 
 }

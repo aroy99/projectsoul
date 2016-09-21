@@ -18,9 +18,8 @@ public class Word {
   
   public Word(String s, int x, int y, int ptSize)
   {
-    string = s;
+    string = s;    
     String[] array = s.split("\\\\p");
-
     
     paragraphs = new char[array.length][];
     

@@ -27,6 +27,13 @@ public class SpeechHandler extends TextHandler {
 
   private int dotCount;
   private boolean dots;
+  
+  private Lock lock;
+  
+  private String[] options;
+  
+  private String answerToQuestion;
+
 
   public SpeechHandler(boolean b)
   {
@@ -240,7 +247,7 @@ public class SpeechHandler extends TextHandler {
 
   @Override
   public void clear()
-  {
+  {    
     super.clear();
     scrollIndex = 0;
     hasChoice = false;
@@ -291,6 +298,28 @@ public class SpeechHandler extends TextHandler {
     }
 
     return s;
+  }
+  
+  public void setOptions(String[] args)
+  {
+    options = args;
+  }
+  
+  public void setLockAndPause(Lock lock)
+  {
+    this.lock = lock;
+    lock.pauseThread();
+  }
+  
+  public void branch(int i)
+  {
+    answerToQuestion = options[i];
+    this.lock.resumeThread();
+  }
+  
+  public String getAnswer()
+  {
+    return answerToQuestion;
   }
 
 }

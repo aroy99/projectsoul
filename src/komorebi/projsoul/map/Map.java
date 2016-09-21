@@ -7,11 +7,13 @@ package komorebi.projsoul.map;
 import static komorebi.projsoul.engine.Main.HEIGHT;
 import static komorebi.projsoul.engine.Main.WIDTH;
 
+import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import komorebi.projsoul.engine.Camera;
 import komorebi.projsoul.engine.Draw;
@@ -22,6 +24,7 @@ import komorebi.projsoul.entities.Enemy;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.Player;
+import komorebi.projsoul.entities.SignPost;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.Script;
 import komorebi.projsoul.script.TalkingScript;
@@ -45,9 +48,10 @@ public class Map implements Playable{
   private ArrayList<NPC> npcs;
   private ArrayList<AreaScript> scripts;
   private static Player play;
-  
+  private ArrayList<SignPost> signs;
+
   //TODO Debug
-  private Enemy enemy;
+  private ArrayList<Enemy> enemies = new ArrayList<Enemy>();
 
   //Debug
   private boolean isHitBox;
@@ -94,6 +98,7 @@ public class Map implements Playable{
       collision = new boolean[rows][cols];
       npcs = new ArrayList<NPC>();
       scripts = new ArrayList<AreaScript>();
+      signs = new ArrayList<SignPost>();
       for (int i = 0; i < tiles.length; i++) {
         String[] str = reader.readLine().split(" ");
         int index = 0;
@@ -102,6 +107,14 @@ public class Map implements Playable{
             index++;  //pass this token, it's blank
           }
           tiles[i][j] = TileList.getTile(Integer.parseInt(str[index]));
+
+
+          //TODO This number will eventually have to be changed
+          if (tiles[i][j]==TileList.getTile(15))
+          {
+            signs.add(new SignPost(j, i, "This is a message!"));
+          }
+
           collision[i][j] = true;
         }
       }
@@ -169,7 +182,7 @@ public class Map implements Playable{
       {
         script.read();
       }
-      
+
       for (NPC npc: npcs)
       {
         npc.getWalkingScript().read();
@@ -177,17 +190,13 @@ public class Map implements Playable{
       }
 
       reader.close();
-      
+
       play = new Player(tiles[0].length/2*16,0);
       Camera.center(play.getX(), play.getY(), tiles[0].length*16, tiles.length*16);
-
 
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
     }
-    
-    enemy = new Enemy(100, 100, 16, 21);
-
 
   }
 
@@ -219,13 +228,20 @@ public class Map implements Playable{
 
     play.update();
 
+    for (Enemy enemy: enemies)
+    {
+      enemy.updateHits(play.getAttackHitBox().intersects(enemy.getHitBox()) 
+          && play.isAttacking(), play.getDirection());
+      enemy.update();
+    }
+
     for (NPC npc: npcs) {
       if (npc != null) 
       {
         npc.update();
-        
+
         if (npc.isApproached(play.getArea(), play.getDirection()) && 
-            KeyHandler.keyClick(Key.SPACE))
+            KeyHandler.keyClick(Key.C))
         {
           //TODO Debug
           npc.turn(play.getDirection().opposite());
@@ -248,6 +264,22 @@ public class Map implements Playable{
 
       }
     }
+
+
+    for (SignPost sign: signs)
+    {            
+      if (sign.isApproached(play.getArea(), play.getDirection())
+          && KeyHandler.keyClick(Key.C))
+      {
+        sign.show();
+      }
+
+
+
+    }
+
+    //Removes all dead enemies from the computer's memory
+    cleanUp();
   }
 
 
@@ -294,7 +326,15 @@ public class Map implements Playable{
 
     play.render();
 
-    enemy.render();
+    for (Enemy enemy: enemies)
+    {
+      enemy.render();
+    }
+
+    for (SignPost sign: signs)
+    {
+      sign.render();
+    }
     //TODO Debug
     if(isHitBox){
       Draw.rectCam((int)play.getX(), (int)play.getY(), 16, 16, 18, 16, 18, 16, 2);
@@ -337,7 +377,7 @@ public class Map implements Playable{
   private boolean checkTileInBounds(float x, float y) {
     x -= Camera.getX();
     y -= Camera.getY();
-    
+
     return x+32 > 0 && x < WIDTH && y+32 > 0 && y < HEIGHT;
   }
 
@@ -354,7 +394,7 @@ public class Map implements Playable{
     //Speed affected
     int x1 = (int)((x-16+dx)/16)+1; //Left
     int y1 = (int)((y-16+dy)/16)+1; //Bottom
-    
+
     int bufX = Math.abs(x1*16 - (int) (x +dx));
 
     int x2 = (int)((x-1+dx)/16)+1;  //Right
@@ -370,12 +410,12 @@ public class Map implements Playable{
 
     boolean[] ret = new boolean[4];
 
-    ret[1] = x2 < collision[0].length;
-    ret[3] = x1-1 >= 0;
-    ret[0] = y2 < collision.length;
-    ret[2] = y1-1 >= 0;
-    
-    if (collision[y2][x3] ^ collision[y2][x4])
+    ret[1] = x2 < collision[0].length; //East
+    ret[3] = x1-1 >= 0; //West
+    ret[0] = y2 < collision.length; //North
+    ret[2] = y1-1 >= 0; //South
+
+    if (ret[0] && (collision[y2][x3] ^ collision[y2][x4]))
     {
       if (collision[y2][x3] && (16 - bufX) >=13)
       {
@@ -383,10 +423,8 @@ public class Map implements Playable{
       } else if (collision[y2][x4] && bufX>=13) {
         play.guide(1, 0);
       }
-      
-      
     } 
-    
+
     ret[0] = ret[0] && collision[y2][x3] && collision[y2][x4];  //North
     ret[2] = ret[2] && collision[y1][x3] && collision[y1][x4];  //South
 
@@ -402,7 +440,7 @@ public class Map implements Playable{
       System.out.println("Never: " + ret[0] + ", Eat: " + ret[1] + 
           ", Slimy: " + ret[2] + ", Worms: " + ret[3]);
     }
-    
+
     if (KeyHandler.keyClick(Key.B))
     {
       System.out.println(collision[y2][x3]);
@@ -412,7 +450,7 @@ public class Map implements Playable{
 
     return ret;
   }
-  
+
   public void setCollision(int x, int y, boolean tf)
   {
     collision[y][x] = tf;
@@ -428,36 +466,36 @@ public class Map implements Playable{
    */
   public boolean[] checkBoundaries(float x, float y, float dx, float dy){
     boolean[] ret = new boolean[2];
-    
+
     //Entire Map < Screen -> Map is centered to screen, Camera Doesn't scroll
     //Map in one dimension > Camera -> Center to clyde in that dimension, Scroll in that dimension until the edge
     //If clyde is not centered and Map > Screen -> don't move in that dimension until he is
-    
-        
+
+
     ret[0] = tiles[0].length*16 > WIDTH && x+dx >= 0 && x+dx+WIDTH < tiles[0].length*16;
-    
+
     //Left
     if(dx < 0){
       ret[0] = ret[0] && play.getX()-x < WIDTH/2-8 || x + WIDTH > tiles[0].length*16;
-      
+
     }else if(dx > 0){ //Right
       ret[0] = ret[0] && play.getX()-x > WIDTH/2-8 || x < 0;
     }
-    
+
     ret[1] = y+dy >= 0 && y+dy+HEIGHT < tiles.length*16 && 
         !(tiles.length*16 < HEIGHT);
-    
+
     //Bottom
     if(dy < 0){
       ret[1] = ret[1] && play.getY()-y < HEIGHT/2-12 || y + HEIGHT > tiles.length*16;
-      
+
     }else if(dy > 0){ //Top
       ret[1] = ret[1] && play.getY()-y > HEIGHT/2-12 || y < 0;
     }
-        
+
     return ret;
   }
-  
+
   public int getWidth(){
     return tiles[0].length;
   }
@@ -475,10 +513,39 @@ public class Map implements Playable{
   {
     return play;
   }
-  
+
   public ArrayList<NPC> getNPCs()
   {
     return npcs;
+  }
+
+  public boolean blockedByEnemy(Rectangle rectangle)
+  {
+    for (Enemy enemy: enemies)
+    {
+      if (enemy.getHitBox().intersects(rectangle))
+        return true;
+    }
+
+    return false;
+  }
+
+  public ArrayList<Enemy> getEnemies()
+  {
+    return enemies;
+  }
+
+  public void cleanUp()
+  {
+    for (Iterator<Enemy> it = enemies.iterator(); it.hasNext();)
+    {      
+      Enemy enemy = it.next();
+      if (enemy.dead())
+      {
+        it.remove();
+      }
+
+    }
   }
 
 }
