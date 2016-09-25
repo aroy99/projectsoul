@@ -25,6 +25,13 @@ public class Enemy extends Entity {
 
   private Face hitDirection;
 
+  /**
+   * Creates a standard enemy
+   * @param x The x location (in the map) of the enemy
+   * @param y The y location (in the map) of the enemy
+   * @param sx The horizontal size, in pixels, of the enemy
+   * @param sy The vertical size, in pixels, of the enemy
+   */
   public Enemy(float x, float y, int sx, int sy) {
     super(x, y, sx, sy);
 
@@ -40,10 +47,11 @@ public class Enemy extends Entity {
     deathAni.add(0, 82);
     deathAni.add(0, 103);
     deathAni.add(0, 124);
-    // TODO Auto-generated constructor stub
   }
 
-  @Override
+  /**
+   * Updates the enemy's statuses and location
+   */
   public void update() {
 
     if (dying && deathAni.lastFrame())
@@ -74,12 +82,14 @@ public class Enemy extends Entity {
     {
       health-=25;
 
+      //Kills the enemy
       if (health<=0)
       {
         deathAni.resume();
         dying = true;
       } else
       {
+        //Knocks back the enemy
         invincible = true;
         hitCounter = 50;
         hitAni.resume();
@@ -109,8 +119,10 @@ public class Enemy extends Entity {
       }
     }
 
+    //Stops the enemy from moving places it shouldn't
     overrideImproperMovements();
 
+    //Update the enemy
     x += dx;
     y += dy;
     hitBox.x = (int) x;
@@ -118,6 +130,9 @@ public class Enemy extends Entity {
 
   }
 
+  /*
+   * Updates whether the enemy is being hit
+   */
   public void updateHits(boolean isHit, Face dir)
   {
     wasHit = this.isHit;
@@ -126,7 +141,10 @@ public class Enemy extends Entity {
     hitDirection = dir;
   }
 
-  @Override
+  /*
+   * (non-Javadoc)
+   * @see komorebi.projsoul.engine.Renderable#render()
+   */
   public void render() {
     if (invincible)
     {
@@ -155,6 +173,9 @@ public class Enemy extends Entity {
     return dead;
   }
 
+  /*
+   * Stops the enemy from moving where it shouldn't 
+   */
   public void overrideImproperMovements()
   {
     if (x+dx<0)
@@ -180,13 +201,27 @@ public class Enemy extends Entity {
     Rectangle hypothetical = new Rectangle((int) (x+dx), (int) (y+dy),
         sx, sy);
 
-    if (hypothetical.intersects(Map.getClyde().getHitBox()) && 
-        !Map.getClyde().invincible())
+    if (hypothetical.intersects(Map.getClyde().getHitBox()))
     { 
-      Map.getClyde().inflictPain(12*dx, 12*dy);
+      
+      if (!Map.getClyde().invincible())
+      {
+        Map.getClyde().inflictPain(12*dx, 12*dy);
+      }
 
       dx = 0;
       dy = 0;
+    }
+    
+    boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
+
+    if(!col[0] || !col[2]){
+      dy=0;
+      dx*=.75f;
+    }
+    if(!col[1] || !col[3]){
+      dx=0;
+      dy*=.75f;
     }
   }
 

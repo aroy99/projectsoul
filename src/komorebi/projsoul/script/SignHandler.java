@@ -7,8 +7,8 @@ public class SignHandler extends SpeechHandler {
   
   private SignPost sign;
   
-  public SignHandler(boolean b, SignPost sign) {
-    super(b);
+  public SignHandler(SignPost sign) {
+    super();
     this.sign = sign;
   }
   

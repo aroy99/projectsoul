@@ -19,8 +19,8 @@ public class SpeechHandler extends TextHandler {
   private int scrollIndex;
   private int buffer;
   
-  private static int speed;
-  private static boolean scrolling;
+  private static int speed = 3;
+  private static boolean scrolling = false;
   
   private boolean delayed;
   private int delayIndex;
@@ -35,30 +35,43 @@ public class SpeechHandler extends TextHandler {
   private String answerToQuestion;
 
 
-  public SpeechHandler(boolean b)
+  /**
+   * Creates a SpeechHandler object
+   */
+  public SpeechHandler()
   {
     super();
-    scrolling = b;
-    speed = 1;
   }
 
+  /**
+   * Sets the speed for ALL SpeechHandlers in the game
+   * @param speed 1 = slowest ... 3 = fastest
+   */
   public static void setSpeed(int speed)
   {
     scrolling = true;
     SpeechHandler.speed = speed;
   }
 
+  /**
+   * Sets whether SpeechHandlers scroll (true) or all the text appears at once 
+   * (false)
+   * @param b Whether SpeechHandlers scroll
+   */
   public static void setScrolling(boolean b)
   {
     scrolling = b;
   }
 
-  @Override
+  /**
+   * Renders the text and speech box on screen
+   */
   public void render()
   {
     
     if (!words.isEmpty())
     {
+      //Speech box
       Draw.rect(15, 15, 220, 59, 0, 0, 220, 59, 6);
     }
 
@@ -84,7 +97,7 @@ public class SpeechHandler extends TextHandler {
           default: break;
         }
 
-        Draw.rect(x, y, 8, 8, 0, 0, 8, 8, 7);
+        Draw.rect(x, y, 8, 8, 0, 0, 8, 8, 7); //Draws the "picker" arrow
       }
 
 
@@ -93,9 +106,8 @@ public class SpeechHandler extends TextHandler {
       scrollingRender(words.get(0));
     }
 
-    if (dots)
+    if (dots) //Draws the "I'm waiting" ellipses animation . . . 
     {
-
       if (dotCount>=10 && dotCount<50)
       {
         Draw.rect(210, 25, 1, 1, 1, 0, 2, 1, 6);
@@ -120,6 +132,10 @@ public class SpeechHandler extends TextHandler {
 
   }
 
+  /**
+   * Renders a word letter by letter, creating a scrolling effect
+   * @param word The Word object to be rendered
+   */
   private void scrollingRender(Word word)
   {
 
@@ -142,6 +158,7 @@ public class SpeechHandler extends TextHandler {
     for (int i=0; i < scroll; i++)
     {
 
+      //Escape sequence \n
       if (letters[i]=='\\')
       {
         if (letters[i+1]=='n')
@@ -157,6 +174,7 @@ public class SpeechHandler extends TextHandler {
         }
       }
 
+      //Escape sequence \d
       if (letters[scroll-1]=='\\' && letters[scroll]=='d')
       {
         if (!delayed)
@@ -182,6 +200,9 @@ public class SpeechHandler extends TextHandler {
       horiz+=(getLength(letters[i])+1);
     }
     
+    /* Signifies that the scrolling is done, so if the user clicks "C",
+     * it will go to the next paragraph
+     */
     if (scrollIndex==word.currentParagraph().length)
     {
       alreadyAsked = true;
@@ -191,7 +212,7 @@ public class SpeechHandler extends TextHandler {
       }
     }
 
-    if (!dots && !delayed)
+    if (!dots && !delayed) //Increments the scroll index
     {
       if (scrollIndex<letters.length)
       {
@@ -205,7 +226,7 @@ public class SpeechHandler extends TextHandler {
         scrollIndex = 0;
         alreadyAsked = true;
       }
-    } else if (delayed)
+    } else if (delayed) //For dramatic effect . . . 
     {
       delayIndex--;
 
@@ -245,7 +266,9 @@ public class SpeechHandler extends TextHandler {
     pickerIndex = option;
   }
 
-  @Override
+  /**
+   * Clears all data in the object
+   */
   public void clear()
   {    
     super.clear();
@@ -254,12 +277,18 @@ public class SpeechHandler extends TextHandler {
     alreadyAsked = false;
   }
 
-  @Override
+  /**
+   * Writes a String for to be shown in a speech box to the object's memory
+   */
   public void write(String s, int x, int y, int fontPt)
   {
     super.write(s,x,y,fontPt);
   }
 
+  /**
+   * Will skip the scrolling text, showing all text up until the next 
+   * paragraph marker (\p)
+   */
   public void skipScroll()
   {
     alreadyAsked = true;
@@ -276,6 +305,10 @@ public class SpeechHandler extends TextHandler {
     return dots;
   }
 
+  /**
+   * Goes to the next paragraph, or the next grouping of text between the 
+   * previous and next paragraph marker (\p)
+   */
   public void nextParagraph()
   {
     
@@ -286,9 +319,17 @@ public class SpeechHandler extends TextHandler {
       scrollIndex =0;
     }
     dotCount = 0;
+    
+    alreadyAsked = false;
 
   }
 
+  /**
+   * Creates a String object from a given char array
+   * @param array The char array to be converted
+   * @return A string containing all the chars in the char array, in order of
+   * their appearance in the array
+   */
   public static String charToString(char[] array)
   {
     String s = "";

@@ -34,8 +34,8 @@ public class AreaScript extends Script{
     ty = (int)(y-EditorMap.getY())/16;
     script = s;
     isRepeatable = repeat;
-    this.x=x;
-    this.y=y;
+    this.x=x*16;
+    this.y=y*16;
 
   }
 
@@ -54,8 +54,8 @@ public class AreaScript extends Script{
     
     script = s;
     isRepeatable = repeat;
-    this.x=x;
-    this.y=y;
+    this.x=x*16;
+    this.y=y*16;
     npc = person;
 
   }
@@ -64,17 +64,16 @@ public class AreaScript extends Script{
    * Executes the script
    */
   public void run()
-  {
-    
+  {    
     hasRun = true;
 
     super.run();
 
   }
 
-  public boolean isLocationIntersected(Player clyde)
+  public boolean isLocationIntersected(int tx, int ty)
   {
-    return (clyde.getTileX()==getTileX() && clyde.getTileY()==getTileY());
+    return (tx==getTileX() && ty==getTileY());
   }
 
   public boolean hasRun()
@@ -83,11 +82,11 @@ public class AreaScript extends Script{
   }
 
   public int getTileX() {
-    return (int) x/16;
+    return (int) (x/16);
   }
 
   public int getTileY() {
-    return (int) y/16;
+    return (int) (y/16);
   }
   
   /**

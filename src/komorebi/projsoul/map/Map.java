@@ -20,7 +20,9 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.entities.Chaser;
 import komorebi.projsoul.entities.Enemy;
+import komorebi.projsoul.entities.Entity;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.Player;
@@ -57,6 +59,8 @@ public class Map implements Playable{
   private boolean isHitBox;
   private boolean isGrid;
 
+  //TODO Debug
+  private int debugCount;
 
 
   /**
@@ -87,18 +91,21 @@ public class Map implements Playable{
    * @param key The location of the map
    */
   public Map(String key){
-
+    
     try {
       BufferedReader reader = new BufferedReader(new FileReader(
           new File(key)));
       int rows = Integer.parseInt(reader.readLine());
       int cols = Integer.parseInt(reader.readLine());
 
+      
+      //instantiates the necessary arrays and arraylists
       tiles = new TileList[rows][cols];
       collision = new boolean[rows][cols];
       npcs = new ArrayList<NPC>();
       scripts = new ArrayList<AreaScript>();
       signs = new ArrayList<SignPost>();
+      
       for (int i = 0; i < tiles.length; i++) {
         String[] str = reader.readLine().split(" ");
         int index = 0;
@@ -106,13 +113,14 @@ public class Map implements Playable{
           if(str[index].equals("")){
             index++;  //pass this token, it's blank
           }
+          //reads the tile makeup of the map
           tiles[i][j] = TileList.getTile(Integer.parseInt(str[index]));
 
 
-          //TODO This number will eventually have to be changed
+          //TODO This number will eventually have to be changed, as will the string
           if (tiles[i][j]==TileList.getTile(15))
           {
-            signs.add(new SignPost(j, i, "This is a message!"));
+            signs.add(new SignPost(j, i, "First line\\nSecond line\\pNew paragraph"));
           }
 
           collision[i][j] = true;
@@ -174,7 +182,7 @@ public class Map implements Playable{
           int arg0 = Integer.parseInt(split[2]);
           int arg1 = Integer.parseInt(split[1]);
 
-          scripts.add(new WarpScript(split[0], arg0, arg1, false));
+          scripts.add(new WarpScript(split[0], arg1, arg0, false));          
         }
       } while ((s=reader.readLine()) != null);
 
@@ -197,6 +205,8 @@ public class Map implements Playable{
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
     }
+    
+    enemies.add(new Chaser(100, 100, 16, 21, 100));
 
   }
 
@@ -257,11 +267,10 @@ public class Map implements Playable{
     }
 
     for (AreaScript script: scripts)
-    {
-      if (script.isLocationIntersected(play) &&   !script.hasRun()) {
-
+    {      
+      if (script.isLocationIntersected(play.getTileX(), play.getTileY()) 
+          && !script.hasRun()) {
         script.run();
-
       }
     }
 
@@ -274,15 +283,15 @@ public class Map implements Playable{
         sign.show();
       }
 
-
-
     }
 
     //Removes all dead enemies from the computer's memory
     cleanUp();
   }
 
-
+  /**
+   * Renders the map on-screen
+   */
   @Override
   public void render() {
     for (int i = 0; i < tiles.length; i++) {
@@ -407,23 +416,12 @@ public class Map implements Playable{
     int x4 = (int)((x-1)/16)+1;  //Right
     int y4 = (int)((y-1)/16)+1;  //Top
 
-
     boolean[] ret = new boolean[4];
-
+        
     ret[1] = x2 < collision[0].length; //East
     ret[3] = x1-1 >= 0; //West
     ret[0] = y2 < collision.length; //North
     ret[2] = y1-1 >= 0; //South
-
-    if (ret[0] && (collision[y2][x3] ^ collision[y2][x4]))
-    {
-      if (collision[y2][x3] && (16 - bufX) >=13)
-      {
-        play.guide(-1, 0);
-      } else if (collision[y2][x4] && bufX>=13) {
-        play.guide(1, 0);
-      }
-    } 
 
     ret[0] = ret[0] && collision[y2][x3] && collision[y2][x4];  //North
     ret[2] = ret[2] && collision[y1][x3] && collision[y1][x4];  //South
@@ -449,6 +447,55 @@ public class Map implements Playable{
     }
 
     return ret;
+  }
+  
+  public void guidePlayer(float x, float y, float dx, float dy)
+  {
+    
+      //Speed affected
+      int x1 = (int)((x-16+dx)/16)+1; //Left
+      int y1 = (int)((y-16+dy)/16)+1; //Bottom
+
+      int bufX = Math.abs(x1*16 - (int) (x +dx));
+      int bufY = Math.abs(y1*16 - (int) (y +dy));
+
+      int x2 = (int)((x-1+dx)/16)+1;  //Right
+      int y2 = (int)((y-1+dy)/16)+1;  //Top
+
+      //Speed Unaffected
+      int x3 = (int)((x-16)/16)+1; //Left
+      int y3 = (int)((y-16)/16)+1; //Bottom
+
+      int x4 = (int)((x-1)/16)+1;  //Right
+      int y4 = (int)((y-1)/16)+1;  //Top
+
+      boolean[] ret = new boolean[4];
+          
+      ret[1] = x2 < collision[0].length; //East
+      ret[3] = x1-1 >= 0; //West
+      ret[0] = y2 < collision.length; //North
+      ret[2] = y1-1 >= 0; //South
+
+      
+       if (ret[0] && (collision[y2][x3] ^ collision[y2][x4]))
+       {
+         if (collision[y2][x3] && (16 - bufX) >=10)
+         {
+           play.guide(-1, 0);
+         } else if (collision[y2][x4] && bufX>=10) {
+           play.guide(1, 0);
+         }
+       } else if (ret[2] && (collision[y1][x3] ^ collision[y1][x4]))
+       {
+         if (collision[y1][x3] && (16 - bufY) >= 10)
+         {
+           System.out.println("Guide 1");
+         } else if (collision[y1][x4] && bufY>=10)
+         {
+           System.out.println("Guide 2");
+         }
+       }
+     
   }
 
   public void setCollision(int x, int y, boolean tf)

@@ -7,30 +7,32 @@ public class Chaser extends Enemy {
   float targetX, targetY;
   
   private final float speed = 0.5f;
-  private boolean tooFar;
   
   private float maxClydeDist;
 
   
   /**
-   * 
-   * @param x
-   * @param y
-   * @param sx
-   * @param sy
-   * @param distanceFromClyde
+   * Creates an enemy that will chase the player within a certain range
+   * @param x The x location (in the map) of the enemy
+   * @param y The y location (in the map) of the enemy
+   * @param sx The horizontal size, in pixels, of the enemy
+   * @param sy The vertical size, in pixels, of the enemy
+   * @param distanceFromClyde The maximum distance the enemy can be from the player
+   *      and still chase him/her
    */
-  public Chaser(float x, float y, int sx, int sy, float distanceFromClyde) {
+  public Chaser(float x, float y, int sx, int sy, float distanceFromPlay) {
     super(x, y, sx, sy);
     
-    maxClydeDist = distanceFromClyde;
+    maxClydeDist = distanceFromPlay;
   }
 
-  @Override
+  /**
+   * Updates the chaser's status and location
+   */
   public void update()
-  {
+  {   
     super.update();
-   
+    
     targetX = Map.getClyde().getX();
     targetY = Map.getClyde().getY();
     
@@ -58,5 +60,6 @@ public class Chaser extends Enemy {
         dy = -speed;
       }
     }
+   
   }
 }

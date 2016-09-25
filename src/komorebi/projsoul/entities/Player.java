@@ -261,7 +261,7 @@ public class Player extends Entity implements Playable{
         isAttacking = true;
         melee.newAttack(dir);
         
-        magic.changeMagicBy(-29);
+        magic.changeMagicBy(-10);
       }
 
       if (!isAttacking)
@@ -333,6 +333,7 @@ public class Player extends Entity implements Playable{
 
       //TODO Debug
       if(!KeyHandler.keyDown(Key.G)){
+        Game.getMap().guidePlayer(x, y, dx, dy);
         boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
 
         if(!col[0] || !col[2]){
@@ -405,7 +406,7 @@ public class Player extends Entity implements Playable{
     guiding = false;
     
     magic.update();
-
+    
   }
 
   /**
@@ -615,11 +616,11 @@ public class Player extends Entity implements Playable{
   }
 
   public int getTileX(){
-    return  (int)rx/16;
+    return  (int) (x/16);
   }
 
   public int getTileY(){
-    return  (int)ry/16;
+    return  (int) (y/16);
   }
 
   public Face getDirection(){
@@ -731,7 +732,7 @@ public class Player extends Entity implements Playable{
   }
 
   public void guide(int dx, int dy)
-  {
+  {    
     this.dx = dx;
     this.dy = dy;
     guiding = true;

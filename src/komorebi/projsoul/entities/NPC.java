@@ -87,7 +87,7 @@ public class NPC extends Entity {
     hasInstructions=false;
     isVisible = true;
 
-    text = new SpeechHandler(true);
+    text = new SpeechHandler();
     SpeechHandler.setSpeed(3);
 
     surround[0] = new Rectangle((int) this.x, (int) this.y+24, 16, 24);
@@ -116,7 +116,7 @@ public class NPC extends Entity {
     isMoving=false;
     hasInstructions=false;
 
-    text = new SpeechHandler(true);
+    text = new SpeechHandler();
 
   }
 
@@ -923,9 +923,5 @@ public class NPC extends Entity {
     this.lock = lock;
     Main.getGame().setSpeaker(text);
     lock.pauseThread();
-
   }
-
-
-
 }

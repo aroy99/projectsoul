@@ -117,8 +117,6 @@ public class Game extends State{
       {
         if (speaker.isWaitingOnParagraph())
         {
-        //TODO Debug
-          System.out.println("Next");
           speaker.nextParagraph();
         } else {
           if (!speaker.alreadyAsked())

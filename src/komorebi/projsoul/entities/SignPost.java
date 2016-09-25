@@ -15,7 +15,7 @@ public class SignPost extends Entity {
   
   public SignPost(float x, float y, String message) {
     super(x*16, y*16, 16, 16);
-    text = new SignHandler(true, this);
+    text = new SignHandler(this);
     
     surround[0] = new Rectangle((int) this.x, (int) this.y+16, 16, 16);
     surround[1] = new Rectangle((int) this.x + 16, (int) this.y, 16, 16);
@@ -53,21 +53,14 @@ public class SignPost extends Entity {
         (surround[3].intersects(clyde) && direction == Face.RIGHT)) && !shown;
   }
 
-
   @Override
   public void update() {
     // TODO Auto-generated method stub
     
   }
-
-
-
+  
   @Override
   public void render() {
     if (shown) text.render();
   }
-  
-  
-
-  
 }
