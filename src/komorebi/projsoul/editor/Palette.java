@@ -11,20 +11,16 @@
 
 package komorebi.projsoul.editor;
 
+import static komorebi.projsoul.engine.KeyHandler.controlDown;
+
 import komorebi.projsoul.editor.modes.TileMode;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.Key;
-import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MainE;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.map.EditorMap;
-import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.TileList;
 
-import static komorebi.projsoul.engine.KeyHandler.keyDown;
-
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
@@ -102,27 +98,27 @@ public class Palette implements Playable{
             
     lButtonWasDown = lButtonIsDown;
     lButtonIsDown = Mouse.isButtonDown(0);
-
     rButtonWasDown = rButtonIsDown;
     rButtonIsDown = Mouse.isButtonDown(1);
-    
-    startDragging = Mouse.isButtonDown(1) && keyDown(Key.CTRL) && 
+        
+    startDragging = Mouse.isButtonDown(1) && controlDown() && 
         !isDragging;
     
-    isDragging = Mouse.isButtonDown(1) && keyDown(Key.CTRL);
+    isDragging = Mouse.isButtonDown(1) && controlDown();
   }
 
 
   @Override
   public void update(){
+    
     if (checkBounds() && lButtonIsDown && !lButtonWasDown) {
       selX = getMouseX()+xOffset;
       selY = getMouseY()+yOffset;
       TileMode.clearSelection();
     }
-
+    
     if(checkBounds() && rButtonIsDown && !rButtonWasDown && 
-        !keyDown(Key.CTRL)){
+        !controlDown()){
       TileMode.clearSelection();
     }
     

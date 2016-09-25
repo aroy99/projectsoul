@@ -4,15 +4,17 @@
 
 package komorebi.projsoul.map;
 
+import static komorebi.projsoul.engine.KeyHandler.button;
+import static komorebi.projsoul.engine.KeyHandler.controlDown;
+
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.editor.modes.MoveMode;
 import komorebi.projsoul.editor.modes.NPCMode;
 import komorebi.projsoul.editor.modes.TileMode;
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.script.AreaScript;
@@ -21,8 +23,6 @@ import komorebi.projsoul.script.WalkingScript;
 import komorebi.projsoul.script.WarpScript;
 
 import org.lwjgl.opengl.Display;
-
-import static komorebi.projsoul.engine.KeyHandler.button;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -62,9 +62,6 @@ public class EditorMap implements Playable, Serializable{
   private boolean isEncSave;        //Saves an encrypted map file
   private boolean isReset;            //Resets tiles position
   private boolean isGrid;              //Turn on/off Grid
-  private boolean startDragging;                //Starting a group selection
-  private boolean isDragging;                   //Is making a group selection
-  private boolean isSelection;                  //A selection is active
 
   //Map States
   public static boolean grid;                //Whether the grid is on or not
@@ -117,7 +114,7 @@ public class EditorMap implements Playable, Serializable{
     npcs = new ArrayList<NPC>();
     scripts = new ArrayList<AreaScript>();
 
-    Display.setTitle("Clyde\'s Editor - "+ "Untitled Map");
+    Display.setTitle("Project Soul Editor - "+ "Untitled Map");
 
     for (int i = tiles.length-1; i >= 0; i--) {
       for (int j = 0; j < tiles[0].length; j++) {
@@ -195,7 +192,7 @@ public class EditorMap implements Playable, Serializable{
       path = key;
       this.name = name;
 
-      Display.setTitle("Clyde\'s Editor - "+name);
+      Display.setTitle("Project Soul Editor - "+name);
 
       do
       {
@@ -281,7 +278,7 @@ public class EditorMap implements Playable, Serializable{
     up =   button(Control.MAP_UP)    && !button(Control.MAP_DOWN);
 
     down = button(Control.MAP_DOWN)  && 
-        !(button(Control.MAP_UP) || KeyHandler.keyDown(Key.CTRL));
+        !(button(Control.MAP_UP) || controlDown());
 
 
     left = button(Control.MAP_LEFT)  && !button(Control.MAP_RIGHT);
@@ -297,11 +294,7 @@ public class EditorMap implements Playable, Serializable{
     //    System.out.println(isSave + ", " + isNewSave);
 
     isGrid = button(Control.GRID);
-    
-    Mode.getModeInput();
-    tileMode.getInput();
-    isGrid = button(Control.GRID);
-    
+        
     Mode.getModeInput();
     tileMode.getInput();
   }
@@ -339,6 +332,10 @@ public class EditorMap implements Playable, Serializable{
       dx = -SPEED;
     }
 
+    if(KeyHandler.shiftDown()){
+      dx *= .1;
+      dy *= .1;
+    }
         
     if(isReset){
       x = 0;
@@ -354,6 +351,7 @@ public class EditorMap implements Playable, Serializable{
         moveMode.update();
         break;
       case NPC:
+        npcMode.update();
         break;
       case TILE:
         tileMode.update();
@@ -366,9 +364,8 @@ public class EditorMap implements Playable, Serializable{
       y = 0;
     }
     
-    x+=dx;
-    y+=dy;
-
+    move(dx, dy);
+    
     dx = 0;
     dy = 0;
 
@@ -429,9 +426,9 @@ public class EditorMap implements Playable, Serializable{
       saved = true;
       writer.close();
       if(name.substring(name.length()-4).equals(".map")){
-        Display.setTitle("Clyde\'s Editor - " + name);
+        Display.setTitle("Project Soul Editor - " + name);
       }else{
-        Display.setTitle("Clyde\'s Editor - " + name + ".map");
+        Display.setTitle("Project Soul Editor - " + name + ".map");
       }
 
 
@@ -568,7 +565,8 @@ public class EditorMap implements Playable, Serializable{
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     chooser.setDialogTitle("Enter the name of the map to save");
     int returnee = chooser.showSaveDialog(null);
-/*
+    
+    /*
     Editor.reloadKeyboard();
 
     if(returnee == JFileChooser.APPROVE_OPTION){
@@ -695,24 +693,8 @@ public class EditorMap implements Playable, Serializable{
         if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
           Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, tiles[i][j].getX(), 
               tiles[i][j].getY(), 1);
-          if(grid){
-            Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, 0, 16, SIZE, 16+SIZE, 2);
-          }
-
         }
       }
-    }
-    switch(mode){
-      case MOVE:
-        moveMode.render();
-        break;
-      case NPC:
-        break;
-      case TILE:
-        tileMode.render();
-        break;
-      default:
-        break;
     }
 
     
@@ -728,7 +710,32 @@ public class EditorMap implements Playable, Serializable{
           script.render();
         }
       }
-    }    
+    }
+    
+    if(grid){
+      for (int i = 0; i < tiles.length; i++) {
+        for (int j = 0; j < tiles[0].length; j++) {
+          if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
+            Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, 0, 16, SIZE, 16+SIZE, 2);
+          }
+        }
+      }
+    }
+    
+    switch(mode){
+      case MOVE:
+        moveMode.render();
+        break;
+      case NPC:
+        npcMode.render();
+        break;
+      case TILE:
+        tileMode.render();
+        break;
+      default:
+        break;
+    }
+
   }
 
   /**

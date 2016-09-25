@@ -22,7 +22,7 @@ import org.lwjgl.input.Mouse;
  */
 public class Buttons implements Playable{
 
-  public static final int SIZE = 32;         //Width and height of a button
+  public static final int BUTTON_SIZE = 32;         //Width and height of a button
 
   public EditorMap map;
 
@@ -49,7 +49,9 @@ public class Buttons implements Playable{
           EditorMap.setMode(Modes.MOVE); break;
         case 2:
           EditorMap.setMode(Modes.NPC);; break;
-        case 3: break;
+        case 3: 
+          //TODO Edit Map Header
+          break;
         case 4:
           EditorMap.changeGrid();  break;
         case 5:
@@ -69,9 +71,16 @@ public class Buttons implements Playable{
           Editor.loadMap(); break;
         case 10:
           Editor.testGame(); break;
+        case 11:
+          //TODO Undo
+          break;
+        case 12:
+          //TODO Redo
+          break;
 
         default:
           //Do nothing, invalid (and impossible, I hope)
+          //TODO Debug
           System.out.println("This shouldn't be happening m8");
       }
     }
@@ -80,14 +89,14 @@ public class Buttons implements Playable{
 
   @Override
   public void render() {
-    Draw.rect(0, HEIGHT-SIZE, SIZE*8, SIZE, 0, 32, 128, 48, 2);
-    Draw.rect(SIZE*8, HEIGHT-SIZE, SIZE*3, SIZE, 0, 48, 48, 64, 2);
+    Draw.rect(0, HEIGHT-BUTTON_SIZE, BUTTON_SIZE*8, BUTTON_SIZE, 0, 32, 128, 48, 2);
+    Draw.rect(BUTTON_SIZE*8, HEIGHT-BUTTON_SIZE, BUTTON_SIZE*3, BUTTON_SIZE, 0, 48, 48, 64, 2);
 
     if(checkButtonBounds()){
-      int x = Mouse.getX()/(SIZE*MainE.getScale())*SIZE;
-      int y = HEIGHT - SIZE;
+      int x = Mouse.getX()/(BUTTON_SIZE*MainE.getScale())*BUTTON_SIZE;
+      int y = HEIGHT - BUTTON_SIZE;
 
-      Draw.rect(x, y, SIZE, SIZE, 64, 0, 2);
+      Draw.rect(x, y, BUTTON_SIZE, BUTTON_SIZE, 64, 0, 2);
     }
 
   }
@@ -97,8 +106,8 @@ public class Buttons implements Playable{
    * @return Mouse is on a button
    */
   private boolean checkButtonBounds() {
-    return (Mouse.getX()/MainE.getScale() < WIDTH-SIZE*14 &&
-        Mouse.getY()/MainE.getScale() > HEIGHT-SIZE);
+    return (Mouse.getX()/MainE.getScale() < WIDTH-BUTTON_SIZE*14 &&
+        Mouse.getY()/MainE.getScale() > HEIGHT-BUTTON_SIZE);
   }
 
 }

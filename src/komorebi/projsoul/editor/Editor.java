@@ -8,6 +8,15 @@ import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glOrtho;
 import static org.lwjgl.opengl.GL11.glViewport;
 
+import komorebi.projsoul.editor.modes.Mode;
+import komorebi.projsoul.engine.Key;
+import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.map.EditorMap;
+
+import org.lwjgl.opengl.Display;
+
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,14 +33,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
-import org.lwjgl.opengl.Display;
-
-import komorebi.projsoul.engine.Key;
-import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.KeyHandler.Control;
-import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.map.EditorMap;
 
 
 /**
@@ -102,6 +103,7 @@ public class Editor implements Playable{
   public void render() {
     map.render();
     buttons.render();
+    Mode.renderStatus();
   }
 
 
@@ -333,7 +335,6 @@ public class Editor implements Playable{
               clearAndHide();
             }else{
               complain();
-
             }
           }else{
             complain();

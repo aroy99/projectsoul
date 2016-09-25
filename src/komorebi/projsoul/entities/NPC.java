@@ -902,6 +902,11 @@ public class NPC extends Entity {
     return area;
   }
   
+  public void setName(String newName){
+    name = newName;
+  }
+
+  
   /**
    * 
    * @param clydeX

@@ -1,0 +1,3 @@
+lock
+say Can't talk right now, I'm jogging
+unlock

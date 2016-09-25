@@ -1,0 +1,4 @@
+walk up
+pause 30
+walk down
+pause 30

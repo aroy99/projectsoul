@@ -1,0 +1,4 @@
+lock
+say Hi, I'm Ashe, and I will destroy your soul ;)
+unlock
+end

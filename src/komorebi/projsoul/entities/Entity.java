@@ -13,11 +13,11 @@ import komorebi.projsoul.engine.Renderable;
  * @author Aaron Roy
  */
 public abstract class Entity implements Renderable{
-  protected float x;
+  protected float x;          //Regular position
   protected float y;
-  protected float rx, ry;
+  protected int rx, ry;     //Original Position
   
-  protected int sx;
+  protected int sx;           //Width and Height
   protected int sy;
 
   protected Rectangle area;
@@ -48,8 +48,8 @@ public abstract class Entity implements Renderable{
     this.sx = sx;
     this.sy = sy;
     
-    rx = x;
-    ry = y;
+    rx = (int) x;
+    ry = (int) y;
   }
 
   public float getX()

@@ -1,7 +1,9 @@
 /**
- * Mode.java		Aug 4, 2016, 6:21:09 PM
+ * Mode.java    Aug 4, 2016, 6:21:09 PM
  */
 package komorebi.projsoul.editor.modes;
+
+import static komorebi.projsoul.engine.KeyHandler.controlDown;
 
 import komorebi.projsoul.editor.Palette;
 import komorebi.projsoul.engine.Key;
@@ -11,8 +13,12 @@ import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.engine.Renderable;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.TileList;
+import komorebi.projsoul.script.TextHandler;
 
 import org.lwjgl.input.Mouse;
+import org.omg.CORBA.PRIVATE_MEMBER;
+
+import java.util.logging.Handler;
 
 /**
  * Represents one of the three modes for editing in Clyde's
@@ -31,6 +37,11 @@ public abstract class Mode implements Renderable{
   protected static boolean mouseSame;                    //Mouse is in same pos as last frame
 
   protected static int mx, my;            //To track mouse position
+  protected static int pmx, pmy;            //To track previous mouse position
+  
+  protected static int clickTimer;
+  protected static final int DOUBLE_CLICK_TIME = 20;
+  protected static boolean lButtonDoubleClicked;
   
   protected static boolean rStartDragging, rIsDragging;//Starting a group selection
   protected static boolean lStartDragging, lIsDragging;//Is making a group selection
@@ -39,6 +50,8 @@ public abstract class Mode implements Renderable{
   protected static int initX, initY; //Location at the beginning of a drag
 
   public static final int SIZE = 16;         //Width and height of a tile
+  
+  protected static TextHandler status = new TextHandler();
     
   /**
    * Gets input in a static way
@@ -47,28 +60,64 @@ public abstract class Mode implements Renderable{
     mouseSame = getMouseX() == mx && getMouseY() == my &&
         (lButtonIsDown || rButtonIsDown);
     
+    pmx = mx;
     mx = getMouseX();
+    
+    pmy = my;
     my = getMouseY();
-
+    
+    status.clear();
+    if(checkMapBounds()){
+      status.write("Mouse location: " + mx + ", " + my, 50, 1, 8);
+    }else{
+      status.write("Mouse location: ", 50, 1, 8);
+    }
     lButtonWasDown = lButtonIsDown;
     lButtonIsDown = Mouse.isButtonDown(0);
+    
+    if(lButtonIsDown && !lButtonWasDown && clickTimer == 0){
+      clickTimer = DOUBLE_CLICK_TIME;
+    }
 
+    if(lButtonIsDown && !lButtonWasDown && clickTimer > 0 && clickTimer != DOUBLE_CLICK_TIME){
+      System.out.println("Double click");
+      lButtonDoubleClicked = true;
+      clickTimer = 0;
+    }else{
+      lButtonDoubleClicked = false;
+    }
+    
+    if(clickTimer > 0){
+      clickTimer--;
+    }
+    
+
+        
     rButtonWasDown = rButtonIsDown;
-    rButtonIsDown = Mouse.isButtonDown(1) && !KeyHandler.keyDown(Key.CTRL);
+    rButtonIsDown = Mouse.isButtonDown(1) && !controlDown();
 
     
     mButtonWasDown = mButtonIsDown;
     mButtonIsDown = KeyHandler.keyClick(Key.MBUTTON);
 
-    rStartDragging = Mouse.isButtonDown(1) && KeyHandler.keyDown(Key.CTRL) && 
+    rStartDragging = Mouse.isButtonDown(1) && controlDown() && 
         !rIsDragging;
 
     rIsDragging = Mouse.isButtonDown(1) && rIsDragging || rStartDragging;
 
-    lStartDragging = Mouse.isButtonDown(0) && KeyHandler.keyDown(Key.CTRL) && 
+    lStartDragging = Mouse.isButtonDown(0) && controlDown() && 
         !lIsDragging;
 
     lIsDragging = Mouse.isButtonDown(0) && lIsDragging || lStartDragging;
+  }
+  
+  /**
+   * Renders the status bar, containing:
+   * -Tile Mouse X and Y
+   *
+   */
+  public static void renderStatus(){
+    status.render();
   }
   
   /**
@@ -91,7 +140,7 @@ public abstract class Mode implements Renderable{
    * Checks if the Mouse is in bounds of the map
    * @return Mouse is in map
    */
-  protected boolean checkMapBounds() {
+  protected static boolean checkMapBounds() {
     return (Mouse.getX()/MainE.getScale() < Palette.xOffset*16 ||
         Mouse.getY()/MainE.getScale() < Palette.yOffset*16) &&
         (getMouseY() >= 0 &&
