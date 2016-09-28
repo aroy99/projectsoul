@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import komorebi.projsoul.engine.GameHandler;
+import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Item;
 import komorebi.projsoul.engine.Item.Items;
 import komorebi.projsoul.engine.Key;
@@ -26,8 +27,6 @@ import komorebi.projsoul.script.Fader;
 import komorebi.projsoul.script.InstructionList;
 import komorebi.projsoul.script.Instructions;
 import komorebi.projsoul.script.Lock;
-import komorebi.projsoul.script.SignHandler;
-import komorebi.projsoul.script.SpeechHandler;
 import komorebi.projsoul.script.Task;
 import komorebi.projsoul.script.Task.TaskWithNumber;
 import komorebi.projsoul.script.Task.TaskWithString;
@@ -50,7 +49,7 @@ public class Game extends State{
   private int pickIndex;
   private int maxOpt;
 
-  private SpeechHandler speaker;
+  private NPC speaker;
 
   private BufferedReader read;
 
@@ -60,6 +59,8 @@ public class Game extends State{
   private int confidence, money;
   
   public static String testLoc;
+  
+  public HUD hud;
   
   public class Int {
     private int val;
@@ -101,6 +102,8 @@ public class Game extends State{
 
     confidence = 0;
     money = 15;
+    
+    hud = new HUD();
 
 
   }
@@ -111,38 +114,31 @@ public class Game extends State{
   @Override
   public void getInput() {
     
-    if (KeyHandler.keyClick(Key.C))
+    if (KeyHandler.keyClick(Key.SPACE))
     {
       if (speaker!=null)
       {
         if (speaker.isWaitingOnParagraph())
         {
+        //TODO Debug
+          System.out.println("Next");
           speaker.nextParagraph();
         } else {
-          if (!speaker.alreadyAsked())
+          if (!speaker.doneAsking())
           {
             speaker.skipScroll();
           } else
           {
             if (hasText)
             {
-              speaker.clear();
+              speaker.clearText();
 
               if (hasChoice) {
-                
                 speaker.branch(pickIndex);
               }
 
               hasChoice=false;
               hasText=false;
-              
-              if (speaker instanceof SignHandler)
-              {
-                SignHandler sign = (SignHandler) speaker;
-                sign.disengage();
-              }
-              
-              speaker = null;
             }
           }
         } 
@@ -152,6 +148,9 @@ public class Game extends State{
 
     //TODO Debug
     map.getInput();
+  
+
+
 
     if (KeyHandler.keyClick(Key.LEFT))
     {
@@ -161,8 +160,8 @@ public class Game extends State{
         if (pickIndex < 1) {
           pickIndex = maxOpt;
         }
-        
         speaker.setPickerIndex(pickIndex);
+        //choosesLeft=!choosesLeft;
 
       }  
     }
@@ -175,7 +174,6 @@ public class Game extends State{
         if (pickIndex > maxOpt) {
           pickIndex = 1;
         }
-        
         speaker.setPickerIndex(pickIndex);
       }
     } 
@@ -229,9 +227,11 @@ public class Game extends State{
   @Override
   public void render() {
     map.render();
-    Map.getClyde().magicBar().render();
 
     Fader.render();
+    
+    hud.render();
+   
 
   }
 
@@ -244,9 +244,9 @@ public class Game extends State{
     map = m;
   }
 
-  public void setSpeaker(SpeechHandler talk)
+  public void setSpeaker(NPC npc)
   {
-    this.speaker = talk;
+    this.speaker = npc;
     this.hasText = true;
   }
 
@@ -267,12 +267,12 @@ public class Game extends State{
   }
 
   /**
-   * Sets the speech bubble currently presenting a question to the player
-   * @param text The asking NPC's SpeechHandler object
+   * Sets the NPC currently presenting a question to the player
+   * @param npc The asking NPCS
    */
-  public void setAsker(SpeechHandler text)
+  public void setAsker(NPC npc)
   {
-    this.speaker = text;
+    this.speaker = npc;
     this.hasText = true;
     this.hasChoice = true;
     //this.choosesLeft = true;
