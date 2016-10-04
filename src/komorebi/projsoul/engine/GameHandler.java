@@ -47,6 +47,7 @@ public class GameHandler implements Playable{
         break;
       case PAUSE:
         pause.getInput();
+        break;
       default:
         break;
     }
@@ -66,6 +67,7 @@ public class GameHandler implements Playable{
       case PAUSE:
         game.update();
         pause.update();
+        break;
       default:
         break;
     }

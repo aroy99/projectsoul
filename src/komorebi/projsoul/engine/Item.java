@@ -1,5 +1,5 @@
 /**
- * Item.java		Aug 3, 2016, 11:49:22 AM
+ * Item.java    Aug 3, 2016, 11:49:22 AM
  */
 package komorebi.projsoul.engine;
 
@@ -10,6 +10,11 @@ package komorebi.projsoul.engine;
  */
 public class Item {
     
+  /**
+   * The various items that can be obtained in-game
+   * @author Andrew Faulkenberry
+   *
+   */
   public enum Items
   {
     KEY("key", "a key"),
@@ -37,15 +42,27 @@ public class Item {
       return idStr;
     }
     
+    /**
+     * Returns the item with the specified name
+     * @param s The name of the item
+     * @return The corresponding Item, or Item.NONE if no such item exists
+     */
     public static Items getItem(String s)
     {
       for (Items item: Items.values())
       {
-        if (item.getIDString().equals(s)) return item;
+        if (item.getIDString().equals(s)) 
+        {
+          return item;
+        }
       }
       return NONE;
     }
     
+    
+    /**
+     * @return A brief description of the item
+     */
     public String getNiftyTidbit() {
       switch (this)
       {
@@ -70,6 +87,11 @@ public class Item {
     item = type;
   }
   
+  /**
+   * Renders the item's icon representation at a specified point on-screen
+   * @param x The x location of the icon
+   * @param y The y location of the icon
+   */
   public void render(int x, int y)
   {
     switch (item)

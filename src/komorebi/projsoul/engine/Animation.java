@@ -119,10 +119,6 @@ public class Animation {
    * 
    * @param f Max number of frames
    * @param t Time till next frame in frames
-   * @param sx size x for the animation 
-   *             *used to calculate other tex coordinates too
-   * @param sy size y for the animation 
-   *             *used to calculate other tex coordinates too
    * @param id The Texture ID
    */
   public Animation(int f, int t, int id){
@@ -189,6 +185,7 @@ public class Animation {
    * (+ means right, - means left)
    * @param offY Amount of pixels the frame should be moved when drawn on the screen
    * (+ means up, - means down)
+   * @param flip Whether the image is flipped or not
    */
   public void add(int tx, int ty, float sx, float sy, int offX, int offY, boolean flip)
   {
@@ -250,8 +247,8 @@ public class Animation {
    * 
    * @param tx X position on the picture, starting from the left         
    * @param ty Y position on the picture, starting from the <i>top</i>   
-   * @param rot the rotation of the tile / 90 degrees
-   * @param flip whether to flip the image or not
+   * @param sx The horizontal size of the picture
+   * @param sy The vertical size of the picture
    */
   public void add(int tx, int ty, int sx, int sy){
     add(tx,ty,sx,sy,0,false);
@@ -382,6 +379,9 @@ public class Animation {
     increment();
   }
 
+  /*
+   * Increments the frame counter
+   */
   public void increment()
   {
     if(playing){
@@ -432,16 +432,17 @@ public class Animation {
     time = speed;
   }
 
-  public int getLWJGLFrames()
-  {
-    return time*frames;
-  }
-  
+  /**
+   * @return true if the animation is currently playing, else false
+   */
   public boolean playing()
   {
     return playing;
   }
   
+  /**
+   * @return True if the animation is on its last frame, else false
+   */
   public boolean lastFrame()
   {
     return (currFrame+1==frames);

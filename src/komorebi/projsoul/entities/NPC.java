@@ -61,8 +61,12 @@ public class NPC extends Entity {
   Animation rightAni, leftAni, downAni, upAni;
 
   private int prevdx, prevdy;
+  private int prevFrames;
+  private Face prevDir;
+  private boolean wasHangingOn;
   
   private Lock lock;
+  private Lock prevLock;
 
   boolean hangOn;
   
@@ -113,7 +117,7 @@ public class NPC extends Entity {
 
     isVisible = false;
 
-    isMoving=false;
+    isMoving = false;
     hasInstructions=false;
 
     text = new SpeechHandler();
@@ -126,11 +130,11 @@ public class NPC extends Entity {
    */
   @Override
 
-  /**
+  /**z
    * Updates the behavior of the NPC, such as speed and movement
    */
   public void update() {
-    
+            
     if (framesToGo <= 0 && hasInstructions)
     {
       isMoving=false;
@@ -144,10 +148,10 @@ public class NPC extends Entity {
       if (lock != null)
       {
         lock.resumeThread();
-      }
+      } 
 
     }
-
+    
     if (isMoving)
     {      
       if (!hangOn && !frontClear() && isWalking)
@@ -159,6 +163,8 @@ public class NPC extends Entity {
 
         dx=0;
         dy=0;
+        
+        prevDir = direction;
 
         downAni.hStop();
         upAni.hStop();
@@ -167,11 +173,13 @@ public class NPC extends Entity {
 
 
       } else if (hangOn && frontClear() && isWalking)
-      {
+      {        
         hangOn = false;
 
         dx = prevdx;
         dy = prevdy;
+        
+        direction = prevDir;
       }
 
       rx+=dx;
@@ -238,7 +246,7 @@ public class NPC extends Entity {
       r.y += dy;
     }
 
-    if (!hangOn)
+    if (!hangOn || isTalking)
     {
       if (dx != 0) {
         framesToGo-=Math.abs(dx);
@@ -713,6 +721,11 @@ public class NPC extends Entity {
    */
   public void approach()
   {
+    prevFrames = framesToGo;
+    wasHangingOn = hangOn;
+    
+    prevLock = lock;
+    
     abortWalkingScript();
     talkScript.run();
   }
@@ -722,11 +735,24 @@ public class NPC extends Entity {
     if (isTalking)
     {
       walkScript.resume();
+      isWalking = true;
     } else
     {
       isWalking = false;
     }
     isTalking = false;    
+    
+    if (prevFrames > 0)
+    {
+      isMoving = true;
+      hasInstructions = true;
+    }
+    
+    hangOn = wasHangingOn;
+    framesToGo = prevFrames;
+    
+    lock = prevLock;
+
   }
 
   public void setTalkingScript(TalkingScript nScript)
@@ -892,8 +918,7 @@ public class NPC extends Entity {
     
     future.x-=dx;
     future.y-=dy;
-
-
+    
     return get;
   }
   
@@ -918,10 +943,8 @@ public class NPC extends Entity {
   
   public void say(String s, Lock lock)
   {
-
     text.write(s, 20, 58, 8);
-    this.lock = lock;
     Main.getGame().setSpeaker(text);
-    lock.pauseThread();
+    text.setAndLock(lock);
   }
 }

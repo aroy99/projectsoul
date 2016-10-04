@@ -4,6 +4,17 @@
 
 package komorebi.projsoul.engine;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
+import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.openal.AL;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
+
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
@@ -21,16 +32,6 @@ import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glOrtho;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-
-import org.lwjgl.LWJGLException;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.openal.AL;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
 import org.newdawn.slick.openal.SoundStore;
 
 import komorebi.projsoul.audio.AudioHandler;
@@ -75,8 +76,7 @@ public class Main {
         }
         if(scale == 0){
           scale = Integer.parseInt(str);
-        }
-        else if(Game.testLoc == null){
+        } else if(Game.testLoc == null){
           Game.testLoc = str;
         }
         
@@ -115,6 +115,7 @@ public class Main {
   /**
    *  Creates a new game and initializes the audio
    *  @see GameHandler
+   *  @see AudioHandler
    */
   private void initGame(){
     gamehandler = new GameHandler();

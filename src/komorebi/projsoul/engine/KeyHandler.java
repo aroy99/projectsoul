@@ -4,7 +4,6 @@
 package komorebi.projsoul.engine;
 
 import org.lwjgl.LWJGLException;
-import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -164,7 +163,6 @@ public class KeyHandler {
     try {
       Keyboard.create();
     } catch (LWJGLException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
 

@@ -4,7 +4,6 @@
 package komorebi.projsoul.script;
 
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.entities.Player;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.map.EditorMap;
 
@@ -51,7 +50,7 @@ public class AreaScript extends Script{
   {
     tx = (int)(x-EditorMap.getX())/16;
     ty = (int)(y-EditorMap.getY())/16;
-    
+
     script = s;
     isRepeatable = repeat;
     this.x=x*16;
@@ -67,13 +66,16 @@ public class AreaScript extends Script{
   {    
     hasRun = true;
 
-    super.run();
+    if (!hasRun || isRepeatable)
+    {
+      super.run();
+    }
 
   }
 
   public boolean isLocationIntersected(int tx, int ty)
   {
-    return (tx==getTileX() && ty==getTileY());
+    return (tx == getTileX() && ty == getTileY());
   }
 
   public boolean hasRun()
@@ -88,7 +90,7 @@ public class AreaScript extends Script{
   public int getTileY() {
     return (int) (y/16);
   }
-  
+
   /**
    * @return the original tile x of this Script
    */
@@ -107,17 +109,17 @@ public class AreaScript extends Script{
   public float getX(){
     return x;
   }
-  
+
   public float getY(){
     return y;
   }
-  
+
   public void setAbsoluteLocation(float x, float y)
   {
     this.x=x;
     this.y=y;
   }
-  
+
   public void move(float dx, float dy)
   {
     x+=dx;
@@ -128,11 +130,11 @@ public class AreaScript extends Script{
   {
     return script;
   }
-  
+
   public NPC getNPC(){
     return npc;
   }
-  
+
   public boolean hasNPC(){
     return npc != null;
   }
@@ -143,7 +145,7 @@ public class AreaScript extends Script{
    */
   @Override
   public void abort() {
-    
+
   }
 
   /**

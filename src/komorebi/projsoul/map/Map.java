@@ -20,9 +20,7 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.entities.Chaser;
 import komorebi.projsoul.entities.Enemy;
-import komorebi.projsoul.entities.Entity;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.Player;
@@ -59,8 +57,6 @@ public class Map implements Playable{
   private boolean isHitBox;
   private boolean isGrid;
 
-  //TODO Debug
-  private int debugCount;
 
 
   /**
@@ -206,7 +202,7 @@ public class Map implements Playable{
       e.printStackTrace();
     }
     
-    enemies.add(new Chaser(100, 100, 16, 21, 100));
+    //enemies.add(new Chaser(100, 100, 16, 21, 100));
 
   }
 
@@ -452,13 +448,15 @@ public class Map implements Playable{
   public void guidePlayer(float x, float y, float dx, float dy)
   {
     
+    
       //Speed affected
       int x1 = (int)((x-16+dx)/16)+1; //Left
       int y1 = (int)((y-16+dy)/16)+1; //Bottom
 
       int bufX = Math.abs(x1*16 - (int) (x +dx));
       int bufY = Math.abs(y1*16 - (int) (y +dy));
-
+      System.out.println(bufY);
+      
       int x2 = (int)((x-1+dx)/16)+1;  //Right
       int y2 = (int)((y-1+dy)/16)+1;  //Top
 
@@ -479,20 +477,43 @@ public class Map implements Playable{
       
        if (ret[0] && (collision[y2][x3] ^ collision[y2][x4]))
        {
+         //Player moving up
          if (collision[y2][x3] && (16 - bufX) >=10)
          {
            play.guide(-1, 0);
-         } else if (collision[y2][x4] && bufX>=10) {
+         } else if (collision[y2][x4] && bufX >= 10) {
            play.guide(1, 0);
          }
        } else if (ret[2] && (collision[y1][x3] ^ collision[y1][x4]))
        {
-         if (collision[y1][x3] && (16 - bufY) >= 10)
+         //Player moving down
+         if (collision[y1][x3] && (16 - bufX) >= 10)
          {
-           System.out.println("Guide 1");
-         } else if (collision[y1][x4] && bufY>=10)
+           play.guide(-1, 0);
+         } else if (collision[y1][x4] && bufX>=10)
          {
-           System.out.println("Guide 2");
+           play.guide(1, 0);
+         }
+       } else if (ret[1] && (collision[y3][x2] ^ collision[y4][x2]))
+       {
+         //Player moving right
+         if (collision[y3][x2] && (bufY <= 6))
+         {
+           play.guide(0, -1);
+         } else if (collision[y4][x2] && (16 - bufY) <= 6)
+         {
+           play.guide(0, 1);
+         }
+         
+       } else if (ret[3] && (collision[y3][x1] ^ collision[y4][x1]))
+       {
+         //Player moving left
+         if (collision[y3][x1] && (bufY <= 6))
+         {
+           play.guide(0, -1);
+         } else if (collision[y4][x1] && (16 - bufY) <= 6)
+         {
+           play.guide(0, 1);
          }
        }
      

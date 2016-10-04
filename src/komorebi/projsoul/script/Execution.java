@@ -5,9 +5,9 @@ package komorebi.projsoul.script;
 
 import komorebi.projsoul.audio.AudioHandler;
 import komorebi.projsoul.audio.Song;
+import komorebi.projsoul.engine.Item.Items;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.engine.ThreadHandler;
-import komorebi.projsoul.engine.Item.Items;
 import komorebi.projsoul.engine.ThreadHandler.NewThread;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.NPC;
@@ -16,6 +16,7 @@ import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.TileList;
 import komorebi.projsoul.script.Task.TaskWithBoolean;
 import komorebi.projsoul.script.Task.TaskWithBranch;
+import komorebi.projsoul.script.Task.TaskWithBranches;
 import komorebi.projsoul.script.Task.TaskWithLocation;
 import komorebi.projsoul.script.Task.TaskWithNumber;
 import komorebi.projsoul.script.Task.TaskWithNumberAndLocation;
@@ -89,10 +90,16 @@ public class Execution implements Runnable {
 
   @Override
   public void run() {
-    
+
     if (!isBlank)
     {
-      if (loop) while (true) execute(); 
+      if (loop)
+      {
+        while (true) 
+        {
+          execute(); 
+        }
+      }
       else 
       {
         execute();
@@ -105,6 +112,10 @@ public class Execution implements Runnable {
   }
 
 
+  /**
+   * Checks whether the Thread has been interrupted before continuing
+   * @return True if the thread can continue, false if it should stop
+   */
   public boolean check()
   {
     try
@@ -120,6 +131,9 @@ public class Execution implements Runnable {
     return false;
   }
 
+  /**
+   * Executes the entire ArrayList of Tasks
+   */
   public void execute() {
 
     for (int j = 0; j < list.getInstructions().size(); j++)
@@ -137,6 +151,10 @@ public class Execution implements Runnable {
 
   }
 
+  /**
+   * Executes a single task
+   * @param task The task to be executed
+   */
   public void execute(Task task)
   {        
     TaskWithNumber taskNum;
@@ -147,10 +165,13 @@ public class Execution implements Runnable {
     TaskWithNumberAndLocation taskNumLoc;
     TaskWithStringArray taskStrArr;
     TaskWithBranch taskBr;
+    TaskWithBranches taskBrs;
     Task nextTask;
 
     boolean run;
-    
+
+    System.out.println(task.getInstruction());
+
     switch (task.getInstruction())
     {
       case WALK_DOWN:
@@ -221,6 +242,16 @@ public class Execution implements Runnable {
         taskBr = (TaskWithBranch) task;
         (new Execution(npc, taskBr.getBranch())).run();
         break;
+      case RUN_BRANCHES:
+        taskBrs = (TaskWithBranches) task;
+        for (TaskWithBranch oneTask: taskBrs.getBranches())
+        {
+          oneTask.getBranch().setTaskWithBranches(taskBrs);
+          ThreadHandler.newThread((new NewThread(new Execution(npc, 
+              oneTask.getBranch()))));
+        }
+        taskBrs.setLockandLock(lock);
+        break;
       case FADE_OUT:
         Fader.fadeOut(lock);
         break;
@@ -259,9 +290,9 @@ public class Execution implements Runnable {
         break;
       case SIMUL_RUN_BRANCH:
         //TODO Debug
-        System.out.println("Simul_run_branch");
         taskBr = (TaskWithBranch) task;
         Execution ex = new Execution(npc, taskBr.getBranch());
+
         ThreadHandler.newThread(new NewThread(ex));
         break;
       case CLYDE_TURN_LEFT:
@@ -329,22 +360,27 @@ public class Execution implements Runnable {
           npc.disengage();
         }
 
+        reset();
+
         ThreadHandler.remove((NewThread) Thread.currentThread());
         break;
       case IF_MONEY:
         taskTask = (TaskWithTask) task;
         nextTask = getNextTask(task);
 
-        run = Main.getGame().getMoney()>taskTask.getPredicate();
-        if (taskTask.isReversed()) run = !run;
+        run = Main.getGame().getMoney() > taskTask.getPredicate();
+        if (taskTask.isReversed()) 
+        {
+          run = !run;
+        }
 
         if (run)
         {
           execute(taskTask.getTask());
 
-          if (nextTask!=null)
+          if (nextTask != null)
           {
-            if (nextTask.getInstruction()==Instructions.ELSE)
+            if (nextTask.getInstruction() == Instructions.ELSE)
             {
               taskBool = (TaskWithBoolean) nextTask;
               taskBool.setIfTrue(true);
@@ -357,16 +393,19 @@ public class Execution implements Runnable {
 
         nextTask = getNextTask(task);
 
-        run = Main.getGame().getConfidence()>taskTask.getPredicate();
-        if (taskTask.isReversed()) run = !run;
+        run = Main.getGame().getConfidence() > taskTask.getPredicate();
+        if (taskTask.isReversed())
+        {
+          run = !run;
+        }
 
         if (run)
         {
           execute(taskTask.getTask());
 
-          if (nextTask!=null)
+          if (nextTask != null)
           {
-            if (nextTask.getInstruction()==Instructions.ELSE)
+            if (nextTask.getInstruction() == Instructions.ELSE)
             {
               taskBool = (TaskWithBoolean) nextTask;
               taskBool.setIfTrue(true);
@@ -379,15 +418,17 @@ public class Execution implements Runnable {
         nextTask = getNextTask(task);
 
         run = Main.getGame().checkFlag(taskTask.getPredicate());
-        if (taskTask.isReversed()) run = !run;
-
+        if (taskTask.isReversed()) 
+        {  
+          run = !run;
+        }
         if (run)
         {
           execute(taskTask.getTask());
 
-          if (nextTask!=null)
+          if (nextTask != null)
           {
-            if (nextTask.getInstruction()==Instructions.ELSE)
+            if (nextTask.getInstruction() == Instructions.ELSE)
             {
               taskBool = (TaskWithBoolean) nextTask;
               taskBool.setIfTrue(true);
@@ -411,6 +452,17 @@ public class Execution implements Runnable {
         taskLoc = (TaskWithLocation) task;
         Game.getMap().setCollision(taskLoc.getX(), taskLoc.getY(), false);
         break;
+      case SYNC:
+        if (list.getSuperTask() == null)
+        {
+          System.out.println("The \"sync\" keyword cannot be used in a thread" +
+              " without a parent thread.");
+        } else
+        {
+          list.getSuperTask().sync(list);
+        }
+
+        break;
       case UNBLOCK:
         taskLoc = (TaskWithLocation) task;
         Game.getMap().setCollision(taskLoc.getX(), taskLoc.getY(), true);
@@ -430,9 +482,20 @@ public class Execution implements Runnable {
   public Task getNextTask(Task task)
   {
     int index = list.getInstructions().indexOf(task);
-    if (index==list.getInstructions().size()-1)
+    if (index == list.getInstructions().size() - 1)
       return null;
     return list.getInstructions().get(index+1);
+  }
+
+  public void reset()
+  {
+    for (Task t: list.getInstructions())
+    {
+      if (t instanceof TaskWithBranches)
+      {
+        ((TaskWithBranches) t).reset();
+      }
+    }
   }
 
 

@@ -15,6 +15,7 @@ import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.script.Task.TaskWithBoolean;
 import komorebi.projsoul.script.Task.TaskWithBranch;
+import komorebi.projsoul.script.Task.TaskWithBranches;
 import komorebi.projsoul.script.Task.TaskWithLocation;
 import komorebi.projsoul.script.Task.TaskWithNumber;
 import komorebi.projsoul.script.Task.TaskWithNumberAndLocation;
@@ -48,7 +49,6 @@ public abstract class Script {
   public abstract void abort();
   /**
    * Interprets a given script and has a given NPC execute them
-   * @param script The script to be executed
    */
   public void read()
   {
@@ -72,12 +72,13 @@ public abstract class Script {
     try {
       while ((s = read.readLine()) != null) {
         s=s.trim();
-        if ((task=interpret(s, line))!=null)
+        if ((task=interpret(s, line)) != null)
         {
           currentBranch.add(task);
         }
         line++;
       }
+
     } catch (IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -86,6 +87,12 @@ public abstract class Script {
     execution = new Execution(npc, ex);
   }
 
+  /**
+   * Converts one line of a script into a Task
+   * @param s The line of script to be interpreted
+   * @param line The line number
+   * @return The appropriate task, or null if an error is thrown
+   */
   public Task interpret(String s, int line)
   {
     if (s.startsWith("walk"))
@@ -95,7 +102,7 @@ public abstract class Script {
       String[] dir = s.split(" ");
       for (int i=0; i < dir.length; i++)
       {
-        if (i+1==dir.length)
+        if (i+1 == dir.length)
         {
           if (dir[i].equals("left"))
           {
@@ -141,7 +148,7 @@ public abstract class Script {
       String[] dir = s.split(" ");
       for (int i=0; i < dir.length; i++)
       {
-        if (i+1==dir.length)
+        if (i+1 == dir.length)
         {
           if (dir[i].equals("left"))
           {
@@ -246,18 +253,21 @@ public abstract class Script {
       for (int i=0; i < newWords.length; i++)
       {
         newWords[i]=words[(i*2)+1];
-        if (i!=0) checkForBranch(newWords[i]);
+        if (i != 0) 
+        {
+          checkForBranch(newWords[i]);
+        }
         newBranches[i] = getTaskWithBranch(newWords[i]);
       }
 
-     return new TaskWithStringArray(Instructions.ASK, newWords,
+      return new TaskWithStringArray(Instructions.ASK, newWords,
           newBranches);
 
     } else if (s.startsWith("branch"))
     {
       s = s.replace("branch ", "");
       checkForBranch(s);
-      
+
       currentBranch = getTaskWithBranch(s).getBranch();
       return null;
     } else if (s.startsWith("fadeout"))
@@ -276,7 +286,10 @@ public abstract class Script {
       s = s.replace("npc ", "");
 
       npc = Game.getMap().findNPC(s);
-      if (npc==null) throwError(line, "NPC \'" + s + "\' not recognized");
+      if (npc == null) 
+      {
+        throwError(line, "NPC \'" + s + "\' not recognized");
+      }
     } else if (s.startsWith("sprite"))
     {
       s = s.replace("sprite ", "");
@@ -309,7 +322,7 @@ public abstract class Script {
       String[] dir = s.split(" ");
       for (int i=0; i < dir.length; i++)
       {
-        if (i==dir.length-1)
+        if (i == dir.length-1)
         {
           if (dir[i].equals("left"))
           {
@@ -346,17 +359,41 @@ public abstract class Script {
             throwError(line, "Direction '" + dir[i] + "' not recongized");
           }
         }
-        
+
       }
-    } else if (s.startsWith("runbranch"))
+    } else if (s.startsWith("call"))
     {
-      s = s.replace("runbranch ", "");
-      checkForBranch(s);
-      
-      TaskWithBranch task = getTaskWithBranch(s);
-      task.setInstruction(Instructions.RUN_BRANCH);
-      
-      return task;
+
+      s = s.replace("call", "");
+
+      if (s.contains(","))
+      {
+        String[] args = s.split(",");
+
+        TaskWithBranches task = new TaskWithBranches(Instructions.RUN_BRANCHES);
+
+        for (String element: args)
+        {
+          element = element.trim();
+          checkForBranch(element);
+          task.addBranch(getTaskWithBranch(element));
+        }
+
+        task.finalize();
+        return task;
+
+      } else
+      {
+        s = s.replace("call", "");
+        s = s.trim();
+        checkForBranch(s);
+
+        TaskWithBranch task = getTaskWithBranch(s);
+        task.setInstruction(Instructions.RUN_BRANCH);
+
+        return task;
+      }
+
     } else if (s.startsWith("end"))
     {
       return new Task(Instructions.END);
@@ -364,7 +401,7 @@ public abstract class Script {
     {
       s = s.replace("simulrunbranch ", "");
       checkForBranch(s);
-      
+
       TaskWithBranch task = getTaskWithBranch(s);
       task.setInstruction(Instructions.SIMUL_RUN_BRANCH);
       return task;
@@ -437,9 +474,12 @@ public abstract class Script {
       toDo = toDo.trim();
       predicate = predicate.replace("if", "");
       predicate = predicate.trim();
-      
+
       boolean reverse = predicate.startsWith("!");
-      if (reverse) predicate = predicate.replace("!", "");
+      if (reverse) 
+      {
+        predicate = predicate.replace("!", "");
+      }
 
       try
       {
@@ -465,8 +505,12 @@ public abstract class Script {
           return new TaskWithTask(Instructions.IF_CONFIDENCE, interpret(toDo, 
               line), compare, reverse);
         }
-        else return throwError(line, "Predicates must either correspond to a "
-            + "boolean flag number, a monetary value or a confidence value");
+        else 
+        {
+          return throwError(line, "Predicates must either correspond to a "
+              + "boolean flag number, a monetary value or a confidence value");
+
+        }
       }
 
     } else if (s.startsWith("else"))
@@ -508,8 +552,8 @@ public abstract class Script {
       try
       {
         int bool = Integer.parseInt(s);
-        
-        if (bool>255 || bool<0)
+
+        if (bool > 255 || bool < 0)
         {
           throwError(line, "Flag values must be between 0 and 255 (inclusive)");
         } else
@@ -524,33 +568,39 @@ public abstract class Script {
     {
       s = s.replace("block ", "");
       String[] split = s.split(" ");
-      
+
       try 
       {
         int argx = Integer.parseInt(split[0]);
         int argy = Integer.parseInt(split[1]);
-        
+
         return new TaskWithLocation(Instructions.BLOCK, argx, argy);
       } catch (NumberFormatException nfe)
       {
         return throwError(line, s + " cannot be resolved to two integers");
       }
-      
+
     } else if (s.startsWith("unblock"))
     {
       s = s.replace("unblock ", "");
       String[] split = s.split(" ");
-      
+
       try 
       {
         int argx = Integer.parseInt(split[0]);
         int argy = Integer.parseInt(split[1]);
-        
+
         return new TaskWithLocation(Instructions.UNBLOCK, argx, argy);
       } catch (NumberFormatException nfe)
       {
         return throwError(line, s + " cannot be resolved to two integers");
       }
+    } else if (s.startsWith("sync"))
+    {
+      s = s.replace("sync", "");
+      s = s.trim();
+
+      return new Task(Instructions.SYNC);
     }
     else if (!(s.startsWith("//") || s.startsWith(" ") || s.isEmpty()))
     {
@@ -560,6 +610,9 @@ public abstract class Script {
     return null;
   }
 
+  /**
+   * Runs the script
+   */
   public void run()
   {        
     if (!syntaxError) 
@@ -568,6 +621,12 @@ public abstract class Script {
     }
   }
 
+  /**
+   * Prints an error message to the console, indicating a syntax error in the script
+   * @param line The line number of the error
+   * @param message The error message
+   * @return null, beacuse no Task can be created from incorrect syntax
+   */
   public Task throwError(int line, String message)
   {
     System.out.println("Syntax error in script " + script + ", line " 
@@ -645,13 +704,13 @@ public abstract class Script {
         break;
       }
     }
-    
+
     if (!there)
     {
       branches.add(new TaskWithBranch(null, new InstructionList(s)));
     }
   }
-  
+
   public TaskWithBranch getTaskWithBranch(String s)
   {
     for (TaskWithBranch task: branches)
@@ -661,7 +720,7 @@ public abstract class Script {
         return task;
       }
     }
-    
+
     return null;
   }
 

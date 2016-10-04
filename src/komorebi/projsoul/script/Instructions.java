@@ -44,6 +44,7 @@ public enum Instructions {
   CLYDE_TURN_DOWN,
   WAIT,
   SIMUL_RUN_BRANCH,
+  RUN_BRANCHES,
   PLAY_SONG,
   STOP_SONG,
   ALIGN,
@@ -63,6 +64,7 @@ public enum Instructions {
   FLAG_BOOLEAN,
   BLOCK,
   UNBLOCK,
+  SYNC,
   END;
 }
 

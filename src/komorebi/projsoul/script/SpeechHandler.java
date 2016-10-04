@@ -362,5 +362,20 @@ public class SpeechHandler extends TextHandler {
   {
     return answerToQuestion;
   }
+  
+  public void setAndLock(Lock lock)
+  {
+   this.lock = lock; 
+   lock.pauseThread();
+  }
+  
+  public void releaseLocks()
+  {
+    if (lock!=null)
+    {
+      lock.resumeThread();
+      lock = null;
+    }
+  }
 
 }

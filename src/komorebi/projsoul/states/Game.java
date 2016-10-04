@@ -142,6 +142,7 @@ public class Game extends State{
                 sign.disengage();
               }
               
+              speaker.releaseLocks();
               speaker = null;
             }
           }
