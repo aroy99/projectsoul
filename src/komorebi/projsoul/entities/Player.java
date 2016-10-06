@@ -1,5 +1,5 @@
 /**
- * Clyde.java       May 15, 2016, 11:58:06 PM
+ * Player.java       May 15, 2016, 11:58:06 PM
  */
 package komorebi.projsoul.entities;
 
@@ -7,6 +7,7 @@ import java.awt.Rectangle;
 
 import org.lwjgl.input.Keyboard;
 
+import komorebi.projsoul.attack.Attack;
 import komorebi.projsoul.attack.MeleeAttack;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Camera;
@@ -32,9 +33,11 @@ public class Player extends Entity implements Playable{
   private boolean pause;
   private boolean guiding;
   
+  public Characters character;
+  
   private int health;
 
-  private boolean isAttacking;
+  public boolean isAttacking;
 
   private boolean canMove = true;
 
@@ -44,15 +47,15 @@ public class Player extends Entity implements Playable{
   private int framesToGo;
   private boolean hasInstructions;
 
-  private Animation upAni;
-  private Animation downAni;
-  private Animation leftAni;
-  private Animation rightAni;
+  public Animation upAni;
+  public Animation downAni;
+  public Animation leftAni;
+  public Animation rightAni;
 
-  private Animation hurtLeftAni;
-  private Animation hurtRightAni;
-  private Animation hurtUpAni;
-  private Animation hurtDownAni;
+  public Animation hurtLeftAni;
+  public Animation hurtRightAni;
+  public Animation hurtUpAni;
+  public Animation hurtDownAni;
   private int hurtCount;
 
   private Rectangle area;
@@ -60,16 +63,16 @@ public class Player extends Entity implements Playable{
 
   private static final float SPEED = 1;
 
-  private Face dir = Face.DOWN;    
+  public Face dir = Face.DOWN;    
   private Execution ex;
 
   private Lock lock;
 
   public Rectangle future;
 
-  private MeleeAttack melee;
+  public Attack attack1;
   
-  private MagicBar magic;
+  public MagicBar magic;
 
   /**
    * @param x x pos, from left
@@ -85,58 +88,6 @@ public class Player extends Entity implements Playable{
     area = new Rectangle((int) x, (int) y, 16, 24);
     future = new Rectangle((int) x, (int) y, 16, 24);
 
-    upAni =    new Animation(6, 8, 11);
-    downAni =  new Animation(6, 8, 11);
-    leftAni =  new Animation(6, 8, 11);
-    rightAni = new Animation(6, 8, 11);
-
-    hurtUpAni = new Animation(2,8,16,35,11);
-    hurtDownAni = new Animation(2,8,16,34,11);
-    hurtRightAni = new Animation(2,8,14,33,11);
-    hurtLeftAni = new Animation(2,8,14,33,11);
-
-    downAni.add(8,162,16,34);
-    downAni.add(28,164,17,32);
-    downAni.add(49,161,18,35);
-    downAni.add(71,162,16,34);
-    downAni.add(91,164,17,32);
-    downAni.add(112,161,18,35);
-
-    upAni.add(8,204,16,35);
-    upAni.add(28,207,18,32);
-    upAni.add(50,206,18,33);
-    upAni.add(71,204,16,35);
-    upAni.add(91,207,18,32);
-    upAni.add(113,206,18,33);
-
-    rightAni.add(3,247,21,32);
-    rightAni.add(30,246,14,33);
-    rightAni.add(52,245,14,34);
-    rightAni.add(72,247,22,32);
-    rightAni.add(99,246,14,33);
-    rightAni.add(120,245,15,34);
-
-    leftAni.add(3,247,21,32,0,true);
-    leftAni.add(30,246,14,33,0,true);
-    leftAni.add(52,245,14,34,0,true);
-    leftAni.add(72,247,22,32,0,true);
-    leftAni.add(99,246,14,33,0,true);
-    leftAni.add(120,245,15,34,0,true);
-
-    hurtUpAni.add(8,204);
-    hurtUpAni.add(141, 205);
-
-    hurtDownAni.add(8, 162);
-    hurtDownAni.add(141, 163);
-
-    hurtRightAni.add(30, 246);
-    hurtRightAni.add(141, 246);
-
-    hurtLeftAni.add(30, 246, true);
-    hurtLeftAni.add(141, 246, true);
-
-
-    melee = new MeleeAttack();
     magic = new MagicBar(200);
     health = 200;
 
@@ -245,31 +196,8 @@ public class Player extends Entity implements Playable{
         speed = (int)Math.round(speed / (Math.sqrt(2)/2));
       }
        */
-
-      if (isAttacking && !melee.playing())
-      {
-        isAttacking = false;
-      }
       
-      if (KeyHandler.keyClick(Key.X) && !isAttacking && magic.hasEnoughMagic(29))
-      {        
-        upAni.hStop();
-        downAni.hStop();
-        leftAni.hStop();
-        rightAni.hStop();
-
-        isAttacking = true;
-        melee.newAttack(dir);
-        
-        magic.changeMagicBy(-10);
-      }
-
-      if (!isAttacking)
-      {
-        melee.setDirection(dir);
-      } 
-
-      melee.update((int) x, (int) y);
+      
 
       upAni.setSpeed(aniSpeed);
       downAni.setSpeed(aniSpeed);
@@ -419,7 +347,7 @@ public class Player extends Entity implements Playable{
     {
       if (isAttacking)
       {
-        melee.play(x, y);
+        attack1.play(x, y);
       } else
       {
         switch (dir) {
@@ -743,10 +671,6 @@ public class Player extends Entity implements Playable{
     return isAttacking;
   }
 
-  public Rectangle getAttackHitBox()
-  {
-    return melee.getHitBox();
-  }
 
 
   public void setDelta(float dx, float dy)
@@ -824,6 +748,17 @@ public class Player extends Entity implements Playable{
   public MagicBar magicBar()
   {
     return magic;
+  }
+  
+  public Characters getCharacter()
+  {
+    return character;
+  }
+  
+  public void setLocation(float x, float y)
+  {
+    this.x = x;
+    this.y = y;
   }
 
 }

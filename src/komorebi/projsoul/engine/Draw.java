@@ -36,7 +36,7 @@ public class Draw {
   private static final int RIGHT_ANGLE = 90;
 
   /** Holds all of the textures for this class.*/
-  private static Texture[] tex = new Texture[12];
+  private static Texture[] tex = new Texture[13];
 
   /** Determines whether textures are loaded.*/
   private static boolean texLoaded;
@@ -91,6 +91,8 @@ public class Draw {
           new File("res/Items.png")));
       tex[11] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/Fillers.png")));
+      tex[12] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/Shadow.png")));
 
     } catch (Exception e) {
       e.printStackTrace();

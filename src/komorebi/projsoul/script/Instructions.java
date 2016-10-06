@@ -60,6 +60,7 @@ public enum Instructions {
   IF_BOOLEAN,
   IF_MONEY,
   IF_CONFIDENCE,
+  IF_CHAR,
   ELSE,
   FLAG_BOOLEAN,
   BLOCK,

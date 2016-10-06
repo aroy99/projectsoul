@@ -20,7 +20,10 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.entities.Caspian;
+import komorebi.projsoul.entities.Chaser;
 import komorebi.projsoul.entities.Enemy;
+import komorebi.projsoul.entities.Flannery;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.Player;
@@ -47,8 +50,11 @@ public class Map implements Playable{
 
   private ArrayList<NPC> npcs;
   private ArrayList<AreaScript> scripts;
-  private static Player play;
   private ArrayList<SignPost> signs;
+  
+  private static Player play;
+  private static Caspian caspian;
+  private static Flannery flannery;
 
   //TODO Debug
   private ArrayList<Enemy> enemies = new ArrayList<Enemy>();
@@ -194,15 +200,19 @@ public class Map implements Playable{
       }
 
       reader.close();
-
-      play = new Player(tiles[0].length/2*16,0);
+      
+      caspian = new Caspian(tiles[0].length/2*16,0);
+      flannery = new Flannery(tiles[0].length/2*16,0);
+      
+      play = caspian;
+      
       Camera.center(play.getX(), play.getY(), tiles[0].length*16, tiles.length*16);
 
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
     }
     
-    //enemies.add(new Chaser(100, 100, 16, 21, 100));
+    enemies.add(new Chaser(100, 100, 16, 21, 100));
 
   }
 
@@ -236,9 +246,13 @@ public class Map implements Playable{
 
     for (Enemy enemy: enemies)
     {
-      enemy.updateHits(play.getAttackHitBox().intersects(enemy.getHitBox()) 
-          && play.isAttacking(), play.getDirection());
+      if (play instanceof Caspian)
+      {
+        enemy.updateHits(((Caspian) play).getAttackHitBox().intersects(enemy.getHitBox()) 
+            && play.isAttacking(), play.getDirection());
+      }
       enemy.update();
+
     }
 
     for (NPC npc: npcs) {
@@ -279,6 +293,11 @@ public class Map implements Playable{
         sign.show();
       }
 
+    }
+    
+    if (KeyHandler.keyClick(Key.ENTER))
+    {
+      switchPlayer();
     }
 
     //Removes all dead enemies from the computer's memory
@@ -454,9 +473,7 @@ public class Map implements Playable{
       int y1 = (int)((y-16+dy)/16)+1; //Bottom
 
       int bufX = Math.abs(x1*16 - (int) (x +dx));
-      int bufY = Math.abs(y1*16 - (int) (y +dy));
-      System.out.println(bufY);
-      
+      int bufY = Math.abs(y1*16 - (int) (y +dy));      
       int x2 = (int)((x-1+dx)/16)+1;  //Right
       int y2 = (int)((y-1+dy)/16)+1;  //Top
 
@@ -613,6 +630,23 @@ public class Map implements Playable{
         it.remove();
       }
 
+    }
+  }
+  
+  public void switchPlayer()
+  {
+    switch (play.getCharacter())
+    {
+      case FLANNERY:
+        caspian.setLocation(flannery.getX(), flannery.getY());
+        play = caspian;
+        break;
+      case CASPIAN:
+        flannery.setLocation(caspian.getX(), caspian.getY());
+        play = flannery;
+        break;
+      default:
+        break;
     }
   }
 
