@@ -1,5 +1,5 @@
 /**
- * NPCMode.java   Aug 16, 2016, 1:30:31 AM
+ * EventMode.java   Aug 16, 2016, 1:30:31 AM
  */
 
 package komorebi.projsoul.editor.modes;
@@ -10,13 +10,18 @@ import static komorebi.projsoul.engine.KeyHandler.keyDown;
 import static komorebi.projsoul.engine.MainE.HEIGHT;
 import static komorebi.projsoul.engine.MainE.WIDTH;
 
+import komorebi.projsoul.editor.Editable;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MainE;
+import komorebi.projsoul.entities.Chaser;
+import komorebi.projsoul.entities.Enemy;
+import komorebi.projsoul.entities.EnemyType;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.SignPost;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.TalkingScript;
@@ -25,46 +30,45 @@ import komorebi.projsoul.script.WarpScript;
 
 import org.lwjgl.input.Mouse;
 
-import java.awt.Button;
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Event;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.geom.Area;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Types;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.function.ObjDoubleConsumer;
 
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 /**
- * The NPC Editor
+ * The Event Editor
  * 
  * @author Aaron Roy
  */
-public class NPCMode extends Mode{
+public class EventMode extends Mode{
 
-  private ArrayList<NPC> npcs;
-  private ArrayList<AreaScript> scripts;
+  private static ArrayList<NPC> npcs;
+  private static ArrayList<AreaScript> scripts;
+  private static ArrayList<Enemy> enemies;
+  private static ArrayList<SignPost> signs;
 
   private int selected = -1;
-  private boolean isNpc;
-
+  private EventTypes selectedType;
+  
   private Animation selection;
 
   private float selX=-16, selY=-16;
@@ -75,8 +79,18 @@ public class NPCMode extends Mode{
    * @author Aaron Roy
    */
   enum EventTypes{
-    NPC, SIGN, ENEMY, SCRIPT, WARP;
+    NPC(npcs), SIGN(signs), ENEMY(enemies), SCRIPT(scripts), WARP(scripts);
 
+    ArrayList<? extends Editable> currEvents;
+    
+    EventTypes(ArrayList<? extends Editable> arr){
+      currEvents = arr;
+    }
+    
+    public ArrayList<? extends Editable> getEvents(){
+      return currEvents;
+    }
+    
     public String toString(){
       switch (this) {
         case NPC:    return "NPC";
@@ -95,9 +109,12 @@ public class NPCMode extends Mode{
    * @param npcs The list of NPCs
    * @param scripts The list of Scripts
    */
-  public NPCMode(ArrayList<NPC> npcs, ArrayList<AreaScript> scripts) {
-    this.npcs = npcs;
-    this.scripts = scripts;
+  public EventMode(ArrayList<NPC> npcs, ArrayList<AreaScript> scripts, 
+      ArrayList<Enemy> enemies, ArrayList<SignPost> signs) {
+    EventMode.npcs = npcs;
+    EventMode.scripts = scripts;
+    EventMode.enemies = enemies;
+    EventMode.signs = signs;
 
     selection = new Animation(8, 8, 16, 16, 2);
     for(int i=3; i >= 0; i--){
@@ -107,55 +124,52 @@ public class NPCMode extends Mode{
   }
 
   @Override
-  public void update() {
+  public void update() {    
     int index;
     //TODO Debug
     if(keyClick(Key.LBUTTON)){
-      if((index = mouseInNPCBounds()) != -1){
-        selX = npcs.get(index).getX();
-        selY = npcs.get(index).getY();
-        selected = index;
-        isNpc = true;
+      if((index = getSelectedEvent(npcs)) != -1){
+        selectedType = EventTypes.NPC;
       }
 
-      else if((index = mouseInScriptBounds()) != -1){
-        selX = scripts.get(index).getX();
-        selY = scripts.get(index).getY();
-        selected = index;
-        isNpc = false;
+      else if((index = getSelectedEvent(scripts)) != -1){
+        if(scripts.get(index) instanceof WarpScript){
+          selectedType = EventTypes.WARP;
+        }else{
+          selectedType = EventTypes.SCRIPT;
+        }     
       }
-      System.out.println("X: " + getMouseX() + ", Y: " + getMouseY());
+      
+      else if((index = getSelectedEvent(enemies)) != -1){
+        selectedType = EventTypes.ENEMY;
+      }
+      
+      else if((index = getSelectedEvent(signs)) != -1){
+        selectedType = EventTypes.SIGN;
+      }
+      
+      if(selectedType != null && index != -1){
+        selX = selectedType.getEvents().get(index).getX();
+        selY = selectedType.getEvents().get(index).getY();
+        selected = index;
+      }
     }
 
-    if(keyDown(Key.LBUTTON) && isNpc && mouseInSelectedNPCBounds(selected) &&
-        (mx != pmx || my != pmy)){
-      npcs.get(selected).setTileLocation(getMouseX(), getMouseY());
-      EditorMap.setUnsaved();
+    if(keyDown(Key.LBUTTON) && (mx != pmx || my != pmy)){
+      if(selectedType != null && mouseInEventBounds(selectedType.getEvents())){
+        selectedType.getEvents().get(selected).setTileLocation(getMouseX(), getMouseY());
+        EditorMap.setUnsaved();
+      }
     }
 
-    if(keyDown(Key.LBUTTON) && !isNpc && mouseInSelectedScriptBounds(selected) &&
-        (mx != pmx || my != pmy)){
-      scripts.get(selected).setTileLocation(getMouseX(), getMouseY());
-      EditorMap.setUnsaved();
-    }
-
-    if(lButtonDoubleClicked && isNpc && mouseInSelectedNPCBounds(selected)){
-      //TODO Edit NPC Dialog
-      EditEventDialog dialog = new EditEventDialog(EventTypes.NPC);
+    if(lButtonDoubleClicked && selectedType != null && 
+        mouseInEventBounds(selectedType.getEvents())){
+      
+      EditEventDialog dialog = new EditEventDialog(selectedType);
       dialog.pack();
       dialog.setVisible(true);
-    }else if(lButtonDoubleClicked && !isNpc && mouseInSelectedScriptBounds(selected)){
-      EditEventDialog dialog;
-      if(scripts.get(selected) instanceof WarpScript){
-        dialog = new EditEventDialog(EventTypes.WARP);
-      }else{
-        dialog = new EditEventDialog(EventTypes.SCRIPT);
-      }     
-      dialog.pack();
-      dialog.setVisible(true);
-
     }
-
+    
     if(KeyHandler.keyClick(Key.LBUTTON) && checkButtonBounds()){
       switch(Mouse.getX()/(32*MainE.scale)){
         case 22:
@@ -166,7 +180,13 @@ public class NPCMode extends Mode{
           System.out.println("Created Dialog");
           break;
         case 23:
-          //TODO Remove NPC
+          if(selected != -1){
+            selectedType.getEvents().remove(selected);
+            selectedType = null;
+            selected = -1;
+            selX = -16;
+            selY = -16;
+          }
           break;
         default:
           //TODO Debug
@@ -177,13 +197,8 @@ public class NPCMode extends Mode{
 
 
     if(selected != -1){
-      if(isNpc){
-        selX = npcs.get(selected).getX();
-        selY = npcs.get(selected).getY();
-      }else{
-        selX = scripts.get(selected).getX();
-        selY = scripts.get(selected).getY();
-      }
+      selX = selectedType.getEvents().get(selected).getX();
+      selY = selectedType.getEvents().get(selected).getY();
     }
 
   }
@@ -210,6 +225,7 @@ public class NPCMode extends Mode{
 
   /**
    * Checks if the Mouse is in bounds of the buttons
+   * 
    * @return Mouse is on a button
    */
   private boolean checkButtonBounds() {
@@ -220,16 +236,18 @@ public class NPCMode extends Mode{
 
 
   /**
-   * Checks if the mouse is in bounds of an NPC
+   * Looks for an event in the specified array that is at the 
+   * same position as the mouse
    * 
-   * @return the NPC id if found, -1 if not
+   * @param events The event array to check
+   * @return the Event id if found, -1 if not
    */
-  public int mouseInNPCBounds(){
-    for(int i = 0; i < npcs.size(); i++){
-      NPC npc = npcs.get(i);
+  public int getSelectedEvent(ArrayList<? extends Editable> events){
+    for(int i = 0; i < events.size(); i++){
+      Editable edit = events.get(i);
 
-      if(getMouseX() == npc.getOrigTX() && 
-          getMouseY() == npc.getOrigTY()){
+      if(getMouseX() == edit.getOrigTX() && 
+          getMouseY() == edit.getOrigTY()){
         return i;
       }
     }
@@ -238,60 +256,23 @@ public class NPCMode extends Mode{
   }
 
   /**
-   * Checks if the mouse is in bounds of an NPC
+   * Checks if the mouse is in bounds of an Event
    * 
    * @return The mouse is in bounds
    */
-  public boolean mouseInSelectedNPCBounds(int index){
+  public boolean mouseInEventBounds(ArrayList<? extends Editable> events){
     if(selected == -1){
       return false;
     }
 
-    if(pmx == npcs.get(selected).getOrigTX() &&
-        pmy == npcs.get(selected).getOrigTY()){
+    if(pmx == events.get(selected).getOrigTX() &&
+        pmy == events.get(selected).getOrigTY()){
       return true;
     }
 
     return false;
   }
 
-  /**
-   * Checks if the mouse is in bounds of an Script
-   * 
-   * @return The mouse is in bounds
-   */
-  public boolean mouseInSelectedScriptBounds(int index){
-    //TODO Debug
-    if(selected == -1){
-      return false;
-    }
-
-    if(pmx == scripts.get(selected).getOrigTX() &&
-        pmy == scripts.get(selected).getOrigTY()){
-      return true;
-    }    
-    return false;
-  }
-
-
-
-  /**
-   * Checks if the mouse is in bounds of an AreaScript
-   * 
-   * @return the AreaScript id if found, -1 if not
-   */
-  public int mouseInScriptBounds(){
-    for(int i = 0; i < scripts.size(); i++){
-      AreaScript scr = scripts.get(i);
-
-      if(getMouseX() == scr.getOrigTX() && 
-          getMouseY() == scr.getOrigTY()){
-        return i;
-      }
-    }
-
-    return -1;
-  }
 
   /**
    * An abstract class to contain all of the shared variables between the New 
@@ -315,8 +296,8 @@ public class NPCMode extends Mode{
     protected Object[] buttons = {btnCreate, btnCancel};
 
     //NPC Items
-    protected String[] npcPicArr = {"Ness", "Ash",};
-    protected JComboBox<String> npcPics = new JComboBox<String>(npcPicArr);
+    protected NPCType[] npcPicArr = NPCType.values();
+    protected JComboBox<NPCType> npcPics = new JComboBox<NPCType>(npcPicArr);
     protected JTextField name = new JTextField(8);
     protected JTextField walking = new JTextField(15);
     protected JButton editWalkScript = new JButton("...");
@@ -345,18 +326,19 @@ public class NPCMode extends Mode{
 
     //Sign Items
     protected JTextField signID = new JTextField(15);
-    protected Component[] signContents = {new JLabel("Script: "), signID};
+    protected Component[] signContents = {new JLabel("Message: "), signID};
 
 
     //Enemy Items
-    protected String[] enemyPicArr = {"Mr. Saturn"};
-    protected JComboBox<String> enemyPics = new JComboBox<String>(enemyPicArr);
-    protected String[] aiTypesArr = {"Radius"};
+    protected EnemyType[] enemyPicArr = EnemyType.values();
+    protected JComboBox<EnemyType> enemyPics = new JComboBox<EnemyType>(enemyPicArr);
+    protected String[] aiTypesArr = {"none", "chaser"};
     protected JComboBox<String> aiType = new JComboBox<String>(aiTypesArr);
+    protected JTextField radius = new JTextField();
 
     protected Component[] enemyContents = {new JLabel("Picture: "), enemyPics, 
         Box.createHorizontalStrut(15),
-        new JLabel("AI Type: "), aiType
+        new JLabel("AI Type: "), aiType, new JLabel("Radius"), radius
     };
 
 
@@ -398,6 +380,8 @@ public class NPCMode extends Mode{
 
     /**
      * Hides all of the other components
+     * 
+     * @param e The EventType to keep
      */
     protected void hideEverything(EventTypes e){
       //TODO Debug
@@ -460,6 +444,10 @@ public class NPCMode extends Mode{
         return false;
       }
       return true;
+    }
+    
+    protected boolean checkNum(JTextField text){
+      return text.getText().matches("\\d{1,3}");
     }
 
     protected void complainSpace(){
@@ -610,20 +598,41 @@ public class NPCMode extends Mode{
             case NPC:
               if(checkText(name) && checkText(walking) && checkText(talking)){
                 NPC newNPC = new NPC(name.getText(), x, y, 
-                    NPCType.toEnum((String)npcPics.getSelectedItem()));
+                    (NPCType)npcPics.getSelectedItem());
                 newNPC.setWalkingScript(new WalkingScript(walking.getText(), newNPC));
                 newNPC.setTalkingScript(new TalkingScript(talking.getText(), newNPC));
                 npcs.add(newNPC);
+                selX = x;
+                selY = y;
                 clearAndHide();
               }
               break;
             case SIGN:
-              if(checkText(signID)){
-                //TODO Implement signs
-              }
+              //TODO Implement sign scripts
+              SignPost newSign = new SignPost(x, y, signID.getText());
+              signs.add(newSign);
+              selX = x;
+              selY = y;
+              clearAndHide();
               break;
             case ENEMY:
-              //TODO Implement Enemies
+              Enemy newEnemy;
+              if(aiType.getSelectedItem().equals("chaser")){
+                if(checkNum(radius)){
+                  newEnemy = new Chaser(x, y, 
+                      (EnemyType)enemyPics.getSelectedItem(), Integer.parseInt(radius.getText()));
+                  enemies.add(newEnemy);
+                  selX = x;
+                  selY = y;
+                  clearAndHide();
+                }
+              }else{
+                newEnemy = new Enemy(x, y, (EnemyType)enemyPics.getSelectedItem());
+                enemies.add(newEnemy);
+                selX = x;
+                selY = y;
+                clearAndHide();
+              }
               break;
             case SCRIPT:
               if(checkText(scriptID)){
@@ -637,6 +646,8 @@ public class NPCMode extends Mode{
                 newScript.setRepeatable(repeatable.isSelected());
 
                 scripts.add(newScript);
+                selX = x;
+                selY = y;
                 clearAndHide();
               }
               break;
@@ -646,6 +657,8 @@ public class NPCMode extends Mode{
 
                 WarpScript newWarp = new WarpScript(newMap.getName(), x, y, true);
                 scripts.add(newWarp);
+                selX = x;
+                selY = y;
                 clearAndHide();
               }
               break;
@@ -758,6 +771,12 @@ public class NPCMode extends Mode{
           });
 
           //TODO Implement Enemy init
+          Enemy editEnemy = enemies.get(selected);
+          enemyPics.setSelectedItem(editEnemy.getType());
+          aiType.setSelectedItem(editEnemy.getBehavior());
+          if(editEnemy.getBehavior().equals("chaser")){
+            radius.setText(""+((Chaser)editEnemy).getOriginalRadius());
+          }
 
           break;
         case NPC:
@@ -771,12 +790,8 @@ public class NPCMode extends Mode{
 
           NPC editNPC = npcs.get(selected);
 
-          switch(editNPC.getType().toString()){
-            case "NESS": npcPics.setSelectedItem(npcPicArr[0]);break;
-            case "POKEMON" : npcPics.setSelectedItem(npcPicArr[1]);break;
-            default: System.out.println("This shouldn't be happening!");
-          }
-
+          npcPics.setSelectedItem(editNPC.getType());
+          
           name.setText(editNPC.getName());
           walking.setText(editNPC.getWalkingScript().getScript());
           talking.setText(editNPC.getTalkingScript().getScript());
@@ -806,7 +821,8 @@ public class NPCMode extends Mode{
             }
           });
 
-          //TODO Implement Sign init
+          SignPost editSign = signs.get(selected);
+          signID.setText(editSign.getText());
 
           break;
         case WARP:
@@ -876,10 +892,28 @@ public class NPCMode extends Mode{
             case SIGN:
               if(checkText(signID)){
                 //TODO Implement signs
+                SignPost editSign = signs.get(selected);
+                editSign.setText(signID.getText());
+                clearAndHide();
               }
               break;
             case ENEMY:
               //TODO Implement Enemies
+              Enemy oldEnemy = enemies.get(selected);
+              Enemy newEnemy;
+              if(aiType.getSelectedItem().equals("chaser")){
+                if(checkNum(radius)){
+                  newEnemy = new Chaser(oldEnemy.getX(), oldEnemy.getY(), 
+                      (EnemyType)enemyPics.getSelectedItem(), Integer.parseInt(radius.getText()));
+                  enemies.set(selected, newEnemy);
+                  clearAndHide();
+                }
+              }else{
+                newEnemy = new Enemy(oldEnemy.getX(), oldEnemy.getY(), 
+                    (EnemyType)enemyPics.getSelectedItem());
+                enemies.set(selected, newEnemy);
+                clearAndHide();
+              }
               break;
             case SCRIPT:
               if(checkText(scriptID)){

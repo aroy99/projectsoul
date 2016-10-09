@@ -4,26 +4,31 @@
 
 package komorebi.projsoul.engine;
 
-import static org.lwjgl.opengl.GL11.GL_NEAREST;
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11.GL_TRIANGLE_FAN;
 import static org.lwjgl.opengl.GL11.glBegin;
+import static org.lwjgl.opengl.GL11.glColor3f;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glEnd;
 import static org.lwjgl.opengl.GL11.glPopMatrix;
 import static org.lwjgl.opengl.GL11.glPushMatrix;
 import static org.lwjgl.opengl.GL11.glRotatef;
+import static org.lwjgl.opengl.GL11.glScalef;
 import static org.lwjgl.opengl.GL11.glTexCoord2f;
 import static org.lwjgl.opengl.GL11.glTexParameteri;
 import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.opengl.GL11.glVertex2f;
 
-import java.io.File;
-import java.io.FileInputStream;
-
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
+
+import java.io.File;
+import java.io.FileInputStream;
 
 /**
  * Draws stuff. :D
@@ -34,6 +39,8 @@ public class Draw {
 
   /** To ensure rotations can only happen in multiples of 90 degrees.*/
   private static final int RIGHT_ANGLE = 90;
+  /** The roundness of the circle */
+  private static final int NUM_PIZZA_SLICES = 30;
 
   /** Holds all of the textures for this class.*/
   private static Texture[] tex = new Texture[12];
@@ -238,6 +245,50 @@ public class Draw {
   public static void rectCam(float x, float y, float sx, float sy, int texx, 
       int texy, int texsx, int texsy, int texID) {
     rectCam(x, y, sx, sy, texx, texy, texsx, texsy, 0, texID);
+  }
+  
+  /**
+   * Creates an approximated circle at the specified point
+   * 
+   * @param x the X position on the screen, starting from the left         
+   * @param y the Y position on the screen, starting from the <i>bottom</i>
+   * @param radius The radius of the circle in pixels
+   * @param r Red, max 255
+   * @param g Green, max 255
+   * @param b Blue, max 255
+   * @param a Alpha value (Transparency), max 255
+   */
+  public static void circ(float x, float y, float radius, 
+      float r, float g, float b, float a){
+    glPushMatrix();
+    {
+      glTranslatef((int)x, (int)y, 0);
+      glScalef((int)radius, (int)radius, 0);
+      glDisable(GL_TEXTURE_2D);
+
+      
+      glBegin(GL_TRIANGLE_FAN);
+      {
+        glColor4f(r/255,g/255,b/255,a/255);
+        glVertex2f(0, 0);
+        for(int i = 0; i <= NUM_PIZZA_SLICES; i++){
+          double angle = Math.PI * 2 * i/NUM_PIZZA_SLICES;
+          glVertex2f((float)Math.cos(angle), (float)Math.sin(angle));
+        }
+        glColor3f(1, 1, 1);
+
+      }
+      glEnd();
+      
+      glEnable(GL_TEXTURE_2D);
+
+    }
+    glPopMatrix();
+  }
+  
+  public static void circCam(float x, float y, float radius, 
+      float r, float g, float b, float a){
+    circ(x-Camera.getX(), y-Camera.getY(), radius, r, g, b, a);
   }
 
 }

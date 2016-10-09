@@ -1,29 +1,40 @@
 package komorebi.projsoul.entities;
 
+import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.EditorMap.Modes;
+import komorebi.projsoul.states.Game;
 
 public class Chaser extends Enemy {
-  
-  float targetX, targetY;
-  
-  private final float speed = 0.5f;
-  
-  private float maxClydeDist;
 
+  float targetX, targetY;
+
+  private final float speed = 2f;
+
+  private int maxClydeDist;
   
+  private int red, green, blue;
+
+
   /**
    * Creates an enemy that will chase the player within a certain range
+   * 
    * @param x The x location (in the map) of the enemy
    * @param y The y location (in the map) of the enemy
-   * @param sx The horizontal size, in pixels, of the enemy
-   * @param sy The vertical size, in pixels, of the enemy
-   * @param distanceFromClyde The maximum distance the enemy can be from the player
+   * @param type The sprite of this enemy
+   * @param distanceFromPlay The maximum distance the enemy can be from the player
    *      and still chase him/her
    */
-  public Chaser(float x, float y, int sx, int sy, float distanceFromPlay) {
-    super(x, y, sx, sy);
+  public Chaser(float x, float y,  EnemyType type, int distanceFromPlay) {
+    super(x, y, type);
+
+    maxClydeDist = 16*distanceFromPlay;
+    System.out.println("Chaser: " + maxClydeDist);
     
-    maxClydeDist = distanceFromPlay;
+    red = (int)(Math.random()*255);
+    green = (int)(Math.random()*255);
+    blue = (int)(Math.random()*255);
   }
 
   /**
@@ -32,34 +43,60 @@ public class Chaser extends Enemy {
   public void update()
   {   
     super.update();
-    
+
     targetX = Map.getClyde().getX();
     targetY = Map.getClyde().getY();
-    
-    if (distanceBetween(x,y,targetX,targetY)>maxClydeDist && (dx!=0 || dy!=0))
+
+    if (distanceBetween(x,y,targetX,targetY) > maxClydeDist && (dx != 0 || dy != 0))
     {
       dx = 0;
       dy = 0;
     }
-    
-    if (!invincible && distanceBetween(x,y,targetX,targetY)<=maxClydeDist)
+
+    if (!invincible && distanceBetween(x,y,targetX,targetY) <= maxClydeDist)
     {
-      if (targetX>x && Math.abs(targetX-x)>12)
-      {
-        dx = speed;
-      } else if (targetX<x)
-      {
-        dx = -speed;
-      }
+      float triX = Math.abs(targetX-x);
+      float triY = Math.abs(targetY-y);
+      float theta = (float)Math.atan(triY/triX);
       
-      if (targetY>y && Math.abs(targetY-y)>12)
+      if (targetX > x && triX > 12)
       {
-        dy = speed;
-      } else if (targetY<y)
+        dx = speed*(float)Math.cos(theta);
+      } else if (targetX < x)
       {
-        dy = -speed;
+        dx = -speed*(float)Math.cos(theta);
+      }
+
+      if (targetY > y && triY > 12)
+      {
+        dy = speed*(float)Math.sin(theta);
+      } else if (targetY < y)
+      {
+        dy = -speed*(float)Math.sin(theta);
       }
     }
-   
   }
+  
+  @Override
+  public void render() {
+    
+    if(EditorMap.getMode() == Modes.EVENT){
+      Draw.circ(x, y, maxClydeDist, red, blue, green, 64);
+    }
+    if(Map.isHitBox){
+      Draw.circCam(x, y, maxClydeDist, red, blue, green, 64);
+    }
+    
+    super.render();
+  }
+  
+  @Override
+  public String getBehavior(){
+    return "chaser";
+  }
+  
+  public int getOriginalRadius(){
+    return maxClydeDist/16;
+  }
+    
 }

@@ -1,8 +1,8 @@
 lock
 align
 say Ness: Hey, I'm the great Ness!\nMy greatness spans multiple worlds, such as\nSmash, Mother 2, and Earthbound.\pHa, I tricked you! Mother 2 and Earthbound are\nthe same game!\pNow feel the power of my\d.\d.\d.\pP.K. FIREEEE!\p*crackle* *crackle* What's that?\pTerra: Uhhh, I think you are on fire
-runbranch talking
-simulrunbranch running
+simulrunbranch talking
+runbranch running
 say Terra: I got you covered, here's some water.\pNess: Thanks! Now hopefully you'll make it to the next Smash game so we can fight!
 unlock
 end

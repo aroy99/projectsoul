@@ -22,6 +22,7 @@ import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.entities.Chaser;
 import komorebi.projsoul.entities.Enemy;
+import komorebi.projsoul.entities.EnemyType;
 import komorebi.projsoul.entities.Entity;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
@@ -51,15 +52,12 @@ public class Map implements Playable{
   private ArrayList<AreaScript> scripts;
   private static Player play;
   private ArrayList<SignPost> signs;
-
-  //TODO Debug
   private ArrayList<Enemy> enemies = new ArrayList<Enemy>();
 
-  //Debug
-  private boolean isHitBox;
-  private boolean isGrid;
-
   //TODO Debug
+  public static boolean isHitBox;
+  public static boolean isGrid;
+
   private int debugCount;
 
 
@@ -115,15 +113,6 @@ public class Map implements Playable{
           }
           //reads the tile makeup of the map
           tiles[i][j] = TileList.getTile(Integer.parseInt(str[index]));
-
-
-          //TODO This number will eventually have to be changed, as will the string
-          if (tiles[i][j]==TileList.getTile(15))
-          {
-            signs.add(new SignPost(j, i, "First line\\nSecond line\\pNew paragraph"));
-          }
-
-          collision[i][j] = true;
         }
       }
 
@@ -183,6 +172,34 @@ public class Map implements Playable{
           int arg1 = Integer.parseInt(split[1]);
 
           scripts.add(new WarpScript(split[0], arg1, arg0, false));          
+        } else if (s.startsWith("enemy")){
+          s = s.replace("enemy ", "");
+          String[] split = s.split(" ");
+
+          int arg0 = Integer.parseInt(split[0]);
+          int arg1 = Integer.parseInt(split[1]);
+          
+          switch(split[3]){
+            case "none":
+              enemies.add(new Enemy(arg0*16, arg1*16, EnemyType.toEnum(split[2])));
+              break;
+            case "chaser":
+              enemies.add(new Chaser(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
+                  Integer.parseInt(split[4])));
+              break;
+            default:
+              System.out.println("This shouldn't happen!");
+              break;
+          }
+        } else if (s.startsWith("sign")){
+          s = s.replace("sign ", "");
+          String[] split = s.split(" ", 3);
+
+          int arg0 = Integer.parseInt(split[0]);
+          int arg1 = Integer.parseInt(split[1]);
+          
+          signs.add(new SignPost(arg0*16, arg1*16, split[2]));
+
         }
       } while ((s=reader.readLine()) != null);
 
@@ -199,15 +216,13 @@ public class Map implements Playable{
 
       reader.close();
 
-      play = new Player(tiles[0].length/2*16,0);
+      play = new Player(tiles[0].length/2*16,3*16);
       Camera.center(play.getX(), play.getY(), tiles[0].length*16, tiles.length*16);
 
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
     }
     
-    enemies.add(new Chaser(100, 100, 16, 21, 100));
-
   }
 
 
@@ -240,8 +255,8 @@ public class Map implements Playable{
 
     for (Enemy enemy: enemies)
     {
-      enemy.updateHits(play.getAttackHitBox().intersects(enemy.getHitBox()) 
-          && play.isAttacking(), play.getDirection());
+      enemy.updateHits(play.getAttackHitBox().intersects(enemy.getHitBox()) && 
+          play.isAttacking(), play.getDirection());
       enemy.update();
     }
 
@@ -268,8 +283,8 @@ public class Map implements Playable{
 
     for (AreaScript script: scripts)
     {      
-      if (script.isLocationIntersected(play.getTileX(), play.getTileY()) 
-          && !script.hasRun()) {
+      if (script.isLocationIntersected(play.getTileX(), play.getTileY()) &&
+          !script.hasRun()) {
         script.run();
       }
     }
@@ -277,8 +292,8 @@ public class Map implements Playable{
 
     for (SignPost sign: signs)
     {            
-      if (sign.isApproached(play.getArea(), play.getDirection())
-          && KeyHandler.keyClick(Key.C))
+      if (sign.isApproached(play.getArea(), play.getDirection()) &&
+          KeyHandler.keyClick(Key.C))
       {
         sign.show();
       }

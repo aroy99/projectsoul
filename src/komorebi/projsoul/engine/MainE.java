@@ -23,6 +23,7 @@ import static org.lwjgl.opengl.GL11.glOrtho;
 
 import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.script.TextHandler;
+import komorebi.projsoul.states.Game;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
@@ -44,7 +45,7 @@ import java.io.IOException;
 public class MainE {
 
   public static Editor edit;
-  public static int scale = 1;
+  public static int scale;
   private static BufferedReader read;
 
   private static TextHandler handler;
@@ -55,6 +56,8 @@ public class MainE {
   
   public static final int WIDTH = 800;
   public static final int HEIGHT = 608;
+  
+  public static String testLoc;
 
   /**
    * Starts the program, reading an int from settings and using it for the scale.
@@ -64,7 +67,7 @@ public class MainE {
 
     try {
       read = new BufferedReader(
-          new FileReader(new File("res/settings")));
+          new FileReader(new File("res/settingsE")));
       String str;
 
       while ((str = read.readLine()) != null) {
@@ -72,8 +75,12 @@ public class MainE {
           continue;
         }
         if (scale == 0) {
+          System.out.println("bleh");
           scale = Integer.parseInt(str);
+        }else if(testLoc == null){
+          testLoc = str;
         }
+
       }
 
     } catch (IOException ex) {

@@ -30,6 +30,7 @@ public class MagicBar implements Renderable {
   public void changeMagicBy(int dMagic)
   {
     magic += dMagic;
+    System.out.println(magic);
     
     if (magic<0) magic = 0;
   }

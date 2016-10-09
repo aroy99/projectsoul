@@ -8,6 +8,7 @@ package komorebi.projsoul.engine;
  * Represents a set of pictures
  * 
  * @author Aaron Roy
+ * @author Andrew Faulkenberry
  */
 public class Animation {
 
@@ -28,7 +29,7 @@ public class Animation {
   private int cAddFrame;
   private int texID;
   private boolean playing = true;
-  private boolean onlyOnce = false;
+  private boolean onlyOnce = false;  
 
   /**
    * Creates a playable animation
@@ -90,11 +91,8 @@ public class Animation {
    * 
    * @param f Max number of frames
    * @param t Time till next frame in frames
-   * @param sx size x for the animation 
-   *             *used to calculate other tex coordinates too
-   * @param sy size y for the animation 
-   *             *used to calculate other tex coordinates too
    * @param id The Texture ID
+   * @param loop Whether the animation should play on loop
    */
   public Animation(int f, int t, int id, boolean loop){
     
@@ -119,10 +117,6 @@ public class Animation {
    * 
    * @param f Max number of frames
    * @param t Time till next frame in frames
-   * @param sx size x for the animation 
-   *             *used to calculate other tex coordinates too
-   * @param sy size y for the animation 
-   *             *used to calculate other tex coordinates too
    * @param id The Texture ID
    */
   public Animation(int f, int t, int id){
@@ -162,9 +156,9 @@ public class Animation {
    * @param sx Horizontal size of the sprite on the picture
    * @param sy Veritcal size of the sprite on the picture
    * @param offX Amount of pixels the frame should be moved when drawn on the screen
-   * (+ means right, - means left)
+   *                  (+ means right, - means left)
    * @param offY Amount of pixels the frame should be moved when drawn on the screen
-   * (+ means up, - means down)
+   *                  (+ means up, - means down)
    */
   public void add(int tx, int ty, float sx, float sy, int offX, int offY)
   {
@@ -186,9 +180,9 @@ public class Animation {
    * @param sx Horizontal size of the sprite on the picture
    * @param sy Veritcal size of the sprite on the picture
    * @param offX Amount of pixels the frame should be moved when drawn on the screen
-   * (+ means right, - means left)
+   *                  (+ means right, - means left)
    * @param offY Amount of pixels the frame should be moved when drawn on the screen
-   * (+ means up, - means down)
+   *                  (+ means up, - means down)
    */
   public void add(int tx, int ty, float sx, float sy, int offX, int offY, boolean flip)
   {
@@ -273,18 +267,20 @@ public class Animation {
               texy[currFrame]+(int) sy[currFrame], texID);
           break;
         case 1:
-          Draw.rect(x+sx[currFrame]+offX[currFrame], y+offY[currFrame], sy[currFrame], sx[currFrame], texx[currFrame], texy[currFrame], 
+          Draw.rect(x+sx[currFrame]+offX[currFrame], y+offY[currFrame], sy[currFrame], 
+              sx[currFrame], texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int) sy[currFrame], texy[currFrame]+(int)sx[currFrame], 
               1, texID);
           break;
         case 2:
-          Draw.rect(x+sx[currFrame]+offX[currFrame], y+sy[currFrame]+offY[currFrame], sx[currFrame], sy[currFrame],
+          Draw.rect(x+sx[currFrame]+offX[currFrame], y+sy[currFrame]+offY[currFrame], 
+              sx[currFrame], sy[currFrame],
               texx[currFrame], texy[currFrame], texx[currFrame]+(int)sx[currFrame],
               texy[currFrame]+ (int)sy[currFrame], 2, texID);
           break;
         case 3:
-          Draw.rect(x+offX[currFrame], y+sy[currFrame]+offY[currFrame], sy[currFrame], sx[currFrame], 
-              texx[currFrame], texy[currFrame], 
+          Draw.rect(x+offX[currFrame], y+sy[currFrame]+offY[currFrame], sy[currFrame], 
+              sx[currFrame], texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sy[currFrame], texy[currFrame]+(int) sx[currFrame],
               3, texID);
           break;
@@ -294,7 +290,8 @@ public class Animation {
     }else{
       switch(rot[currFrame]){
         case 0:
-          Draw.rect(x+offX[currFrame], y+offY[currFrame], sx[currFrame], sy[currFrame], texx[currFrame]+(int)sx[currFrame], 
+          Draw.rect(x+offX[currFrame], y+offY[currFrame], sx[currFrame], 
+              sy[currFrame], texx[currFrame]+(int)sx[currFrame], 
               texy[currFrame], texx[currFrame], texy[currFrame]+(int)sy[currFrame], texID);
           break;
         case 1:
@@ -302,7 +299,8 @@ public class Animation {
         case 2:
           break;
         case 3:
-          Draw.rect(x+offX[currFrame], y+sy[currFrame]+offY[currFrame], sy[currFrame], sx[currFrame], texx[currFrame],
+          Draw.rect(x+offX[currFrame], y+sy[currFrame]+offY[currFrame], 
+              sy[currFrame], sx[currFrame], texx[currFrame],
               texy[currFrame]+(int)sx[currFrame], 
               texx[currFrame]+(int)sy[currFrame], texy[currFrame], 3, texID);
           break;
@@ -334,23 +332,27 @@ public class Animation {
     if(!flipped[currFrame]){
       switch(rot[currFrame]){
         case 0:
-          Draw.rectCam(x+offX[currFrame], y+offY[currFrame], sx[currFrame], sy[currFrame], texx[currFrame], texy[currFrame], 
+          Draw.rectCam(x+offX[currFrame], y+offY[currFrame], sx[currFrame], 
+              sy[currFrame], texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], texID);
           break;
         case 1:
-          Draw.rectCam(x+sx[currFrame]+offX[currFrame], y+offY[currFrame], sy[currFrame], sx[currFrame], 
+          Draw.rectCam(x+sx[currFrame]+offX[currFrame], y+offY[currFrame], 
+              sy[currFrame], sx[currFrame], 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sy[currFrame], texy[currFrame]+(int)sx[currFrame],
               1, texID);
           break;
         case 2:
-          Draw.rectCam(x+sx[currFrame]+offX[currFrame], y+sy[currFrame]+offY[currFrame], sx[currFrame], sy[currFrame], 
+          Draw.rectCam(x+sx[currFrame]+offX[currFrame], 
+              y + sy[currFrame] + offY[currFrame], sx[currFrame], sy[currFrame], 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               2, texID);
           break;
         case 3:
-          Draw.rectCam(x+offX[currFrame], y+sy[currFrame]+offY[currFrame], sy[currFrame], sx[currFrame], 
+          Draw.rectCam(x+offX[currFrame], y+sy[currFrame]+offY[currFrame], 
+              sy[currFrame], sx[currFrame], 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sy[currFrame], texy[currFrame]+(int)sx[currFrame], 
               3, texID);
@@ -361,7 +363,8 @@ public class Animation {
     }else{
       switch(rot[currFrame]){
         case 0:
-          Draw.rectCam(x+offX[currFrame], y+offY[currFrame], sx[currFrame], sy[currFrame], texx[currFrame]+
+          Draw.rectCam(x+offX[currFrame], y+offY[currFrame], sx[currFrame], 
+              sy[currFrame], texx[currFrame]+
               (int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame], texID);
           break;
@@ -370,7 +373,8 @@ public class Animation {
         case 2:
           break;
         case 3:
-          Draw.rectCam(x+offX[currFrame], y+sy[currFrame]+offY[currFrame], sy[currFrame], sx[currFrame], 
+          Draw.rectCam(x+offX[currFrame], y+sy[currFrame]+offY[currFrame], 
+              sy[currFrame], sx[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sx[currFrame], 
               texx[currFrame]+(int)sy[currFrame], texy[currFrame], 3, texID);
           break;
@@ -444,7 +448,11 @@ public class Animation {
   
   public boolean lastFrame()
   {
-    return (currFrame+1==frames);
+    return (currFrame+1 == frames);
+  }
+  
+  public void setStopFrame(){
+    
   }
 
 

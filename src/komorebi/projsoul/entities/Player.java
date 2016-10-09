@@ -10,6 +10,7 @@ import org.lwjgl.input.Keyboard;
 import komorebi.projsoul.attack.MeleeAttack;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Camera;
+import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MagicBar;
@@ -242,7 +243,7 @@ public class Player extends Entity implements Playable{
       if((up && (left || right)) || (down && (left || right))){
         dx *= Math.sqrt(2)/2;
         dy *= Math.sqrt(2)/2;
-        speed = (int)Math.round(speed / (Math.sqrt(2)/2));
+        aniSpeed = (int)Math.round(aniSpeed / (Math.sqrt(2)/2));
       }
        */
 
@@ -251,7 +252,7 @@ public class Player extends Entity implements Playable{
         isAttacking = false;
       }
       
-      if (KeyHandler.keyClick(Key.X) && !isAttacking && magic.hasEnoughMagic(29))
+      if (KeyHandler.keyClick(Key.X) && !isAttacking && magic.hasEnoughMagic(3))
       {        
         upAni.hStop();
         downAni.hStop();
@@ -261,7 +262,7 @@ public class Player extends Entity implements Playable{
         isAttacking = true;
         melee.newAttack(dir);
         
-        magic.changeMagicBy(-10);
+        magic.changeMagicBy(-3);
       }
 
       if (!isAttacking)
@@ -282,27 +283,35 @@ public class Player extends Entity implements Playable{
 
         if (!restoreMvmtX)
         {
-          if (Math.abs(dx)<=0.5 && Math.abs(dx)>=0)
+          if (Math.abs(dx) <= 0.5 && Math.abs(dx) >= 0)
           {
             dx = 0;
             restoreMvmtX = true;
           }
-          if (dx>0) dx-=0.5;
-          if (dx<0) dx+=0.5;
+          if (dx > 0){
+            dx-=0.5;
+          }
+          if (dx < 0){
+            dx+=0.5;
+          }
         }
         
         if (!restoreMvmtY)
         {
-          if (Math.abs(dy)<=0.5 && Math.abs(dy)>=0)
+          if (Math.abs(dy) <= 0.5 && Math.abs(dy) >= 0)
           {
             dy = 0;
             restoreMvmtY = true;
           }
-          if (dy>0) dy-=0.5;
-          if (dy<0) dy+=0.5;
+          if (dy > 0){
+            dy-=0.5;
+          }
+          if (dy < 0){
+            dy+=0.5;
+          }
         }
        
-        if (hurtCount<=0)
+        if (hurtCount <= 0)
         {
           invincible = false;
 
@@ -368,7 +377,7 @@ public class Player extends Entity implements Playable{
 
     if (hasInstructions)
     {
-      if (dx!=0) 
+      if (dx != 0) 
       {
         framesToGo-=Math.abs(dx);
       } else if (dy != 0)
@@ -385,7 +394,7 @@ public class Player extends Entity implements Playable{
       System.out.println("x: "+x+", y: "+y);
     }
 
-    if (hasInstructions&&framesToGo<=0)
+    if (hasInstructions && framesToGo <= 0)
     {
       hasInstructions=false;
       dx=0;
@@ -422,21 +431,41 @@ public class Player extends Entity implements Playable{
         melee.play(x, y);
       } else
       {
-        switch (dir) {
-          case DOWN:
-            downAni.playCam(x,y);
-            break;
-          case UP:
-            upAni.playCam(x,y);
-            break;
-          case LEFT:
-            leftAni.playCam(x,y);
-            break;
-          case RIGHT:
-            rightAni.playCam(x,y);
-            break;
-          default:
-            break;
+        if(dx == 0 && dy == 0){
+          switch (dir) {
+            case DOWN:
+              Draw.rectCam(x, y, 16, 35, 166, 162, 11);
+              break;
+            case UP:
+              Draw.rectCam(x, y, 16, 33, 166, 207, 11);
+              break;
+            case LEFT:
+              Draw.rectCam(x, y, 14, 34, 180, 245, 166, 279, 11);
+              break;
+            case RIGHT:
+              Draw.rectCam(x, y, 14, 34, 166, 245, 11);
+              break;
+            default:
+              break;
+          }
+        }
+        else{
+          switch (dir) {
+            case DOWN:
+              downAni.playCam(x,y);
+              break;
+            case UP:
+              upAni.playCam(x,y);
+              break;
+            case LEFT:
+              leftAni.playCam(x,y);
+              break;
+            case RIGHT:
+              rightAni.playCam(x,y);
+              break;
+            default:
+              break;
+          }
         }
       }
     } else
@@ -527,19 +556,19 @@ public class Player extends Entity implements Playable{
     switch (dir)
     {
       case DOWN:
-        framesToGo = (int) this.ry - 16*getTileY();
+        framesToGo = (int) y - 16*getTileY();
         down = true;
         break;
       case LEFT:
-        framesToGo = (int) this.rx - 16*getTileX();
+        framesToGo = (int) x - 16*getTileX();
         left = true;
         break;
       case RIGHT:
-        framesToGo = (int) (16*getTileX() + 16 - this.rx);
+        framesToGo = (int) (16*getTileX() + 16 - x);
         right = true;
         break;
       case UP:
-        framesToGo = (int) (16*getTileY() + 16 - this.ry);
+        framesToGo = (int) (16*getTileY() + 16 - y);
         up = true;
         break;
       default:
@@ -634,22 +663,22 @@ public class Player extends Entity implements Playable{
 
     if (horizontal)
     {
-      if (x>tx*16)
+      if (x > tx*16)
       {
         align(Face.LEFT, lock);
         walk(Face.LEFT, getTileX()-tx);
-      } else if (rx<tx*16)
+      } else if (x < tx*16)
       {
         align(Face.RIGHT, lock);
         walk(Face.RIGHT, tx-getTileX(), lock);
       }
     } else
     {
-      if (y>tx*16)
+      if (y > tx*16)
       {
         align(Face.DOWN, lock);
         walk(Face.DOWN, getTileY()-tx, lock);
-      } else if (ry<tx*16)
+      } else if (y < tx*16)
       {
         align(Face.UP, lock);
         walk(Face.UP, tx-getTileY(), lock);
@@ -761,7 +790,7 @@ public class Player extends Entity implements Playable{
     {
       x = 0;
       dx = 0;
-    } else if (x+dx>Game.getMap().getWidth()*16 - sx)
+    } else if (x+dx > Game.getMap().getWidth()*16 - sx)
     {
       dx = 0;
       x = Game.getMap().getHeight() * 16 - sx;
@@ -771,7 +800,7 @@ public class Player extends Entity implements Playable{
     {
       dy = 0;
       y = 0;
-    } else if (y+dy>Game.getMap().getHeight()*16 - sy)
+    } else if (y+dy > Game.getMap().getHeight()*16 - sy)
     {
       dy = 0;
       y = Game.getMap().getHeight() * 16 - sy;

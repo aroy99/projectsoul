@@ -9,14 +9,18 @@ import static komorebi.projsoul.engine.KeyHandler.controlDown;
 
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.editor.modes.MoveMode;
-import komorebi.projsoul.editor.modes.NPCMode;
+import komorebi.projsoul.editor.modes.EventMode;
 import komorebi.projsoul.editor.modes.TileMode;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.KeyHandler.Control;
 import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.entities.Chaser;
+import komorebi.projsoul.entities.Enemy;
+import komorebi.projsoul.entities.EnemyType;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.SignPost;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.WalkingScript;
@@ -35,6 +39,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -47,12 +52,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class EditorMap implements Playable, Serializable{
 
-  /**
-   * 
-   */
+  /** I will probably never bother to understand what this does... */
   private static final long serialVersionUID = 3907867851725270089L;
-  //Mouse buttons
-
+  
   //Arrow keys
   private transient boolean up, down, left, right;        //Directions for movement
 
@@ -76,6 +78,8 @@ public class EditorMap implements Playable, Serializable{
 
   private ArrayList<NPC> npcs;
   private ArrayList<AreaScript> scripts;
+  private ArrayList<Enemy> enemies;
+  private ArrayList<SignPost> signs;
 
   private static float x, y;       //Current location
   private static float dx, dy;
@@ -89,7 +93,7 @@ public class EditorMap implements Playable, Serializable{
   
   private TileMode tileMode;
   private MoveMode moveMode;
-  private NPCMode npcMode;
+  private EventMode npcMode;
 
   /**
    * The various modes this map can be in
@@ -97,7 +101,7 @@ public class EditorMap implements Playable, Serializable{
    * @author Aaron Roy
    */
   public enum Modes{
-    TILE, MOVE, NPC;
+    TILE, MOVE, EVENT;
   }
 
   private static Modes mode = Modes.TILE;
@@ -113,6 +117,9 @@ public class EditorMap implements Playable, Serializable{
     collision = new boolean[row][col];
     npcs = new ArrayList<NPC>();
     scripts = new ArrayList<AreaScript>();
+    enemies = new ArrayList<Enemy>();
+    signs = new ArrayList<SignPost>();
+
 
     Display.setTitle("Project Soul Editor - "+ "Untitled Map");
 
@@ -122,16 +129,11 @@ public class EditorMap implements Playable, Serializable{
       }
     }
 
-    Mode.setMap(tiles);
-    
     tileMode = new TileMode();
     moveMode = new MoveMode(collision);
-    npcMode = new NPCMode(npcs, scripts);
+    npcMode = new EventMode(npcs, scripts, enemies, signs);
     Mode.setMap(tiles);
     
-    tileMode = new TileMode();
-    moveMode = new MoveMode(collision);
-    npcMode = new NPCMode(npcs, scripts);
   }
 
 
@@ -156,6 +158,8 @@ public class EditorMap implements Playable, Serializable{
       collision = new boolean[rows][cols];
       npcs = new ArrayList<NPC>();
       scripts = new ArrayList<AreaScript>();
+      enemies = new ArrayList<Enemy>();
+      signs = new ArrayList<SignPost>();
 
 
       for (int i = 0; i < tiles.length; i++) {
@@ -238,7 +242,36 @@ public class EditorMap implements Playable, Serializable{
           int arg1 = Integer.parseInt(split[2]);
 
           scripts.add(new WarpScript(split[0], x+arg0*16, y+arg1*16, false));
+        } else if (s.startsWith("enemy")){
+          s = s.replace("enemy ", "");
+          String[] split = s.split(" ");
+
+          int arg0 = Integer.parseInt(split[0]);
+          int arg1 = Integer.parseInt(split[1]);
+          
+          switch(split[3]){
+            case "none":
+              enemies.add(new Enemy(x+arg0*16, y+arg1*16, EnemyType.toEnum(split[2])));
+              break;
+            case "chaser":
+              enemies.add(new Chaser(x+arg0*16, y+arg1*16, EnemyType.toEnum(split[2]),
+                  Integer.parseInt(split[4])));
+              break;
+            default:
+              System.out.println("This shouldn't happen!");
+              break;
+          }
+        } else if (s.startsWith("sign")){
+          s = s.replace("sign ", "");
+          String[] split = s.split(" ", 3);
+
+          int arg0 = Integer.parseInt(split[0]);
+          int arg1 = Integer.parseInt(split[1]);
+          
+          signs.add(new SignPost(x+arg0*16, y+arg1*16, split[2]));
+
         }
+        
       } while ((s=reader.readLine()) != null);
 
 
@@ -261,14 +294,10 @@ public class EditorMap implements Playable, Serializable{
       KeyHandler.reloadKeyboard();
     }         
     
-    
-    
-    Mode.setMap(tiles);
-    
     tileMode = new TileMode();
     moveMode = new MoveMode(collision);
-    npcMode = new NPCMode(npcs, scripts);
-
+    npcMode = new EventMode(npcs, scripts, enemies, signs);
+    Mode.setMap(tiles);
   }
 
   @Override
@@ -350,7 +379,7 @@ public class EditorMap implements Playable, Serializable{
       case MOVE:
         moveMode.update();
         break;
-      case NPC:
+      case EVENT:
         npcMode.update();
         break;
       case TILE:
@@ -421,6 +450,19 @@ public class EditorMap implements Playable, Serializable{
               " " + script.getOrigTY() + 
               (script.hasNPC()?" " + script.getNPC().getName() : ""));
         }
+      }
+      
+      for(Enemy enemy:enemies){
+        writer.println("enemy " + enemy.getOrigTX() + 
+            " " + enemy.getOrigTY() + " " + enemy.getType() + " " + 
+            enemy.getBehavior() + 
+            (enemy instanceof Chaser?" " +  ((Chaser)enemy).getOriginalRadius() : ""));
+      }
+      
+      for(SignPost sign:signs){
+        writer.println("sign " + sign.getOrigTX() + 
+            " " + sign.getOrigTY() + " " + sign.getText());
+
       }
       
       saved = true;
@@ -698,7 +740,7 @@ public class EditorMap implements Playable, Serializable{
     }
 
     
-    if(mode == Modes.NPC){
+    if(mode == Modes.EVENT){
       for (NPC npc: npcs) {
         if(checkTileInBounds(npc.getX(), npc.getY())){
           npc.render();
@@ -708,6 +750,18 @@ public class EditorMap implements Playable, Serializable{
       for (AreaScript script: scripts) {
         if(checkTileInBounds(script.getX(), script.getY())){
           script.render();
+        }
+      }
+      
+      for(Enemy enemy: enemies){
+        if(checkTileInBounds(enemy.getX(), enemy.getY())){
+          enemy.render();
+        }
+      }
+      
+      for(SignPost sign: signs){
+        if(checkTileInBounds(sign.getX(), sign.getY())){
+          sign.render();
         }
       }
     }
@@ -726,7 +780,7 @@ public class EditorMap implements Playable, Serializable{
       case MOVE:
         moveMode.render();
         break;
-      case NPC:
+      case EVENT:
         npcMode.render();
         break;
       case TILE:
@@ -750,15 +804,26 @@ public class EditorMap implements Playable, Serializable{
     y+=dy;
 
     for(NPC npc:npcs){
-      npc.setPixLocation((int)(npc.getX()+dx)+npc.getXTravelled(), 
-          (int)(npc.getY()+dy)+npc.getYTravelled());
+      npc.setPixLocation((int)(npc.getX()+dx), (int)(npc.getY()+dy));
       npc.update();
     }
 
     for(AreaScript script:scripts){
-      script.setAbsoluteLocation(script.getX()+dx,script.getY()+dy);
+      script.setPixLocation((int)(script.getX()+dx),(int)(script.getY()+dy));
+    }
+    
+    for (Enemy enemy:enemies) {
+      enemy.setPixLocation((int)(enemy.getX()+dx),(int)(enemy.getY()+dy));
+    }
+    
+    for (SignPost sign:signs) {
+      sign.setPixLocation((int)(sign.getX()+dx),(int)(sign.getY()+dy));
     }
 
+  }
+  
+  public static Modes getMode(){
+    return mode;
   }
   
 

@@ -4,14 +4,6 @@
  */
 package komorebi.projsoul.states;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.Item;
 import komorebi.projsoul.engine.Item.Items;
@@ -32,6 +24,14 @@ import komorebi.projsoul.script.Task;
 import komorebi.projsoul.script.Task.TaskWithNumber;
 import komorebi.projsoul.script.Task.TaskWithString;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+
 /**
  * Represents the game
  * 
@@ -40,8 +40,11 @@ import komorebi.projsoul.script.Task.TaskWithString;
  */
 public class Game extends State{
 
+  @Deprecated
   public ArrayList<NPC> npcs;
+  @Deprecated
   public ArrayList<AreaScript> scripts;
+  
   public ArrayList<Item> items = new ArrayList<Item>();
   
   public boolean[] booleans;
@@ -198,8 +201,6 @@ public class Game extends State{
    */
   @Override
   public void update() {
-    // TODO Auto-generated method stub    
-
     
     KeyHandler.getInput();
 
@@ -209,11 +210,15 @@ public class Game extends State{
     for (Iterator<Int> it = pauseFrames.iterator(); it.hasNext();)
     {      
       Int i = it.next();
-      i.decrement();
-      if (i.intValue()==0)
-      {
-        waitingLocks.get(pauseFrames.indexOf(i)).resumeThread();
-        waitingLocks.remove(pauseFrames.indexOf(i));
+      if(i != null){
+        i.decrement();
+        if (i.intValue() == 0)
+        {
+          waitingLocks.get(pauseFrames.indexOf(i)).resumeThread();
+          waitingLocks.remove(pauseFrames.indexOf(i));
+          it.remove();
+        }
+      }else{
         it.remove();
       }
 
@@ -235,6 +240,9 @@ public class Game extends State{
 
   }
 
+  /**
+   * @return The current map
+   */
   public static Map getMap(){
     return map;
   }
@@ -252,12 +260,11 @@ public class Game extends State{
 
   /**
    * Pauses the game for a specified number of frames
+   * 
    * @param frames The number of frames to be paused
-   * @param ex The script execution whose thread will be locked while the game
+   * @param lock The script execution whose thread will be locked while the game
    *        is paused
    */
-
-
   public void pause(int frames, Lock lock)
   {
     pauseFrames.add(new Int(frames));
@@ -268,6 +275,7 @@ public class Game extends State{
 
   /**
    * Sets the speech bubble currently presenting a question to the player
+   * 
    * @param text The asking NPC's SpeechHandler object
    */
   public void setAsker(SpeechHandler text)
@@ -304,9 +312,11 @@ public class Game extends State{
   }
 
   /**
-   * Loads a given map into the game
+   * Loads a given map into the game (Just make a new map instead)
+   * 
    * @param mapFile The name of the file (sans .txt) in the res/ folder
    */
+  @Deprecated
   public void loadMap(String mapFile)
   {
     try {

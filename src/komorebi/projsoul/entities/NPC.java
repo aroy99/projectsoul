@@ -4,19 +4,17 @@
  **/
 package komorebi.projsoul.entities;
 
-import java.awt.Rectangle;
-import java.util.ArrayList;
-
 import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Main;
-import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
 import komorebi.projsoul.script.SpeechHandler;
 import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.WalkingScript;
+
+import java.awt.Rectangle;
+import java.util.ArrayList;
 
 
 /**
@@ -66,7 +64,6 @@ public class NPC extends Entity {
 
   boolean hangOn;
   
-  int tx, ty;
 
   /**
    * @param x The x location (in pixels) of the bottom left corner of the NPC
@@ -74,8 +71,6 @@ public class NPC extends Entity {
    */
   public NPC(String name, float x, float y, NPCType type) {
     super(x,y,16,24);
-    tx = (int)(x-EditorMap.getX())/16;
-    ty = (int)(y-EditorMap.getY())/16;
     
     area = new Rectangle((int) x, (int) y, 16, 24);
 
@@ -173,9 +168,6 @@ public class NPC extends Entity {
         dx = prevdx;
         dy = prevdy;
       }
-
-      rx+=dx;
-      ry+=dy;
 
       if (isRunning)
       {
@@ -284,8 +276,8 @@ public class NPC extends Entity {
 
       text.render();
 
-      Draw.rectCam(area.x, area.y, area.width, area.height, 
-          220, 0, 221, 1, 6);
+//      Draw.rectCam(area.x, area.y, area.width, area.height, 
+//          220, 0, 221, 1, 6);
       
     }
 
@@ -567,18 +559,6 @@ public class NPC extends Entity {
     }
   }
 
-
-  /**
-   * Moves the NPC to a new tile
-   * 
-   * @param tx The tile x location of the bottom left corner of the NPC
-   * @param ty The tile y location of the bottom left corner of the NPC
-   */
-  public void setTileLocation(int tx, int ty){
-    this.x=tx*16;
-    this.y=ty*16;
-  }
-
   /**
    * Relocates the NPC to a specific spot on the screen
    * @param x The x cooridnate of the new bottom left corner, in pixels, of the NPC
@@ -599,15 +579,23 @@ public class NPC extends Entity {
    * Asks a question, creating a message box and pausing the thread
    * 
    * @param args The options to write
-   * @param instructor The new thread to run the command
+   * @param lock The new thread to run the command
    */
   public String ask(String[] args, Execution ex, Lock lock)
   {
     text.write(args[0], 20, 58, 8);
-    if (args.length>1) text.write(args[1], 30, 40, 8);
-    if (args.length>2) text.write(args[2], 100, 40, 8);
-    if (args.length>3) text.write(args[3], 30, 22, 8);
-    if (args.length>4) text.write(args[4], 100, 22, 8);
+    if (args.length > 1){
+      text.write(args[1], 30, 40, 8);
+    }
+    if (args.length > 2){
+      text.write(args[2], 100, 40, 8);
+    }
+    if (args.length > 3){
+      text.write(args[3], 30, 22, 8);
+    }
+    if (args.length > 4){
+      text.write(args[4], 100, 22, 8);
+    }
 
     this.instructor = ex;
     this.lock = lock;
@@ -625,26 +613,12 @@ public class NPC extends Entity {
 
   public int getTileX()
   {
-    return ((int) rx)/16;
+    return ((int) x)/16;
   }
 
   public int getTileY()
   {
-    return ((int) ry)/16;
-  }
-
-  /**
-   * @return the original tile x of this NPC
-   */
-  public int getOrigTX(){
-    return tx;
-  }
-
-  /**
-   * @return the original tile y of this NPC
-   */
-  public int getOrigTY(){
-    return ty;
+    return ((int) y)/16;
   }
 
   public void setPickerIndex(int i)

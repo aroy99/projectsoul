@@ -20,20 +20,25 @@ public class Enemy extends Entity {
 
   private Animation hitAni;
   private Animation deathAni;
+  
+  public static final int KNOCKBACK = 6;
 
   public float dx, dy;
 
   private Face hitDirection;
+  
+  private EnemyType type;
 
   /**
    * Creates a standard enemy
    * @param x The x location (in the map) of the enemy
    * @param y The y location (in the map) of the enemy
-   * @param sx The horizontal size, in pixels, of the enemy
-   * @param sy The vertical size, in pixels, of the enemy
+   * @param type The sprite of this enemy
    */
-  public Enemy(float x, float y, int sx, int sy) {
-    super(x, y, sx, sy);
+  public Enemy(float x, float y, EnemyType type) {
+    super(x, y, type.getSX(), type.getSY());
+    
+    this.type = type;
 
     hitBox = new Rectangle((int)x,(int)y,sx,sy);
     health = 100;
@@ -66,10 +71,18 @@ public class Enemy extends Entity {
     if (invincible)
     {
       hitCounter--;
-      if (dx>0) dx--;
-      if (dx<0) dx++;
-      if (dy>0) dy--;
-      if (dy<0) dy++;
+      if (dx > 0){
+        dx--;
+      }
+      if (dx < 0){
+        dx++;
+      }
+      if (dy > 0){
+        dy--;
+      }
+      if (dy < 0){
+        dy++;
+      }
     }
 
     if (hitCounter<=0)
@@ -130,7 +143,7 @@ public class Enemy extends Entity {
 
   }
 
-  /*
+  /**
    * Updates whether the enemy is being hit
    */
   public void updateHits(boolean isHit, Face dir)
@@ -141,10 +154,7 @@ public class Enemy extends Entity {
     hitDirection = dir;
   }
 
-  /*
-   * (non-Javadoc)
-   * @see komorebi.projsoul.engine.Renderable#render()
-   */
+  @Override
   public void render() {
     if (invincible)
     {
@@ -167,13 +177,21 @@ public class Enemy extends Entity {
   {
     return health;
   }
+  
+  public EnemyType getType(){
+    return type;
+  }
+  
+  public String getBehavior(){
+    return "none";
+  }
 
   public boolean dead()
   {
     return dead;
   }
 
-  /*
+  /**
    * Stops the enemy from moving where it shouldn't 
    */
   public void overrideImproperMovements()
@@ -206,7 +224,9 @@ public class Enemy extends Entity {
       
       if (!Map.getClyde().invincible())
       {
-        Map.getClyde().inflictPain(12*dx, 12*dy);
+        Map.getClyde().inflictPain(KNOCKBACK*Math.signum(dx)*(float)Math.sqrt(Math.abs(dx)), 
+            KNOCKBACK*Math.signum(dy)*(float)Math.sqrt(Math.abs(dy)));
+
       }
 
       dx = 0;
@@ -234,7 +254,7 @@ public class Enemy extends Entity {
    * @return The distance, as a double
    */
   public static double distanceBetween(float x, float y, float tarX, float tarY)
-  {
+  {    
     return Math.sqrt(Math.pow((x-tarX), 2) + Math.pow((y-tarY), 2));
   }
 

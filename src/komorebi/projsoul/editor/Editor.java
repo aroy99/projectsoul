@@ -12,6 +12,7 @@ import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.engine.MainE;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.map.EditorMap;
 
@@ -58,7 +59,9 @@ public class Editor implements Playable{
    * Creates a new editor with a map that is 20*20
    */
   public Editor(){
-    map = new EditorMap(20, 20);
+    map = new EditorMap("res/maps/"+MainE.testLoc, MainE.testLoc);
+//    map = new EditorMap(20, 20);
+
     buttons = new Buttons(map);
   }
 

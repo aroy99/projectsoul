@@ -45,4 +45,4 @@ npc vinny 16 11 POKEMON walk_up_and_down stay_or_go
 npc bobobo-bobobo 2 10 NESS walk_up_and_down yoyoyo
 script surprise_attack 1 3 bobobo-bobobo
 warp Test_Map_2 8 9
-warp null 8 2
+warp Test_Map_2 8 2

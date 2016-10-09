@@ -48,7 +48,7 @@ public class Buttons implements Playable{
         case 1:
           EditorMap.setMode(Modes.MOVE); break;
         case 2:
-          EditorMap.setMode(Modes.NPC);; break;
+          EditorMap.setMode(Modes.EVENT);; break;
         case 3: 
           //TODO Edit Map Header
           break;

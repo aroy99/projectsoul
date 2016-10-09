@@ -5,20 +5,25 @@ package komorebi.projsoul.entities;
 
 import java.awt.Rectangle;
 
+import komorebi.projsoul.editor.Editable;
 import komorebi.projsoul.engine.Renderable;
+import komorebi.projsoul.map.EditorMap;
 
 /**
  * Represents something that moves
  * 
  * @author Aaron Roy
  */
-public abstract class Entity implements Renderable{
+public abstract class Entity implements Renderable, Editable{
   protected float x;          //Regular position
   protected float y;
-  protected int rx, ry;     //Original Position
   
   protected int sx;           //Width and Height
   protected int sy;
+  
+  protected int tx;           //Tile X and Y (accounting for Editor position)
+  protected int ty;
+
 
   protected Rectangle area;
   
@@ -48,8 +53,10 @@ public abstract class Entity implements Renderable{
     this.sx = sx;
     this.sy = sy;
     
-    rx = (int) x;
-    ry = (int) y;
+    tx = (int)(x-EditorMap.getX())/16;
+    ty = (int)(y-EditorMap.getY())/16;
+
+    
   }
 
   public float getX()
@@ -61,5 +68,47 @@ public abstract class Entity implements Renderable{
   {
     return y;
   }
+  
+  /**
+   * @return the original tile x of this NPC
+   */
+  public int getOrigTX(){
+    return tx;
+  }
+
+  /**
+   * @return the original tile y of this NPC
+   */
+  public int getOrigTY(){
+    return ty;
+  }
+
+  
+  /**
+   * Moves the NPC to a new tile
+   * 
+   * @param tx The tile x location of the bottom left corner of the NPC
+   * @param ty The tile y location of the bottom left corner of the NPC
+   */
+  public void setTileLocation(int tx, int ty){
+    this.x=tx*16+EditorMap.getX();
+    this.y=ty*16+EditorMap.getY();
+    
+    this.tx = tx;
+    this.ty = ty;
+  }
+  
+  /**
+   * Relocates the Entity to a specific spot on the screen
+   * @param x The x cooridnate of the new bottom left corner, in pixels, of the Entity
+   * @param y The y coordinate of the new bottom left corner, in pixels, of the Entity
+   */
+  public void setPixLocation(int x, int y)
+  {
+    this.x = x;
+    this.y = y;
+  }
+
+
 
 }
