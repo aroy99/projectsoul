@@ -17,6 +17,8 @@ import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
 import komorebi.projsoul.states.Game;
+import komorebi.projsoul.engine.HUD;
+
 
 /**
  * @author Aaron Roy
@@ -31,11 +33,16 @@ public class Player extends Entity implements Playable{
   private boolean run;
   private boolean pause;
   private boolean guiding;
+ 
   
-  private int health;
+  //private int health;
 
   private boolean isAttacking;
-
+  public static boolean isHit, wasHit;
+  private boolean dying;
+  private boolean dead; 
+  private int hitCounter;
+  
   private boolean canMove = true;
 
   private float dx;
@@ -70,6 +77,9 @@ public class Player extends Entity implements Playable{
   private MeleeAttack melee;
   
   private MagicBar magic;
+  private Animation hitAni;
+  private Animation deathAni;
+  private Face hitDirection;
 
   /**
    * @param x x pos, from left
@@ -78,6 +88,16 @@ public class Player extends Entity implements Playable{
   public Player(float x, float y) {
     super(x, y, 16, 24);
     ent = Entities.CLYDE;
+    
+    hitAni = new Animation(2,8,16,21,11);
+    hitAni.add(0, 0);
+    hitAni.add(0, 22);
+
+    deathAni = new Animation(4,8,16,21,11,false);
+    deathAni.add(0, 57);
+    deathAni.add(0, 82);
+    deathAni.add(0, 103);
+    deathAni.add(0, 124);
     
     restoreMvmtX = true;
     restoreMvmtY = true;
@@ -138,7 +158,7 @@ public class Player extends Entity implements Playable{
 
     melee = new MeleeAttack();
     magic = new MagicBar(200);
-    health = 200;
+    
 
   }
 
@@ -406,6 +426,72 @@ public class Player extends Entity implements Playable{
     guiding = false;
     
     magic.update();
+    
+    if (dying && deathAni.lastFrame())
+    {
+      dead = true;
+    } else if (dying)
+    {
+      dx = 0;
+      dy = 0;
+    }
+
+    /*if (invincible)
+    {
+      hitCounter--;
+      if (dx>0) dx--;
+      if (dx<0) dx++;
+      if (dy>0) dy--;
+      if (dy<0) dy++;
+    }
+
+    if (hitCounter<=0)
+    {
+      hitAni.hStop();
+      invincible = false;
+    }*/
+
+    if (isHit && !wasHit && !invincible)
+    {
+      HUD.health-=25;
+
+      //Kills the enemy
+      if (HUD.health<=0)
+      {
+        deathAni.resume();
+        dying = true;
+      } /*else
+      {
+        //Knocks back the enemy
+        invincible = true;
+        hitCounter = 50;
+        hitAni.resume();
+
+        switch (hitDirection)
+        {
+          case DOWN:
+            dx = 0;
+            dy = -5;
+            //break;
+          case LEFT:
+            dx = -5;
+            dy = 0;
+            //break;
+          case RIGHT:
+            dx = 5;
+            dy = 0;
+            //break;
+          case UP:
+            dx = 0;
+            dy = 5;
+            //break;
+          default:
+            //break;
+
+        }
+      }*/
+    }
+
     
   }
 
@@ -791,7 +877,7 @@ public class Player extends Entity implements Playable{
     
     hurtCount = 40;
     
-    health-=25;
+    HUD.health-=25;
 
     switch (dir)
     {
