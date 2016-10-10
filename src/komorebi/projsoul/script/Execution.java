@@ -169,7 +169,7 @@ public class Execution implements Runnable {
     Task nextTask;
 
     boolean run;
-
+    
     System.out.println(task.getInstruction());
 
     switch (task.getInstruction())
@@ -436,12 +436,53 @@ public class Execution implements Runnable {
           }
         }
         break;
+      case IF_CHAR:
+        taskTask = (TaskWithTask) task;
+        nextTask = getNextTask(task);
+        
+        System.out.println(Map.currentPlayer());
+        run = Map.currentPlayer() == taskTask.getCharacter();
+        if (taskTask.isReversed())
+        {
+          run = !run;
+        }
+        
+        if (run)
+        {
+          System.out.println("Run if");
+          execute(taskTask.getTask());
+          
+          if (nextTask != null)
+          {
+            if (nextTask.getInstruction() == Instructions.ELSE)
+            {
+              taskBool = (TaskWithBoolean) nextTask;
+              taskBool.setIfTrue(true);
+            }
+          }
+        } else
+        {
+          if (nextTask != null)
+          {
+            if (nextTask.getInstruction() == Instructions.ELSE)
+            {
+              taskBool = (TaskWithBoolean) nextTask;
+              taskBool.setIfTrue(false);
+            }
+          }
+        }
+        
+        break;
       case ELSE:
         taskBool = (TaskWithBoolean) task;
 
+        System.out.println("HEY YA");
+        
         if (!taskBool.ifTrue())
         {
+          System.out.println("Run else");
           execute(taskBool.getTask());
+          taskBool.setIfTrue(false);
         }
         break;
       case FLAG_BOOLEAN:

@@ -5,6 +5,8 @@ package komorebi.projsoul.script;
 
 import java.util.ArrayList;
 
+import komorebi.projsoul.entities.Characters;
+
 /**
  * 
  * @author Aaron Roy
@@ -158,6 +160,7 @@ public class Task {
     Task task;
     int s;
     boolean reverse;
+    Characters character;
     
     public TaskWithTask(Instructions instruction, Task task, int predicate,
         boolean reverse)
@@ -165,6 +168,15 @@ public class Task {
       super(instruction);
       this.task = task;
       s = predicate;
+      this.reverse = reverse;
+    }
+    
+    public TaskWithTask(Instructions instruction, Task task, Characters character,
+        boolean reverse)
+    {
+      super(instruction);
+      this.character = character;
+      this.task = task;
       this.reverse = reverse;
     }
     
@@ -181,6 +193,11 @@ public class Task {
     public boolean isReversed()
     {
       return reverse;
+    }
+    
+    public Characters getCharacter()
+    {
+      return character;
     }
   }
   

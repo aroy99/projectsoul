@@ -41,6 +41,6 @@
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 //npc joe 2 1 NESS do_nothing do_nothing
-npc vin 5 5 POKEMON walk_up_and_down pk_fire
+npc vin 5 5 POKEMON walk_up_and_down decision
 //script surprise_attack 1 1 joe
 warp Test_Map_2 8 2

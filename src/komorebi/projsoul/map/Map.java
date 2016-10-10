@@ -20,7 +20,9 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.entities.Bruno;
 import komorebi.projsoul.entities.Caspian;
+import komorebi.projsoul.entities.Characters;
 import komorebi.projsoul.entities.Chaser;
 import komorebi.projsoul.entities.Enemy;
 import komorebi.projsoul.entities.Flannery;
@@ -55,6 +57,7 @@ public class Map implements Playable{
   private static Player play;
   private static Caspian caspian;
   private static Flannery flannery;
+  private static Bruno bruno;
 
   //TODO Debug
   private ArrayList<Enemy> enemies = new ArrayList<Enemy>();
@@ -203,6 +206,7 @@ public class Map implements Playable{
       
       caspian = new Caspian(tiles[0].length/2*16,0);
       flannery = new Flannery(tiles[0].length/2*16,0);
+      bruno = new Bruno(tiles[0].length/2*16,0);
       
       play = caspian;
       
@@ -286,16 +290,15 @@ public class Map implements Playable{
 
 
     for (SignPost sign: signs)
-    {            
+    { 
       if (sign.isApproached(play.getArea(), play.getDirection())
           && KeyHandler.keyClick(Key.C))
       {
         sign.show();
       }
-
     }
     
-    if (KeyHandler.keyClick(Key.ENTER))
+    if (KeyHandler.keyClick(Key.SPACE))
     {
       switchPlayer();
     }
@@ -637,17 +640,26 @@ public class Map implements Playable{
   {
     switch (play.getCharacter())
     {
-      case FLANNERY:
-        caspian.setLocation(flannery.getX(), flannery.getY());
-        play = caspian;
-        break;
       case CASPIAN:
         flannery.setLocation(caspian.getX(), caspian.getY());
         play = flannery;
         break;
+      case FLANNERY:
+        bruno.setLocation(flannery.getX(), flannery.getY());
+        play = bruno;
+        break;
+      case BRUNO:
+        caspian.setLocation(bruno.getX(), bruno.getY());
+        play = caspian;
+        break;
       default:
         break;
     }
+  }
+  
+  public static Characters currentPlayer()
+  {
+    return play.getCharacter();
   }
 
 }

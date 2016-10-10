@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import komorebi.projsoul.engine.ThreadHandler;
+import komorebi.projsoul.entities.Characters;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.script.Task.TaskWithBoolean;
@@ -397,14 +398,6 @@ public abstract class Script {
     } else if (s.startsWith("end"))
     {
       return new Task(Instructions.END);
-    } else if (s.startsWith("simulrunbranch"))
-    {
-      s = s.replace("simulrunbranch ", "");
-      checkForBranch(s);
-
-      TaskWithBranch task = getTaskWithBranch(s);
-      task.setInstruction(Instructions.SIMUL_RUN_BRANCH);
-      return task;
     } else if (s.startsWith("@turn"))
     {
       s = s.replace("@turn ", "");
@@ -507,9 +500,28 @@ public abstract class Script {
         }
         else 
         {
-          return throwError(line, "Predicates must either correspond to a "
-              + "boolean flag number, a monetary value or a confidence value");
-
+          if (predicate.equalsIgnoreCase("caspian"))
+          {
+            return new TaskWithTask(Instructions.IF_CHAR, interpret(toDo, line),
+                Characters.CASPIAN, reverse); 
+          } else if (predicate.equalsIgnoreCase("flannery"))
+          {
+            return new TaskWithTask(Instructions.IF_CHAR, interpret(toDo, line),
+                Characters.FLANNERY, reverse); 
+          } /*else if (predicate.equalsIgnoreCase("caspian"))
+          {
+            return new TaskWithTask(Instructions.IF_CHAR, interpret(toDo, line),
+                Characters.CASPIAN, reverse); 
+          } else if (predicate.equalsIgnoreCase("caspian"))
+          {
+            return new TaskWithTask(Instructions.IF_CHAR, interpret(toDo, line),
+                Characters.CASPIAN, reverse); 
+          } */ else
+          {
+            return throwError(line, "Predicates must either correspond to a "
+                + "boolean flag number, a monetary value, a confidence value,"
+                + "or a playable character.");
+          }
         }
       }
 
@@ -517,7 +529,7 @@ public abstract class Script {
     {
       if (s.contains(","))
       {
-        s = s.replace(",","");
+        s = s.replaceFirst(",", "");
       } else
       {
         throwError(line, "'else' keyword must be proceeded by a comma (,)");

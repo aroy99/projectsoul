@@ -231,7 +231,7 @@ public class Game extends State{
   public void render() {
     map.render();
     Map.getClyde().magicBar().render();
-
+    
     Fader.render();
 
   }
