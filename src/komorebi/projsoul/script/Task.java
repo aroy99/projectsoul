@@ -121,6 +121,11 @@ public class Task {
     {
       return s;
     }
+    
+    public void setString(String s)
+    {
+      this.s = s;
+    }
   }
   
   public static class TaskWithStringArray extends Task
@@ -134,6 +139,11 @@ public class Task {
       super(instruction);
       this.args = args;
       this.branches = branches;
+    }
+    
+    public void setStrings(String[] newArr)
+    {
+      args = newArr;
     }
     
     public String[] getStrings()

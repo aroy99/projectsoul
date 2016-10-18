@@ -4,14 +4,18 @@ import java.awt.Rectangle;
 
 import komorebi.projsoul.attack.MeleeAttack;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.MagicBar;
 
 public class Caspian extends Player {
+  
+  private MeleeAttack melee;
 
   public Caspian(float x, float y) {
     super(x, y);
-    
+
     character = Characters.CASPIAN;
     
     upAni =    new Animation(6, 8, 11);
@@ -44,6 +48,8 @@ public class Caspian extends Player {
     rightAni.add(72,247,22,32);
     rightAni.add(99,246,14,33);
     rightAni.add(120,245,15,34);
+    
+    rightAni.setPausedFrame(99,246,14,33);
 
     leftAni.add(3,247,21,32,0,true);
     leftAni.add(30,246,14,33,0,true);
@@ -51,6 +57,8 @@ public class Caspian extends Player {
     leftAni.add(72,247,22,32,0,true);
     leftAni.add(99,246,14,33,0,true);
     leftAni.add(120,245,15,34,0,true);
+    
+    leftAni.setPausedFrame(99,246,14,33,0,true);
 
     hurtUpAni.add(8,204);
     hurtUpAni.add(141, 205);
@@ -64,21 +72,27 @@ public class Caspian extends Player {
     hurtLeftAni.add(30, 246, true);
     hurtLeftAni.add(141, 246, true);
 
-    attack1 = new MeleeAttack(Characters.CASPIAN);
+    melee = new MeleeAttack(Characters.CASPIAN);
+    
+    magic = new MagicBar(50);
+    health = new HUD(50);
+    
+    attack = 50;
+    defense = 50;
   }
   
   public void update()
   {
     super.update();
-    
-    MeleeAttack melee = (MeleeAttack) attack1;
+   
     
     if (isAttacking && !melee.playing())
     {
       isAttacking = false;
     }
     
-    if (KeyHandler.keyClick(Key.X) && !isAttacking && magic.hasEnoughMagic(29))
+    if (KeyHandler.keyClick(Key.X) && !isAttacking && magic.hasEnoughMagic(
+        (int) (10*(attack/Player.MEAN_STAT))))
     {        
       upAni.hStop();
       downAni.hStop();
@@ -101,7 +115,12 @@ public class Caspian extends Player {
   
   public Rectangle getAttackHitBox()
   {
-    return ((MeleeAttack) attack1).getHitBox();
+    return melee.getHitBox();
+  }
+
+  @Override
+  public void renderAttack() {
+    melee.play(x, y);
   }
 
 

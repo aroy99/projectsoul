@@ -29,6 +29,7 @@ import komorebi.projsoul.entities.Flannery;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.Player;
+import komorebi.projsoul.entities.Sierra;
 import komorebi.projsoul.entities.SignPost;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.Script;
@@ -55,8 +56,10 @@ public class Map implements Playable{
   private ArrayList<SignPost> signs;
   
   private static Player play;
+  
   private static Caspian caspian;
   private static Flannery flannery;
+  private static Sierra sierra;
   private static Bruno bruno;
 
   //TODO Debug
@@ -206,6 +209,7 @@ public class Map implements Playable{
       
       caspian = new Caspian(tiles[0].length/2*16,0);
       flannery = new Flannery(tiles[0].length/2*16,0);
+      sierra = new Sierra(tiles[0].length/2*16,0);
       bruno = new Bruno(tiles[0].length/2*16,0);
       
       play = caspian;
@@ -249,11 +253,11 @@ public class Map implements Playable{
     play.update();
 
     for (Enemy enemy: enemies)
-    {
+    { 
       if (play instanceof Caspian)
       {
         enemy.updateHits(((Caspian) play).getAttackHitBox().intersects(enemy.getHitBox()) 
-            && play.isAttacking(), play.getDirection());
+            && play.isAttacking(), (int) (25*(play.getAttack()/Player.MEAN_STAT)), play.getDirection());
       }
       enemy.update();
 
@@ -597,7 +601,7 @@ public class Map implements Playable{
     tiles[x][y] = tile;
   }
 
-  public static Player getClyde()
+  public static Player getPlayer()
   {
     return play;
   }
@@ -645,7 +649,11 @@ public class Map implements Playable{
         play = flannery;
         break;
       case FLANNERY:
-        bruno.setLocation(flannery.getX(), flannery.getY());
+        sierra.setLocation(flannery.getX(), flannery.getY());
+        play = sierra;
+        break;
+      case SIERRA:
+        bruno.setLocation(sierra.getX(), sierra.getY());
         play = bruno;
         break;
       case BRUNO:
@@ -661,6 +669,7 @@ public class Map implements Playable{
   {
     return play.getCharacter();
   }
+  
 
 }
 

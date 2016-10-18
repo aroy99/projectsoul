@@ -508,15 +508,15 @@ public abstract class Script {
           {
             return new TaskWithTask(Instructions.IF_CHAR, interpret(toDo, line),
                 Characters.FLANNERY, reverse); 
-          } /*else if (predicate.equalsIgnoreCase("caspian"))
+          } else if (predicate.equalsIgnoreCase("sierra"))
           {
             return new TaskWithTask(Instructions.IF_CHAR, interpret(toDo, line),
-                Characters.CASPIAN, reverse); 
-          } else if (predicate.equalsIgnoreCase("caspian"))
+                Characters.SIERRA, reverse); 
+          } else if (predicate.equalsIgnoreCase("bruno"))
           {
             return new TaskWithTask(Instructions.IF_CHAR, interpret(toDo, line),
-                Characters.CASPIAN, reverse); 
-          } */ else
+                Characters.BRUNO, reverse); 
+          } else
           {
             return throwError(line, "Predicates must either correspond to a "
                 + "boolean flag number, a monetary value, a confidence value,"

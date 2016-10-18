@@ -1,10 +1,22 @@
 package komorebi.projsoul.entities;
 
-import komorebi.projsoul.attack.MeleeAttack;
+import komorebi.projsoul.attack.ProjectileAttack;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.HUD;
+import komorebi.projsoul.engine.Key;
+import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.MagicBar;
 
 public class Flannery extends Player {
 
+  private ProjectileAttack projectile;
+  private Animation leftThrow;
+  private Animation rightThrow;
+  private Animation upThrow;
+  private Animation downThrow;
+  
+  private Animation currentAnimation;
+  
   public Flannery(float x, float y) {
     
     super(x,y);
@@ -61,11 +73,115 @@ public class Flannery extends Player {
     hurtLeftAni.add(346,225);
     hurtLeftAni.add(347,261);
     
+    downThrow = new Animation(6,8,12,false);
+    downThrow.add(315,100,21,32);
+    downThrow.add(339,100,20,32);
+    downThrow.add(362,100,21,32);
+    downThrow.add(387,100,22,32);
+    downThrow.add(412,100,22,32);
+    downThrow.add(438,100,22,32);
+    
+    leftThrow = new Animation(6,8,12,false);
+    leftThrow.add(439,138,21,32);
+    leftThrow.add(414,138,22,32);
+    leftThrow.add(388,138,22,32);
+    leftThrow.add(363,138,21,32);
+    leftThrow.add(339,138,20,32);
+    leftThrow.add(307,138,29,32);
+    
+    rightThrow = new Animation(6,8,12,false);
+    rightThrow.add(439,138,21,32,0,true);
+    rightThrow.add(414,138,22,32,0,true);
+    rightThrow.add(388,138,22,32,0,true);
+    rightThrow.add(363,138,21,32,0,true);
+    rightThrow.add(339,138,20,32,0,true);
+    rightThrow.add(307,138,29,32,0,true);
+    
+    upThrow = new Animation(6,8,12,false);
+    upThrow.add(431,180,23,32);
+    upThrow.add(408,180,18,32);
+    upThrow.add(385,180,18,32);
+    upThrow.add(355,180,23,32);
+    upThrow.add(333,180,18,32);
+    upThrow.add(313,180,16,32);
+    
+    magic = new MagicBar(40);
+    health = new HUD(50);
+    
+    attack = 60;
+    defense = 50;
+    
+    projectile = new ProjectileAttack(Characters.FLANNERY);
+    
   }
   
   public void update()
   {
     super.update();
+    
+    if (projectile.isActive())
+    {
+      projectile.update();
+    }
+    
+    if (isAttacking && !currentAnimation.playing())
+    {
+      isAttacking = false;
+      currentAnimation = null;
+    }
+    
+    if (KeyHandler.keyClick(Key.X) && !isAttacking && magic.hasEnoughMagic(
+        10))
+    {        
+      upAni.hStop();
+      downAni.hStop();
+      leftAni.hStop();
+      rightAni.hStop();
+
+      isAttacking = true;
+                 
+      switch (dir)
+      {
+        case DOWN:
+          currentAnimation = downThrow;
+          projectile.newAttack(x,y,0,-1,dir,(int) (25*(attack/Player.MEAN_STAT)));
+          break;
+        case LEFT:
+          currentAnimation = leftThrow;
+          projectile.newAttack(x,y,-1,0,dir,(int) (25*(attack/Player.MEAN_STAT)));
+          break;
+        case RIGHT:
+          currentAnimation = rightThrow;
+          projectile.newAttack(x,y,1,0,dir,(int) (25*(attack/Player.MEAN_STAT)));
+          break;
+        case UP:
+          currentAnimation = upThrow;
+          projectile.newAttack(x,y,0,1,dir,(int) (25*(attack/Player.MEAN_STAT)));
+          break;
+        default:
+          break;
+      }
+      
+      currentAnimation.resume();
+      
+      magic.changeMagicBy(-10);
+    }
+    
+   }
+  
+  
+  public void render()
+  {
+    super.render();
+    if (projectile.isActive())
+    {
+      projectile.play();
+    }
+  }
+
+  @Override
+  public void renderAttack() {
+     currentAnimation.playCam(x, y);
   }
  
 

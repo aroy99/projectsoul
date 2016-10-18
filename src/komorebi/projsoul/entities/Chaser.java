@@ -33,8 +33,8 @@ public class Chaser extends Enemy {
   {   
     super.update();
     
-    targetX = Map.getClyde().getX();
-    targetY = Map.getClyde().getY();
+    targetX = Map.getPlayer().getX();
+    targetY = Map.getPlayer().getY();
     
     if (distanceBetween(x,y,targetX,targetY)>maxClydeDist && (dx!=0 || dy!=0))
     {

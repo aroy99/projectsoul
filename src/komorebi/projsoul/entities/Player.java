@@ -11,6 +11,7 @@ import komorebi.projsoul.attack.Attack;
 import komorebi.projsoul.attack.MeleeAttack;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Camera;
+import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MagicBar;
@@ -23,7 +24,7 @@ import komorebi.projsoul.states.Game;
  * @author Aaron Roy
  * @author Andrew Faulkenberry
  */
-public class Player extends Entity implements Playable{
+public abstract class Player extends Entity implements Playable{
 
   private boolean up;
   private boolean down;
@@ -32,10 +33,11 @@ public class Player extends Entity implements Playable{
   private boolean run;
   private boolean pause;
   private boolean guiding;
-  
+
+  private boolean dying;
+  private boolean dead; 
+
   public Characters character;
-  
-  private int health;
 
   public boolean isAttacking;
 
@@ -56,6 +58,8 @@ public class Player extends Entity implements Playable{
   public Animation hurtRightAni;
   public Animation hurtUpAni;
   public Animation hurtDownAni;
+  public Animation deathAni;
+
   private int hurtCount;
 
   private Rectangle area;
@@ -70,9 +74,14 @@ public class Player extends Entity implements Playable{
 
   public Rectangle future;
 
-  public Attack attack1;
-  
   public MagicBar magic;
+  public HUD health;
+  
+  public int attack, defense;
+  
+  public boolean doNotRender;
+  
+  public static final double MEAN_STAT = 50.0;
 
   /**
    * @param x x pos, from left
@@ -81,15 +90,18 @@ public class Player extends Entity implements Playable{
   public Player(float x, float y) {
     super(x, y, 16, 24);
     ent = Entities.CLYDE;
-    
+
     restoreMvmtX = true;
     restoreMvmtY = true;
 
     area = new Rectangle((int) x, (int) y, 16, 24);
     future = new Rectangle((int) x, (int) y, 16, 24);
 
-    magic = new MagicBar(200);
-    health = 200;
+    deathAni = new Animation(4,8,16,21,11,false);
+    deathAni.add(0, 57);
+    deathAni.add(0, 82);
+    deathAni.add(0, 103);
+    deathAni.add(0, 124);
 
   }
 
@@ -196,8 +208,8 @@ public class Player extends Entity implements Playable{
         speed = (int)Math.round(speed / (Math.sqrt(2)/2));
       }
        */
-      
-      
+
+
 
       upAni.setSpeed(aniSpeed);
       downAni.setSpeed(aniSpeed);
@@ -218,7 +230,7 @@ public class Player extends Entity implements Playable{
           if (dx>0) dx-=0.5;
           if (dx<0) dx+=0.5;
         }
-        
+
         if (!restoreMvmtY)
         {
           if (Math.abs(dy)<=0.5 && Math.abs(dy)>=0)
@@ -229,7 +241,7 @@ public class Player extends Entity implements Playable{
           if (dy>0) dy-=0.5;
           if (dy<0) dy+=0.5;
         }
-       
+
         if (hurtCount<=0)
         {
           invincible = false;
@@ -332,9 +344,12 @@ public class Player extends Entity implements Playable{
     future.y = (int) y;
 
     guiding = false;
-    
+
     magic.update();
-    
+
+
+
+
   }
 
   /**
@@ -345,11 +360,7 @@ public class Player extends Entity implements Playable{
 
     if (!invincible)
     {
-      if (isAttacking)
-      {
-        attack1.play(x, y);
-      } else
-      {
+      if (!isAttacking) {
         switch (dir) {
           case DOWN:
             downAni.playCam(x,y);
@@ -366,6 +377,9 @@ public class Player extends Entity implements Playable{
           default:
             break;
         }
+      } else
+      {
+        renderAttack();
       }
     } else
     {
@@ -385,10 +399,9 @@ public class Player extends Entity implements Playable{
           break;
         default:
           break;
-
       }
     }
-    
+
   }
 
   public void pause(int frames, Lock lock)
@@ -707,15 +720,13 @@ public class Player extends Entity implements Playable{
     return area;
   }
 
-  public void inflictPain(float dx, float dy)
+  public void inflictPain(int damage, float dx, float dy)
   {
     invincible = true;
     restoreMvmtX = false;
     restoreMvmtY = false;
-    
+
     hurtCount = 40;
-    
-    health-=25;
 
     switch (dir)
     {
@@ -736,6 +747,15 @@ public class Player extends Entity implements Playable{
 
     }
 
+    health.health -= (int) (damage / (defense / MEAN_STAT));
+
+    //Kills the enemy
+    if (health.health<=0)
+    {
+      deathAni.resume();
+      dying = true;
+    }
+
     this.dx = dx;
     this.dy = dy;
   }
@@ -744,21 +764,34 @@ public class Player extends Entity implements Playable{
   {
     return invincible;
   }
-  
+
   public MagicBar magicBar()
   {
     return magic;
   }
-  
+
   public Characters getCharacter()
   {
     return character;
   }
-  
+
   public void setLocation(float x, float y)
   {
     this.x = x;
     this.y = y;
   }
+  
+  public void renderHUD()
+  {
+    magic.render();
+    health.render();
+  }
+  
+  public int getAttack()
+  {
+    return attack;
+  }
+  
+  public abstract void renderAttack();
 
 }

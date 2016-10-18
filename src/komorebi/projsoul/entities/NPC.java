@@ -12,6 +12,7 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
 import komorebi.projsoul.script.SpeechHandler;
@@ -611,11 +612,11 @@ public class NPC extends Entity {
    */
   public String ask(String[] args, Execution ex, Lock lock)
   {
-    text.write(args[0], 20, 58, 8);
-    if (args.length>1) text.write(args[1], 30, 40, 8);
-    if (args.length>2) text.write(args[2], 100, 40, 8);
-    if (args.length>3) text.write(args[3], 30, 22, 8);
-    if (args.length>4) text.write(args[4], 100, 22, 8);
+    text.write(args[0], 20, 58, new EarthboundFont(1));
+    if (args.length>1) text.write(args[1], 30, 40, new EarthboundFont(1));
+    if (args.length>2) text.write(args[2], 100, 40, new EarthboundFont(1));
+    if (args.length>3) text.write(args[3], 30, 22, new EarthboundFont(1));
+    if (args.length>4) text.write(args[4], 100, 22, new EarthboundFont(1));
 
     this.instructor = ex;
     this.lock = lock;
@@ -867,6 +868,12 @@ public class NPC extends Entity {
     }
   }
 
+  /**
+   * Directs the NPC to a specific tile location
+   * @param horizontal Whether to move horizontally (true) or vertically (false)
+   * @param tx The tile to move to
+   * @param lock Lock to wait on
+   */
   public void goTo(boolean horizontal, int tx, Lock lock)
   {
     if (horizontal)
@@ -891,6 +898,9 @@ public class NPC extends Entity {
 
   }
 
+  /**
+   * @return Whether the player is standing right in the NPC's path
+   */
   public boolean frontClear()
   {
     boolean get;
@@ -906,7 +916,7 @@ public class NPC extends Entity {
       future.grow(0, 1);
     }
     
-    get = !future.intersects(Map.getClyde().getArea());
+    get = !future.intersects(Map.getPlayer().getArea());
 
     if (direction == Face.LEFT || direction == Face.RIGHT)
     {
@@ -943,7 +953,7 @@ public class NPC extends Entity {
   
   public void say(String s, Lock lock)
   {
-    text.write(s, 20, 58, 8);
+    text.write(s, 20, 58, new EarthboundFont(1));
     Main.getGame().setSpeaker(text);
     text.setAndLock(lock);
   }

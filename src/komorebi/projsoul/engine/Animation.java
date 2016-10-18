@@ -29,7 +29,9 @@ public class Animation {
   private int texID;
   private boolean playing = true;
   private boolean onlyOnce = false;
-
+  
+  private boolean hasCustomFrame;
+  
   /**
    * Creates a playable animation
    * 
@@ -43,21 +45,21 @@ public class Animation {
    * @param loop Whether the animation should play on loop
    */
   public Animation(int f, int t, float sx, float sy, int id, boolean loop){
-    
+
     onlyOnce = !loop;
-    
+
     frames = f;
-    texx = new int[frames];
-    texy = new int[frames];
-    rot = new int[frames];
-    flipped = new boolean[frames];
+    texx = new int[frames+1];
+    texy = new int[frames+1];
+    rot = new int[frames+1];
+    flipped = new boolean[frames+1];
     time = t;
     texID = id;
 
-    this.sx = new float[f];
-    this.sy = new float[f];
-    this.offX = new int[f];
-    this.offY = new int[f];
+    this.sx = new float[frames+1];
+    this.sy = new float[frames+1];
+    this.offX = new int[frames+1];
+    this.offY = new int[frames+1];
 
     for (int i = 0; i < f; i++)
     {
@@ -66,8 +68,8 @@ public class Animation {
     }
 
   }
-  
-  
+
+
 
   /**
    * Creates a playable animation
@@ -97,23 +99,23 @@ public class Animation {
    * @param id The Texture ID
    */
   public Animation(int f, int t, int id, boolean loop){
-    
+
     onlyOnce = !loop;
-    
+
     frames = f;
-    texx = new int[frames];
-    texy = new int[frames];
-    rot = new int[frames];
-    flipped = new boolean[frames];
+    texx = new int[frames+1];
+    texy = new int[frames+1];
+    rot = new int[frames+1];
+    flipped = new boolean[frames+1];
     time = t;
     texID = id;
 
-    sx = new float[f];
-    sy = new float[f];
-    this.offX = new int[f];
-    this.offY = new int[f];
+    sx = new float[f+1];
+    sy = new float[f+1];
+    this.offX = new int[f+1];
+    this.offY = new int[f+1];
   }
-  
+
   /**
    * Creates a playable animation
    * 
@@ -172,7 +174,7 @@ public class Animation {
     add(tx, ty, 0, false);
 
   }
-  
+
   /**
    * Adds a frame to the animation, given the texture cooridantes, and the
    * size of the sprite in the frame
@@ -225,7 +227,7 @@ public class Animation {
     flipped[cAddFrame] = flip;
     cAddFrame++;
   }
-  
+
   /**
    * Adds a frame to the animation, given  the texture coordinates, angle, and
    * whether it's flipped or not
@@ -240,7 +242,7 @@ public class Animation {
     this.sy[cAddFrame] = sy;
     add(tx, ty, rot, flip);
   }
-  
+
   /**
    * Adds a frame to the animation, given  the texture coordinates, angle, and
    * whether it's flipped or not
@@ -254,6 +256,7 @@ public class Animation {
     add(tx,ty,sx,sy,0,false);
   }
 
+
   /**
    * Plays the animation at the specified location
    * 
@@ -261,6 +264,7 @@ public class Animation {
    * @param y y location for the animation
    */
   public void play(float x, float y){
+    
     if(!flipped[currFrame]){
       switch(rot[currFrame]){
         case 0:
@@ -308,6 +312,9 @@ public class Animation {
       }
     }
 
+
+
+
     if(playing){
       counter++;
       if(counter > time){
@@ -327,7 +334,7 @@ public class Animation {
    * @param y y location for the animation
    */
   public void playCam(float x, float y){
-
+    
     if(!flipped[currFrame]){
       switch(rot[currFrame]){
         case 0:
@@ -392,7 +399,7 @@ public class Animation {
         if(currFrame > frames-1){
           if (onlyOnce)
           {
-            hStop();
+             hStop();
           } else
           {
             currFrame = 0;
@@ -415,8 +422,15 @@ public class Animation {
    */
   public void hStop(){
     playing  = false;
-    currFrame = 0;
+    if (hasCustomFrame)
+    {
+      currFrame = frames;
+    } else
+    {
+      currFrame = 0;
+    }
   }
+ 
 
   /**
    * Resumes the animation
@@ -439,7 +453,7 @@ public class Animation {
   {
     return playing;
   }
-  
+
   /**
    * @return True if the animation is on its last frame, else false
    */
@@ -448,5 +462,146 @@ public class Animation {
     return (currFrame+1==frames);
   }
 
+  public void reset()
+  {
+    currFrame = 0;
+  }
 
+  public int currentFrame()
+  {
+    return currFrame;
+  }
+
+  public float getCurrentFrameSX()
+  {
+    return sx[currFrame];
+  }
+
+  public float getCurrentFrameSY()
+  {
+    return sy[currFrame];
+  }
+  
+  public void setPausedFrame(int tx, int ty){
+    setPausedFrame(tx, ty, 0, false);
+  }
+
+  /**
+   * Adds a frame to the animation, given  the texture coordinates, and
+   * whether it's flipped or not
+   * 
+   * @param tx X position on the picture, starting from the left         
+   * @param ty Y position on the picture, starting from the <i>top</i>   
+   * @param flip whether to flip the image or not
+   */
+  public void setPausedFrame(int tx, int ty, boolean flip){
+    setPausedFrame(tx, ty, 0, flip);
+  }
+
+
+  /**
+   * Adds a frame to the animation, given the texture cooridantes, and the
+   * size of the sprite in the frame
+   * 
+   * @param tx X position on the picture, starting from the left
+   * @param ty Y position on the picture, starting from the top
+   * @param sx Horizontal size of the sprite on the picture
+   * @param sy Veritcal size of the sprite on the picture
+   * @param offX Amount of pixels the frame should be moved when drawn on the screen
+   * (+ means right, - means left)
+   * @param offY Amount of pixels the frame should be moved when drawn on the screen
+   * (+ means up, - means down)
+   */
+  public void setPausedFrame(int tx, int ty, float sx, float sy, int offX, int offY)
+  {
+    this.sx[frames] = sx;
+    this.sy[frames] = sy;
+    this.offX[frames] = offX;
+    this.offY[frames] = offY;
+
+    setPausedFrame(tx, ty, 0, false);
+
+  }
+
+  /**
+   * Adds a frame to the animation, given the texture cooridantes, and the
+   * size of the sprite in the frame
+   * 
+   * @param tx X position on the picture, starting from the left
+   * @param ty Y position on the picture, starting from the top
+   * @param sx Horizontal size of the sprite on the picture
+   * @param sy Veritcal size of the sprite on the picture
+   * @param offX Amount of pixels the frame should be moved when drawn on the screen
+   * (+ means right, - means left)
+   * @param offY Amount of pixels the frame should be moved when drawn on the screen
+   * (+ means up, - means down)
+   * @param flip Whether the image is flipped or not
+   */
+  public void setPausedFrame(int tx, int ty, float sx, float sy, int offX, int offY, boolean flip)
+  {
+    this.sx[frames] = sx;
+    this.sy[frames] = sy;
+    this.offX[frames] = offX;
+    this.offY[frames] = offY;
+
+    setPausedFrame(tx, ty, 0, flip);
+
+  }
+
+  /**
+   * Adds a frame to the animation, given  the texture coordinates, angle
+   * 
+   * @param tx X position on the picture, starting from the left         
+   * @param ty Y position on the picture, starting from the <i>top</i>   
+   * @param rot the rotation of the tile / 90 degrees
+   */
+  public void setPausedFrame(int tx, int ty, int rot){
+    setPausedFrame(tx, ty, rot, false);
+  }
+
+  /**
+   * Adds a frame to the animation, given  the texture coordinates, angle, and
+   * whether it's flipped or not
+   * 
+   * @param tx X position on the picture, starting from the left         
+   * @param ty Y position on the picture, starting from the <i>top</i>   
+   * @param rot the rotation of the tile / 90 degrees
+   * @param flip whether to flip the image or not
+   */
+  public void setPausedFrame(int tx, int ty, int rot, boolean flip){
+    texx[frames] = tx;
+    texy[frames] = ty;
+    this.rot[frames] = rot;
+    flipped[frames] = flip;
+    
+    hasCustomFrame = true;
+  }
+
+  /**
+   * Adds a frame to the animation, given  the texture coordinates, angle, and
+   * whether it's flipped or not
+   * 
+   * @param tx X position on the picture, starting from the left         
+   * @param ty Y position on the picture, starting from the <i>top</i>   
+   * @param rot the rotation of the tile / 90 degrees
+   * @param flip whether to flip the image or not
+   */
+  public void setPausedFrame(int tx, int ty, int sx, int sy, int rot, boolean flip){    
+    this.sx[frames] = sx;
+    this.sy[frames] = sy;
+    setPausedFrame(tx, ty, rot, flip);
+  }
+
+  /**
+   * Adds a frame to the animation, given  the texture coordinates, angle, and
+   * whether it's flipped or not
+   * 
+   * @param tx X position on the picture, starting from the left         
+   * @param ty Y position on the picture, starting from the <i>top</i>   
+   * @param sx The horizontal size of the picture
+   * @param sy The vertical size of the picture
+   */
+  public void setPausedFrame(int tx, int ty, int sx, int sy){
+    setPausedFrame(tx,ty,sx,sy,0,false);
+  }
 }

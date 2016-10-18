@@ -1,6 +1,8 @@
 package komorebi.projsoul.entities;
 
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.HUD;
+import komorebi.projsoul.engine.MagicBar;
 
 public class Bruno extends Player {
   public Bruno(float x, float y) {
@@ -76,6 +78,18 @@ public class Bruno extends Player {
 
     hurtLeftAni.add(195,654);
     hurtLeftAni.add(426,763);
+    
+    magic = new MagicBar(40);
+    health = new HUD(55);
+    
+    attack = 45;
+    defense = 60;
 
+  }
+
+  @Override
+  public void renderAttack() {
+    // TODO Auto-generated method stub
+    
   }
 }

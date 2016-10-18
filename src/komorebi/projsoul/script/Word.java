@@ -14,9 +14,11 @@ public class Word {
   char[][] paragraphs;
   int x, y, ptSize;
   
+  Font font;
+  
   private int currentParagraph;
   
-  public Word(String s, int x, int y, int ptSize)
+  public Word(String s, int x, int y, Font font)
   {
     string = s;    
     String[] array = s.split("\\\\p");
@@ -30,12 +32,8 @@ public class Word {
     
     this.x = x;
     this.y = y;
-    this.ptSize = ptSize;
-  }
-  
-  public Word(String s, int x, int y)
-  {
-    this(s, x, y, 8);
+    
+    this.font = font;
   }
   
   public void nextParagraph()
@@ -76,5 +74,10 @@ public class Word {
   public boolean hasNext()
   {
     return currentParagraph < paragraphs.length - 1;
+  }
+  
+  public Font getFont()
+  {
+    return font;
   }
 }

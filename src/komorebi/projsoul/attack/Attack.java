@@ -7,5 +7,5 @@ public abstract class Attack {
    * @param x The x location at which the attack is occuring
    * @param y The y location at which the attack is occuring
    */
-  public abstract void play(float x, float y);
+
 }

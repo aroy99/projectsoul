@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import komorebi.projsoul.engine.GameHandler;
+import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Item;
 import komorebi.projsoul.engine.Item.Items;
 import komorebi.projsoul.engine.Key;
@@ -60,7 +61,7 @@ public class Game extends State{
   private int confidence, money;
   
   public static String testLoc;
-  
+    
   public class Int {
     private int val;
     
@@ -230,8 +231,7 @@ public class Game extends State{
   @Override
   public void render() {
     map.render();
-    Map.getClyde().magicBar().render();
-    
+    Map.getPlayer().renderHUD();
     Fader.render();
 
   }

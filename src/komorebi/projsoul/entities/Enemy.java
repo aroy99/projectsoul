@@ -17,6 +17,8 @@ public class Enemy extends Entity {
   private boolean dying;
   private boolean dead;
   private int hitCounter;
+  
+  private int attackersAttack;
 
   private Animation hitAni;
   private Animation deathAni;
@@ -36,7 +38,7 @@ public class Enemy extends Entity {
     super(x, y, sx, sy);
 
     hitBox = new Rectangle((int)x,(int)y,sx,sy);
-    health = 100;
+    health = 40;
 
     hitAni = new Animation(2,8,16,21,11);
     hitAni.add(0, 0);
@@ -53,7 +55,7 @@ public class Enemy extends Entity {
    * Updates the enemy's statuses and location
    */
   public void update() {
-
+        
     if (dying && deathAni.lastFrame())
     {
       dead = true;
@@ -80,7 +82,8 @@ public class Enemy extends Entity {
 
     if (isHit && !wasHit && !invincible)
     {
-      health-=25;
+      isHit = false;
+      health -= attackersAttack;
 
       //Kills the enemy
       if (health<=0)
@@ -133,10 +136,12 @@ public class Enemy extends Entity {
   /*
    * Updates whether the enemy is being hit
    */
-  public void updateHits(boolean isHit, Face dir)
+  public void updateHits(boolean isHit, int attack, Face dir)
   {
     wasHit = this.isHit;
     this.isHit = isHit;
+    
+    attackersAttack = attack;
 
     hitDirection = dir;
   }
@@ -201,12 +206,12 @@ public class Enemy extends Entity {
     Rectangle hypothetical = new Rectangle((int) (x+dx), (int) (y+dy),
         sx, sy);
 
-    if (hypothetical.intersects(Map.getClyde().getHitBox()))
+    if (hypothetical.intersects(Map.getPlayer().getHitBox()))
     { 
       
-      if (!Map.getClyde().invincible())
+      if (!Map.getPlayer().invincible())
       {
-        Map.getClyde().inflictPain(12*dx, 12*dy);
+        Map.getPlayer().inflictPain(10, 12*dx, 12*dy);
       }
 
       dx = 0;
