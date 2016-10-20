@@ -61,6 +61,8 @@ public class MainE {
 
   /**
    * Starts the program, reading an int from settings and using it for the scale.
+   * Now starts with a specified map too
+   * 
    * @param args not used
    */
   public static void main(String[] args) {
@@ -75,7 +77,6 @@ public class MainE {
           continue;
         }
         if (scale == 0) {
-          System.out.println("bleh");
           scale = Integer.parseInt(str);
         }else if(testLoc == null){
           testLoc = str;
@@ -84,9 +85,11 @@ public class MainE {
       }
 
     } catch (IOException ex) {
+      System.out.println("bleh, scale is 0");
       ex.printStackTrace();
       scale = 1;
     } catch (NumberFormatException ex) {
+      System.out.println("bleh, scale is 0");
       ex.printStackTrace();
       scale = 1;
     }
@@ -198,17 +201,18 @@ public class MainE {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     //sets the clearing color to light gray
-    glClearColor(246f / 255,246f / 255,246f / 255,1);
+    glClearColor(246f/255, 246f/255, 246f/255, 1);
 
     glDisable(GL_DEPTH_TEST);      //kills off the third dimension
   }
   
   /**
-   *  Destroys the display and keyboard, closing the window.
+   *  Destroys the display and keyboard, closing all open windows.
    */
   private static void cleanUp() {
     Display.destroy();
     AL.destroy();
+    System.exit(0); //to Force lingering JDialogs to close
   }
 
   public static int getScale() {

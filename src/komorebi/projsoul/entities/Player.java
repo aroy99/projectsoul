@@ -340,7 +340,7 @@ public class Player extends Entity implements Playable{
         }
       }
 
-      //TODO Debug
+      //DEBUG Grid
       if(!KeyHandler.keyDown(Key.G)){
         Game.getMap().guidePlayer(x, y, dx, dy);
         boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
@@ -389,7 +389,7 @@ public class Player extends Entity implements Playable{
       }
     }
 
-    //TODO Debug
+    //DEBUG Location
     if(KeyHandler.keyClick(Key.L)){
       System.out.println("x: "+x+", y: "+y);
     }

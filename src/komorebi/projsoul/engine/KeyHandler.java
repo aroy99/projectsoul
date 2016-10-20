@@ -29,8 +29,9 @@ public class KeyHandler {
     UP, DOWN, LEFT, RIGHT, TALK, MENU, 
     
     MAP_UP, MAP_DOWN, MAP_LEFT, MAP_RIGHT, SAVE, NEW_SAVE, LOAD, NEW, GRID, 
-    REVERT_MAP, RESET_LOC, PLAY, MOVE_SET, NPC;
-  }  
+    REVERT_MAP, RESET_LOC, PLAY, 
+    TILE, MOVE_SET, EVENT, CONNECT, HEADER;
+  }
   
   public static int totalKeys()
   {
@@ -104,21 +105,24 @@ public class KeyHandler {
       case RIGHT: return keyDown(Key.RIGHT);
       case TALK:  return keyClick(Key.Z);
       case MENU:  return keyClick(Key.ENTER);
-             
+
       case MAP_DOWN:   return keyDown(Key.DOWN)  || keyDown(Key.S) && !controlDown();
       case MAP_LEFT:   return keyDown(Key.LEFT)  || keyDown(Key.A);
       case MAP_RIGHT:  return keyDown(Key.RIGHT) || keyDown(Key.D);
       case MAP_UP:     return keyDown(Key.UP)    || keyDown(Key.W);
       case SAVE:       return !shiftDown()       && controlDown()  && keyClick(Key.S);
-      case NEW_SAVE:   return shiftDown()        && controlDown()   & keyClick(Key.S);
+      case NEW_SAVE:   return shiftDown()        && controlDown()  && keyClick(Key.S);
       case LOAD:       return controlDown()      && keyClick(Key.L);
       case NEW:        return controlDown()      && keyClick(Key.N);
       case REVERT_MAP: return controlDown()      && keyClick(Key.R);
       case RESET_LOC:  return !controlDown()     && keyClick(Key.R);
       case GRID:       return controlDown()      && keyClick(Key.G);
       case PLAY:       return controlDown()      && keyClick(Key.P);
-      case MOVE_SET:   return controlDown()      && keyClick(Key.M);
-      case NPC:        return controlDown()      && keyClick(Key.C);
+      case TILE:       return controlDown()      && keyClick(Key.ROW1);
+      case MOVE_SET:   return controlDown()      && keyClick(Key.ROW2);
+      case EVENT:      return controlDown()      && keyClick(Key.ROW3);
+      case CONNECT:    return controlDown()      && keyClick(Key.ROW4);
+      case HEADER:     return controlDown()      && keyClick(Key.ROW5);
 
       default:         return false;
       

@@ -126,7 +126,7 @@ public class EventMode extends Mode{
   @Override
   public void update() {    
     int index;
-    //TODO Debug
+    
     if(keyClick(Key.LBUTTON)){
       if((index = getSelectedEvent(npcs)) != -1){
         selectedType = EventTypes.NPC;
@@ -172,14 +172,12 @@ public class EventMode extends Mode{
     
     if(KeyHandler.keyClick(Key.LBUTTON) && checkButtonBounds()){
       switch(Mouse.getX()/(32*MainE.scale)){
-        case 22:
+        case WIDTH/BUTTON_SIZE-3:
           NewEventDialog dialog = new NewEventDialog();
           dialog.pack();
           dialog.setVisible(true);
-          //TODO Debug
-          System.out.println("Created Dialog");
           break;
-        case 23:
+        case WIDTH/BUTTON_SIZE-2:
           if(selected != -1){
             selectedType.getEvents().remove(selected);
             selectedType = null;
@@ -189,8 +187,8 @@ public class EventMode extends Mode{
           }
           break;
         default:
-          //TODO Debug
-          System.out.println("This shouldn't be happening m9");
+          //DEBUG Button fail text
+          System.out.println("Event mode button failure pls");
       }
     }
 
@@ -210,7 +208,7 @@ public class EventMode extends Mode{
       selection.play(selX, selY);
     }
 
-    Draw.rect(WIDTH-SIZE*6, HEIGHT-SIZE*2, 64, 32, 32, 16, 64, 32, 2);
+    Draw.rect(WIDTH-BUTTON_SIZE*3, HEIGHT-BUTTON_SIZE, 64, 32, 32, 16, 64, 32, 2);
 
     if(checkButtonBounds()){
       int x = Mouse.getX()/(BUTTON_SIZE*MainE.getScale())*BUTTON_SIZE;
@@ -384,9 +382,6 @@ public class EventMode extends Mode{
      * @param e The EventType to keep
      */
     protected void hideEverything(EventTypes e){
-      //TODO Debug
-      System.out.println(e);
-
       if(e != EventTypes.NPC){
         for(Component c: npcContents){
           c.setVisible(false);
@@ -412,7 +407,6 @@ public class EventMode extends Mode{
           c.setVisible(false);
         }
       }
-
     }
 
     /** This method clears the dialog and hides it. */
@@ -426,6 +420,7 @@ public class EventMode extends Mode{
       newMap.setText(null);
 
       setVisible(false);
+      dispose();
     }
 
     /**
@@ -465,7 +460,7 @@ public class EventMode extends Mode{
       if(Desktop.isDesktopSupported()){
         File file = new File("res/scripts/"+script.getText()+".txt");
         try{
-          //TODO Debug
+          //DEBUG Editing scripts
           System.out.println("Trying to launch " + script.getText() + "...");
           Desktop.getDesktop().edit(file);
         }catch (IllegalArgumentException ex) {
@@ -588,8 +583,6 @@ public class EventMode extends Mode{
         //property change event will be fired.
         options.setValue(JOptionPane.UNINITIALIZED_VALUE);
 
-        System.out.println("Create works");
-
         if(btnCreate.equals(value)){
           float x = EditorMap.getX();
           float y = EditorMap.getY();
@@ -664,8 +657,8 @@ public class EventMode extends Mode{
               break;
 
             default:
-              //TODO Debug
-              System.out.println("How does this even happen??");
+              //DEBUG New event case fail
+              System.out.println("How does this even happen?? (New Event fail)");
 
           }
         }else{
@@ -682,9 +675,6 @@ public class EventMode extends Mode{
         EventTypes type = (EventTypes)types.getSelectedItem();
 
         hideEverything(type);
-
-        //TODO Debug
-        System.out.println("For the top combobox");
 
         switch(type){
           case NPC:
@@ -714,8 +704,8 @@ public class EventMode extends Mode{
             break;
 
           default:
-            //TODO Debug
-            System.out.println("How does this even happen??");
+            //DEBUG Case fail New event
+            System.out.println("How??? (New Event Case Fail2)");
         }
       }
       if(e.getSource() == options){
@@ -770,7 +760,6 @@ public class EventMode extends Mode{
             }
           });
 
-          //TODO Implement Enemy init
           Enemy editEnemy = enemies.get(selected);
           enemyPics.setSelectedItem(editEnemy.getType());
           aiType.setSelectedItem(editEnemy.getBehavior());
@@ -891,14 +880,12 @@ public class EventMode extends Mode{
               break;
             case SIGN:
               if(checkText(signID)){
-                //TODO Implement signs
                 SignPost editSign = signs.get(selected);
                 editSign.setText(signID.getText());
                 clearAndHide();
               }
               break;
             case ENEMY:
-              //TODO Implement Enemies
               Enemy oldEnemy = enemies.get(selected);
               Enemy newEnemy;
               if(aiType.getSelectedItem().equals("chaser")){
@@ -938,8 +925,8 @@ public class EventMode extends Mode{
               break;
 
             default:
-              //TODO Debug
-              System.out.println("How does this even happen??");
+              //DEBUG Edit event case fail
+              System.out.println("How does this even happen?? (Edit event)");
 
           }
         }else{

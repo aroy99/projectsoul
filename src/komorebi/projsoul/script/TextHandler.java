@@ -12,7 +12,7 @@ import komorebi.projsoul.engine.Draw;
  * @author Aaron Roy
  * @version 
  */
-public class TextHandler {
+public class TextHandler{
 
   public static final int SCALE = 16;
 
@@ -204,7 +204,7 @@ public class TextHandler {
       Draw.rect(horiz, vert-under, size, size+under, 
           getTexX(letters[i]), getTexY(letters[i]), 
           getTexX(letters[i])+8, getTexY(letters[i]) + 8+texUnder, 5);
-      horiz+=(getLength(letters[i])+1);
+      horiz+=((getLength(letters[i])+1)*size/8);
     }
   }
 

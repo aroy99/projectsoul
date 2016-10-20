@@ -8,6 +8,7 @@ package komorebi.projsoul.audio;
  * Handles the playing, stopping, and looping of music and sfx
  * 
  * @author Aaron Roy 
+ * @author Andrew Faulkenberry
  */
 public class AudioHandler {
 
@@ -22,21 +23,32 @@ public class AudioHandler {
   
   public static void stop()
   {
-    currentSong.stop();
+    Song.stop();
   }
   
+  /**
+   * Plays a song, allowing the option to loop or not
+   * 
+   * @param song The song to play
+   * @param loop Whether to loop or not
+   */
   public static void play(Song song, boolean loop)
   {
     currentSong = song;
     song.play(loop);
   }
   
+  /**
+   * Plays a song that automatically loops
+   * 
+   * @param song The song to play
+   */
   public static void play(Song song)
   {
     currentSong = song;
     song.play(true);
     
-    //TODO Debug
+    //DEBUG Print song
     System.out.println("Play " + currentSong);
   }
 

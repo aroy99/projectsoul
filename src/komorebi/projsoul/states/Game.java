@@ -4,11 +4,13 @@
  */
 package komorebi.projsoul.states;
 
+import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.Item;
 import komorebi.projsoul.engine.Item.Items;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.map.Map;
@@ -23,12 +25,15 @@ import komorebi.projsoul.script.SpeechHandler;
 import komorebi.projsoul.script.Task;
 import komorebi.projsoul.script.Task.TaskWithNumber;
 import komorebi.projsoul.script.Task.TaskWithString;
+import komorebi.projsoul.script.TextHandler;
+import komorebi.projsoul.script.Word;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.KeyStore.PrivateKeyEntry;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -39,11 +44,6 @@ import java.util.Iterator;
  * @version 
  */
 public class Game extends State{
-
-  @Deprecated
-  public ArrayList<NPC> npcs;
-  @Deprecated
-  public ArrayList<AreaScript> scripts;
   
   public ArrayList<Item> items = new ArrayList<Item>();
   
@@ -54,8 +54,11 @@ public class Game extends State{
   private int maxOpt;
 
   private SpeechHandler speaker;
-
-  private BufferedReader read;
+  
+  private TextHandler currMap;
+  
+  private int mapDisplayCount = 120;
+  private int displayY = 15;
 
   private ArrayList<Lock> waitingLocks;
   private ArrayList<Int> pauseFrames;
@@ -93,9 +96,9 @@ public class Game extends State{
    */
   public Game(){
     map = new Map("res/maps/"+testLoc);
-
-    npcs = new ArrayList<NPC>();
-    scripts = new ArrayList<AreaScript>();
+    
+    currMap = new TextHandler();
+    currMap.write(map.getTitle(), 5, Main.HEIGHT-13, 8);
 
     pauseFrames = new ArrayList<Int>();
     waitingLocks = new ArrayList<Lock>();
@@ -112,8 +115,7 @@ public class Game extends State{
    * @see komorebi.clyde.states.State#getInput()
    */
   @Override
-  public void getInput() {
-    
+  public void getInput() {    
     if (KeyHandler.keyClick(Key.C))
     {
       if (speaker!=null)
@@ -153,7 +155,7 @@ public class Game extends State{
     }
 
 
-    //TODO Debug
+    //TODO Remove map debug features
     map.getInput();
 
     if (KeyHandler.keyClick(Key.LEFT))
@@ -201,9 +203,6 @@ public class Game extends State{
    */
   @Override
   public void update() {
-    
-    KeyHandler.getInput();
-
     map.update();
     Fader.update();
 
@@ -235,7 +234,17 @@ public class Game extends State{
   public void render() {
     map.render();
     Map.getClyde().magicBar().render();
-
+    
+    if(mapDisplayCount > 0 || displayY > 0){
+      Draw.rect(2, Main.HEIGHT-displayY, 100, 12, 1, 1, 2, 2, 6);
+      currMap.render(new Word(map.getTitle(), 5, Main.HEIGHT-displayY+2));
+      mapDisplayCount--;
+      
+      if(mapDisplayCount < 0){
+        displayY--;
+      }
+    }
+    
     Fader.render();
 
   }
@@ -309,49 +318,6 @@ public class Game extends State{
       }
     }
     return null;
-  }
-
-  /**
-   * Loads a given map into the game (Just make a new map instead)
-   * 
-   * @param mapFile The name of the file (sans .txt) in the res/ folder
-   */
-  @Deprecated
-  public void loadMap(String mapFile)
-  {
-    try {
-      read = new BufferedReader(
-          new FileReader(new File("res/maps/"+mapFile+".txt")));
-    } catch (FileNotFoundException e1) {
-      e1.printStackTrace();
-    }
-    String s;
-
-    try {
-      while ((s = read.readLine()) != null) {
-        if (s.startsWith("npc"))
-        {
-          s = s.replace("npc ", "");
-          String[] split = s.split(" ");
-
-          NPC.add(new NPC(split[0], Integer.parseInt(split[1]), 
-              Integer.parseInt(split[2]), NPCType.toEnum(split[3])));
-        } else if (s.startsWith("script"))
-        {
-          s = s.replace("script ", "");
-          String[] split = s.split(" ");
-
-          scripts.add(new AreaScript(split[0], Integer.parseInt(split[1]), 
-              Integer.parseInt(split[2]), false, NPC.get(split[3])));
-        }
-
-      }
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-
-
   }
 
   /**

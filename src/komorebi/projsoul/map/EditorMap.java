@@ -7,9 +7,11 @@ package komorebi.projsoul.map;
 import static komorebi.projsoul.engine.KeyHandler.button;
 import static komorebi.projsoul.engine.KeyHandler.controlDown;
 
+import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.audio.Song;
+import komorebi.projsoul.editor.modes.EventMode;
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.editor.modes.MoveMode;
-import komorebi.projsoul.editor.modes.EventMode;
 import komorebi.projsoul.editor.modes.TileMode;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
@@ -28,6 +30,11 @@ import komorebi.projsoul.script.WarpScript;
 
 import org.lwjgl.opengl.Display;
 
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -38,11 +45,19 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.security.KeyStore.PrivateKeyEntry;
 import java.util.ArrayList;
-import java.util.Iterator;
 
+import javax.swing.Box;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
@@ -71,8 +86,11 @@ public class EditorMap implements Playable, Serializable{
 
 
   private static TileList[][] tiles;                //The Map itself
-  private boolean[][] collision;
+  private static boolean[][] collision;
 
+  private static String title;                 //The in-game name of this map
+  private static Song song;                    //The song this map uses
+  private static boolean outside;
 
   public static final int SIZE = 16;         //Width and height of a tile
 
@@ -160,7 +178,21 @@ public class EditorMap implements Playable, Serializable{
       scripts = new ArrayList<AreaScript>();
       enemies = new ArrayList<Enemy>();
       signs = new ArrayList<SignPost>();
-
+      
+      reader.mark(50);
+      
+      String test = reader.readLine();
+      
+      if(!test.substring(0, 1).matches("\\d")){
+        title = test;
+        song = Song.getSong(reader.readLine());
+        if(song == null){
+          song = Song.NONE;
+        }
+        outside = Integer.parseInt(reader.readLine()) == 1?true : false;
+      }else{
+        reader.reset();
+      }
 
       for (int i = 0; i < tiles.length; i++) {
         String[] str = reader.readLine().split(" ");
@@ -365,14 +397,19 @@ public class EditorMap implements Playable, Serializable{
       dx *= .1;
       dy *= .1;
     }
-        
-    if(isReset){
-      x = 0;
-      y = 0;
+     
+    if(button(Control.TILE)){
+      mode = Modes.TILE;
     }
-
     if(button(Control.MOVE_SET)){
       mode = Modes.MOVE;
+    }
+    if(button(Control.EVENT)){
+      mode = Modes.EVENT;
+    }
+    
+    if(button(Control.HEADER)){
+      editMapHeader();
     }
 
     switch(mode){
@@ -389,8 +426,8 @@ public class EditorMap implements Playable, Serializable{
         break;
     }
     if(isReset){
-      x = 0;
-      y = 0;
+      dx = -x;
+      dy = -y;
     }
     
     move(dx, dy);
@@ -398,6 +435,80 @@ public class EditorMap implements Playable, Serializable{
     dx = 0;
     dy = 0;
 
+  }
+
+
+  @Override
+  public void render() {
+    for (int i = 0; i < tiles.length; i++) {
+      for (int j = 0; j < tiles[0].length; j++) {
+        if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
+          Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, tiles[i][j].getX(), 
+              tiles[i][j].getY(), 1);
+        }
+      }
+    }
+  
+    
+    if(mode == Modes.EVENT){
+      for (NPC npc: npcs) {
+        if(checkTileInBounds(npc.getX(), npc.getY())){
+          npc.render();
+        }
+      }
+  
+      for (AreaScript script: scripts) {
+        if(checkTileInBounds(script.getX(), script.getY())){
+          script.render();
+        }
+      }
+      
+      for(Enemy enemy: enemies){
+        if(checkTileInBounds(enemy.getX(), enemy.getY())){
+          enemy.render();
+        }
+      }
+      
+      for(SignPost sign: signs){
+        if(checkTileInBounds(sign.getX(), sign.getY())){
+          sign.render();
+        }
+      }
+    }
+    
+    if(grid){
+      for (int i = 0; i < tiles.length; i++) {
+        for (int j = 0; j < tiles[0].length; j++) {
+          if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
+            Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, 0, 16, SIZE, 16+SIZE, 2);
+          }
+        }
+      }
+    }
+    
+    switch(mode){
+      case MOVE:
+        moveMode.render();
+        break;
+      case EVENT:
+        npcMode.render();
+        break;
+      case TILE:
+        tileMode.render();
+        break;
+      default:
+        break;
+    }
+  
+  }
+  
+  /**
+   * Creates a new map header dialog
+   */
+  public static void editMapHeader(){
+    EditMapHeader header = new EditMapHeader();
+    header.pack();
+    header.setVisible(true);
   }
 
 
@@ -413,10 +524,14 @@ public class EditorMap implements Playable, Serializable{
       }else{
         writer = new PrintWriter(path+".map", "UTF-8");
       }
-
+      
       writer.println(tiles.length);
       writer.println(tiles[0].length);
 
+      writer.println(title);
+      writer.println(song);
+      writer.println(outside?1 : 0);
+      
       //The map itself
       for (TileList[] tile : tiles) {
         for (TileList t : tile) {
@@ -652,7 +767,7 @@ public class EditorMap implements Playable, Serializable{
   {
     for (AreaScript scr: scripts)
     {
-      //TODO Debug
+      //DEBUG Print out Script name
       System.out.println(scr.getName());
       if (scr.getName().equals(s)){
         return scr;
@@ -693,10 +808,35 @@ public class EditorMap implements Playable, Serializable{
   public static float getY() {
     return y;
   }
+  
+  public String getTitle(){
+    return title;
+  }
+  
+  public void setTitle(String newTitle){
+    title = newTitle;
+  }
+  
+  public Song getSong(){
+    return song;
+  }
+  
+  public void setSong(Song newSong){
+    song = newSong;
+  }
+  
+  public boolean isOutside(){
+    return outside;
+  }
+  
+  public void setOutside(boolean isOutside){
+    outside = isOutside;
+  }
 
   public static boolean wasSaved(){
     return saved;
   }
+  
   /**
    * Creates the asterisk next to the name indicating the map has changed
    */
@@ -720,77 +860,18 @@ public class EditorMap implements Playable, Serializable{
    * @return Whether the tile is on the map
    */
   public static boolean checkTileInBounds(float x, float y) {
-    return x+SIZE > 0 && x < WIDTH-SIZE*8 && y+SIZE > 0 && y < HEIGHT;
+    switch (mode) {
+      case TILE:
+        return x+SIZE > 0 && x < WIDTH-SIZE*8 && y+SIZE > 0 && y < HEIGHT;
+      default:
+        return x+SIZE > 0 && x < WIDTH+SIZE && y+SIZE > 0 && y < HEIGHT;
+    }
   }
 
   public static TileList[][] getMap(){
     return tiles;
   }
 
-
-  @Override
-  public void render() {
-    for (int i = 0; i < tiles.length; i++) {
-      for (int j = 0; j < tiles[0].length; j++) {
-        if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
-          Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, tiles[i][j].getX(), 
-              tiles[i][j].getY(), 1);
-        }
-      }
-    }
-
-    
-    if(mode == Modes.EVENT){
-      for (NPC npc: npcs) {
-        if(checkTileInBounds(npc.getX(), npc.getY())){
-          npc.render();
-        }
-      }
-
-      for (AreaScript script: scripts) {
-        if(checkTileInBounds(script.getX(), script.getY())){
-          script.render();
-        }
-      }
-      
-      for(Enemy enemy: enemies){
-        if(checkTileInBounds(enemy.getX(), enemy.getY())){
-          enemy.render();
-        }
-      }
-      
-      for(SignPost sign: signs){
-        if(checkTileInBounds(sign.getX(), sign.getY())){
-          sign.render();
-        }
-      }
-    }
-    
-    if(grid){
-      for (int i = 0; i < tiles.length; i++) {
-        for (int j = 0; j < tiles[0].length; j++) {
-          if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
-            Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, 0, 16, SIZE, 16+SIZE, 2);
-          }
-        }
-      }
-    }
-    
-    switch(mode){
-      case MOVE:
-        moveMode.render();
-        break;
-      case EVENT:
-        npcMode.render();
-        break;
-      case TILE:
-        tileMode.render();
-        break;
-      default:
-        break;
-    }
-
-  }
 
   /**
    * Moves the entire map and all entities contained by it by the specified amount
@@ -826,6 +907,195 @@ public class EditorMap implements Playable, Serializable{
     return mode;
   }
   
+  /**
+   * Allows the user to edit the width, height, title, and song of maps
+   *
+   * @author Aaron Roy
+   */
+  public static class EditMapHeader extends JDialog implements ActionListener,
+                                                        PropertyChangeListener{
+    
+    /** Not planning to know what this does... */
+    private static final long serialVersionUID = 5657211675232029800L;
+
+    JOptionPane options;
+    String btnCreate = "Create";
+    String btnCancel = "Cancel";
+
+    Object[] buttons = {btnCreate, btnCancel};
+        
+    JTextField newTitle = new JTextField(10);
+    
+    Box titleBox = Box.createHorizontalBox();
+    {
+      titleBox.add(new JLabel("Displayed Name:  "));
+      titleBox.add(newTitle);
+    }
+    
+    JTextField newWidth = new JTextField(3);
+    JTextField newHeight = new JTextField(3);
+    
+    Box dimensions = Box.createHorizontalBox();
+    {
+      dimensions.add(new JLabel("Width:  "));
+      dimensions.add(newWidth);
+      dimensions.add(Box.createHorizontalStrut(30));
+      dimensions.add(new JLabel("Height:  "));
+      dimensions.add(newHeight);
+    }
+
+    JComboBox<Song> songs = new JComboBox<Song>(Song.values());
+    JButton play = new JButton("Play");
+    JButton stop = new JButton("Stop");
+    
+    Box songBox = Box.createHorizontalBox();
+    {
+      songBox.add(new JLabel("Song: "));
+      songBox.add(songs);
+      songBox.add(Box.createGlue());
+      songBox.add(play);
+      songBox.add(stop);
+    }
+    JCheckBox isOutside = new JCheckBox("Is this map outside?");
+    
+    Object[] fullContent = {
+        titleBox,   Box.createVerticalStrut(5),
+        dimensions, Box.createVerticalStrut(5),
+        songBox,    Box.createVerticalStrut(5),
+        isOutside
+    };
+    
+    /**
+     * Creates a new map header dialog
+     */
+    public EditMapHeader(){
+      super((Frame)null, false);
+      setLocationRelativeTo(null);
+      setAlwaysOnTop(true);
+      setResizable(false);
+      
+      setTitle("Edit Map Header");
+      
+      newWidth.setText(Integer.toString(tiles[0].length));
+      newHeight.setText(Integer.toString(tiles.length));
+      newTitle.setText(title);
+      songs.setSelectedItem(song);
+      isOutside.setSelected(outside);
+
+      options = new JOptionPane(fullContent, JOptionPane.PLAIN_MESSAGE,
+          JOptionPane.YES_NO_OPTION, null, buttons, buttons[0]);
+      
+      setContentPane(options);
+      
+      options.addPropertyChangeListener(this);
+      
+      play.addActionListener(this);
+      stop.addActionListener(this);
+
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent e) {
+      String prop = e.getPropertyName();
+
+      
+      if(e.getSource() == options && (JOptionPane.VALUE_PROPERTY.equals(prop) ||
+          JOptionPane.INPUT_VALUE_PROPERTY.equals(prop))){
+        Object value = options.getValue();
+
+        if(value == JOptionPane.UNINITIALIZED_VALUE){
+          //ignore reset
+          return;
+        }
+
+        //Reset the JOptionPane's value.
+        //If you don't do this, then if the user
+        //presses the same button next time, no
+        //property change event will be fired.
+        options.setValue(JOptionPane.UNINITIALIZED_VALUE);
+
+        //DEBUG Affirm Create button works
+        System.out.println("Create works");
+
+        if(btnCreate.equals(value)){
+          if(!newTitle.equals("") && checkNum(newWidth) && checkNum(newHeight) &&
+              songs.getSelectedItem() != null){
+            title = newTitle.getText();
+            song = (Song)songs.getSelectedItem();
+            outside = isOutside.isSelected();
+            
+            int width = Integer.parseInt(newWidth.getText());
+            int height = Integer.parseInt(newHeight.getText());
+            
+            TileList[][] newMap = new TileList[height][width];
+            boolean[][] newCol = new boolean[height][width];
+            for(int i = 0; i < height; i++){
+              for(int j = 0; j < width; j++){
+                if(i < tiles.length && j < tiles[0].length){
+                  newMap[i][j] = tiles[i][j];
+                  newCol[i][j] = collision[i][j];
+                }
+                else{
+                  newMap[i][j] = TileList.BLANK;
+                  newCol[i][j] = true;
+                }
+              }
+            }
+            
+            tiles = newMap;
+            collision = newCol;
+            
+            clearAndHide();
+          }
+          else{
+            complainIncomplete();
+          }
+        }else{
+          clearAndHide();
+        }
+      }
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      if(e.getSource() == options){
+        options.setValue(btnCreate);
+      }
+      if(e.getSource() == play && songs.getSelectedItem() != null){
+        AudioHandler.play((Song)songs.getSelectedItem());
+      }
+      if(e.getSource() == stop){
+        AudioHandler.stop();
+      }
+    }
+    
+    /** This method clears the dialog and hides it. */
+    public void clearAndHide() {
+      newTitle.setText(null);
+      newWidth.setText(null);
+      newHeight.setText(null);
+      songs.setSelectedItem(null);
+      isOutside.setSelected(false);
+      
+      setVisible(false);
+      dispose();
+    }
+    
+    public boolean checkNum(JTextField text){
+      return text.getText().matches("[1-9]\\d{0,2}?");
+    }
+    
+    /**
+     * Complains about problems in input
+     */
+    public void complainIncomplete(){
+      JOptionPane.showMessageDialog(this, "Sorry, make sure every field is " +
+          "filled in and formatted correctly (numbers should be between 1-128)", 
+          "Please Try Again", JOptionPane.ERROR_MESSAGE);
+    }
+
+
+  }
 
 }
 

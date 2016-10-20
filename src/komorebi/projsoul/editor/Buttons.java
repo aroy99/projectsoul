@@ -50,7 +50,7 @@ public class Buttons implements Playable{
         case 2:
           EditorMap.setMode(Modes.EVENT);; break;
         case 3: 
-          //TODO Edit Map Header
+          EditorMap.editMapHeader();
           break;
         case 4:
           EditorMap.changeGrid();  break;
@@ -66,22 +66,24 @@ public class Buttons implements Playable{
         case 7:
           map.newSave(); break;
         case 8:    
-          Editor.revertMap();      break;
+          Editor.revertMap(); break;
         case 9:
           Editor.loadMap(); break;
         case 10:
           Editor.testGame(); break;
         case 11:
           //TODO Undo
+          System.out.println("Undo");
           break;
         case 12:
           //TODO Redo
+          System.out.println("Redo");
           break;
 
         default:
           //Do nothing, invalid (and impossible, I hope)
-          //TODO Debug
-          System.out.println("This shouldn't be happening m8");
+          //DEBUG Button problemz
+          System.err.println("Button Error");
       }
     }
 
@@ -106,7 +108,7 @@ public class Buttons implements Playable{
    * @return Mouse is on a button
    */
   private boolean checkButtonBounds() {
-    return (Mouse.getX()/MainE.getScale() < WIDTH-BUTTON_SIZE*14 &&
+    return (Mouse.getX()/MainE.getScale() < BUTTON_SIZE*11 &&
         Mouse.getY()/MainE.getScale() > HEIGHT-BUTTON_SIZE);
   }
 

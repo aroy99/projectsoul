@@ -7,6 +7,9 @@ package komorebi.projsoul.map;
 import static komorebi.projsoul.engine.Main.HEIGHT;
 import static komorebi.projsoul.engine.Main.WIDTH;
 
+import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.audio.Song;
+
 import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,6 +34,7 @@ import komorebi.projsoul.entities.SignPost;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.Script;
 import komorebi.projsoul.script.TalkingScript;
+import komorebi.projsoul.script.TextHandler;
 import komorebi.projsoul.script.WalkingScript;
 import komorebi.projsoul.script.WarpScript;
 
@@ -52,9 +56,14 @@ public class Map implements Playable{
   private ArrayList<AreaScript> scripts;
   private static Player play;
   private ArrayList<SignPost> signs;
-  private ArrayList<Enemy> enemies = new ArrayList<Enemy>();
+  private ArrayList<Enemy> enemies;
+  
+  private String title;                 //The in-game name of this map
+  private Song song;                    //The song this map uses
+  private boolean outside;
 
-  //TODO Debug
+
+  //DEBUG Map Debug variables
   public static boolean isHitBox;
   public static boolean isGrid;
 
@@ -103,6 +112,28 @@ public class Map implements Playable{
       npcs = new ArrayList<NPC>();
       scripts = new ArrayList<AreaScript>();
       signs = new ArrayList<SignPost>();
+      enemies = new ArrayList<Enemy>();
+      
+      reader.mark(50);
+      
+      String test = reader.readLine();
+      
+      if(!test.substring(0, 1).matches("\\d")){
+        title = test;
+        song = Song.getSong(reader.readLine());
+        if(song == null){
+          song = Song.NONE;
+        }
+        outside = Integer.parseInt(reader.readLine()) == 1?true : false;
+      }else{
+        reader.reset();
+      }
+
+      //DEBUG Text
+      System.out.println("Title: " + title);
+      System.out.println("Song: " + song);
+      System.out.println(outside);
+      AudioHandler.play(song);
       
       for (int i = 0; i < tiles.length; i++) {
         String[] str = reader.readLine().split(" ");
@@ -234,7 +265,7 @@ public class Map implements Playable{
 
     play.getInput();
 
-    // TODO Debug
+    // DEBUG Special map functions
     if(KeyHandler.keyClick(Key.H)){
       isHitBox = !isHitBox;
     }
@@ -268,7 +299,7 @@ public class Map implements Playable{
         if (npc.isApproached(play.getArea(), play.getDirection()) && 
             KeyHandler.keyClick(Key.C))
         {
-          //TODO Debug
+          //DEBUG NPC turning
           npc.turn(play.getDirection().opposite());
           npc.approach();
         }
@@ -315,7 +346,7 @@ public class Map implements Playable{
           Draw.rectCam((int)j*SIZE, (int)i*SIZE, SIZE, SIZE, 
               tiles[i][j].getX(), tiles[i][j].getY(), 1);
 
-          //TODO Debug
+          //DEBUG Grid
           if(isGrid){
             Draw.rectCam((int)j*SIZE, (int)i*SIZE, SIZE, SIZE, 
                 0, 16, SIZE, 16+SIZE, 2);
@@ -336,7 +367,7 @@ public class Map implements Playable{
 
 
 
-    //TODO Debug
+    //DEBUG Show Hitboxes
     if (isHitBox) {
       for (int i = 0; i < collision.length; i++) {
         for (int j = 0; j < collision[0].length; j++) {
@@ -359,7 +390,7 @@ public class Map implements Playable{
     {
       sign.render();
     }
-    //TODO Debug
+    //DEBUG Draw Player hitbox
     if(isHitBox){
       Draw.rectCam((int)play.getX(), (int)play.getY(), 16, 16, 18, 16, 18, 16, 2);
     }
@@ -444,7 +475,7 @@ public class Map implements Playable{
     ret[1] = ret[1] && collision[y3][x2] && collision[y4][x2];  //East
     ret[3] = ret[3] && collision[y3][x1] && collision[y4][x1];  //West
 
-    //TODO Debug
+    //DEBUG Show collision values
     if(KeyHandler.keyClick(Key.Q)){
       System.out.println(x1 + ", " + x2 + ", " + y1 + ", " + y2);
       System.out.println("dx: " + dx + ", dy: " + dy + "\n" + 
@@ -527,12 +558,16 @@ public class Map implements Playable{
    * @return {X, Y}
    */
   public boolean[] checkBoundaries(float x, float y, float dx, float dy){
+    if(outside){
+      return new boolean[]{true, true, true};
+    }
+    
     boolean[] ret = new boolean[2];
 
     //Entire Map < Screen -> Map is centered to screen, Camera Doesn't scroll
-    //Map in one dimension > Camera -> Center to clyde in that dimension, Scroll in that dimension until the edge
+    //Map in one dimension > Camera -> Center to clyde in that dimension, 
+    //  Scroll in that dimension until the edge
     //If clyde is not centered and Map > Screen -> don't move in that dimension until he is
-
 
     ret[0] = tiles[0].length*16 > WIDTH && x+dx >= 0 && x+dx+WIDTH < tiles[0].length*16;
 
@@ -609,6 +644,23 @@ public class Map implements Playable{
 
     }
   }
+  
+  public Song getSong(){
+    return song;
+  }
+  
+  public void setSong(Song newSong){
+    song = newSong;
+  }
+  
+  public boolean isOutside(){
+    return outside;
+  }
+  
+  public String getTitle(){
+    return title;
+  }
+
 
 }
 

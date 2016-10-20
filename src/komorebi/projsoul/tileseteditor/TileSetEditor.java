@@ -706,7 +706,7 @@ public class TileSetEditor implements Playable {
         }
         writer.println();
       }
-    //TODO Debug
+    //DEBUG Save message
       System.out.println("Save complete");
       save = true;
       writer.close();

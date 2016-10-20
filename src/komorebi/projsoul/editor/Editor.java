@@ -8,6 +8,8 @@ import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glOrtho;
 import static org.lwjgl.opengl.GL11.glViewport;
 
+import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.audio.Song;
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
@@ -27,7 +29,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
+import javax.print.attribute.standard.RequestingUserName;
 import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -134,11 +140,14 @@ public class Editor implements Playable{
   
       int width = dialog.getActWidth();
       int height = dialog.getActHeight();
-  
-      if(width != 0 && height != 0){
-        map = new EditorMap(width, height);
-        buttons.setMap(map);
-      }
+
+      map = new EditorMap(width, height);
+      map.setTitle(dialog.getTitleText());
+      map.setSong(dialog.getSong());
+      map.setOutside(dialog.getOutside());
+
+      buttons.setMap(map);
+      
       KeyHandler.reloadKeyboard();
     }
   
@@ -256,8 +265,43 @@ public class Editor implements Playable{
      */
     private static final long serialVersionUID = -7199179946667631093L;
 
+    JTextField title = new JTextField(10);
+    
+    Box titleBox = Box.createHorizontalBox();
+    {
+      titleBox.add(new JLabel("Displayed Name:  "));
+      titleBox.add(title);
+    }
+    
     JTextField width = new JTextField(3);
     JTextField height = new JTextField(3);
+    
+    Box dimensions = Box.createHorizontalBox();
+    {
+      dimensions.add(new JLabel("Width:  "));
+      dimensions.add(width);
+      dimensions.add(Box.createHorizontalStrut(30));
+      dimensions.add(new JLabel("Height:  "));
+      dimensions.add(height);
+    }
+
+    JComboBox<Song> songs = new JComboBox<Song>(Song.values());
+    
+    Box songBox = Box.createHorizontalBox();
+    {
+      songBox.add(new JLabel("Song: "));
+      songBox.add(songs);
+      songBox.add(Box.createGlue());
+    }
+    JCheckBox isOutside = new JCheckBox("Is this map outside?");
+    
+    Object[] contents = {
+        titleBox,   Box.createVerticalStrut(5),
+        dimensions, Box.createVerticalStrut(5),
+        songBox,    Box.createVerticalStrut(5),
+        isOutside
+    };
+    
     String entWidth, entHeight;
     int actWidth, actHeight;
     JOptionPane options;
@@ -268,13 +312,8 @@ public class Editor implements Playable{
       super((Frame)null, true);
       setTitle("Create a New Map");
       setLocationRelativeTo(null);
-      
-      
-      Object[] contents = {
-          new JLabel("Width: "),width,
-          Box.createHorizontalStrut(15),
-          new JLabel("Height: "), height
-      };
+      setAlwaysOnTop(true);
+      setResizable(false);
       
       Object[] buttons = {btnCreate, btnCancel};
       
@@ -283,7 +322,7 @@ public class Editor implements Playable{
       
       addComponentListener(new ComponentAdapter() {
         public void componentShown(ComponentEvent ce) {
-            width.requestFocusInWindow();
+            title.requestFocusInWindow();
         }
       });
       
@@ -291,15 +330,29 @@ public class Editor implements Playable{
       
       width.addActionListener(this);
       height.addActionListener(this);
-
+      
       options.addPropertyChangeListener(this);
 
 
     }
     
+    public boolean getOutside() {
+      return isOutside.isSelected();
+    }
+
+    public Song getSong() {
+      return (Song)songs.getSelectedItem();
+    }
+
+    public String getTitleText() {
+      return title.getText();
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
-      options.setValue(btnCreate);
+      if(e.getSource() == options){
+        options.setValue(btnCreate);
+      }
     }
 
     
@@ -323,7 +376,7 @@ public class Editor implements Playable{
         //property change event will be fired.
         options.setValue(JOptionPane.UNINITIALIZED_VALUE);
         
-        if(btnCreate.equals(value)){
+        if(btnCreate.equals(value)){          
           entWidth = width.getText();
           entHeight = height.getText();
           
@@ -335,6 +388,11 @@ public class Editor implements Playable{
             if(tWidth <= 128 && tHeight <= 128){
               actWidth = tWidth;
               actHeight = tHeight;
+              
+              if(actWidth > 0 && actHeight > 0){
+                
+              }
+              
               clearAndHide();
             }else{
               complain();
@@ -371,6 +429,7 @@ public class Editor implements Playable{
       width.setText(null);
       height.setText(null);
       setVisible(false);
+      dispose();
     }
 
   }
