@@ -11,6 +11,10 @@ import komorebi.projsoul.engine.MagicBar;
 
 public class Caspian extends Player {
   
+  public static int attack = 50, defense = 50, 
+      maxHealth = 50, maxMagic = 50;
+  public static int level = 1, xp = 0, nextLevelUp = 10;
+  
   private MeleeAttack melee;
 
   public Caspian(float x, float y) {
@@ -74,11 +78,9 @@ public class Caspian extends Player {
 
     melee = new MeleeAttack(Characters.CASPIAN);
     
-    magic = new MagicBar(50);
-    health = new HUD(50);
+    magic = new MagicBar(maxMagic);
+    health = new HUD(maxHealth);
     
-    attack = 50;
-    defense = 50;
   }
   
   public void update()
@@ -121,6 +123,40 @@ public class Caspian extends Player {
   @Override
   public void renderAttack() {
     melee.play(x, y);
+  }
+
+  @Override
+  public void levelUp() {
+    
+    level++;
+    
+    int nAtt = (int) (Math.random()*3 + 1);
+    int nDef = (int) (Math.random()*3 + 1);
+    
+    int nMag = (int) (Math.random()*8 + 3);
+    int nHth = (int) (Math.random()*8 + 3);
+    
+    attack += nAtt;
+    defense += nDef;
+    maxMagic += nMag;
+    maxHealth += nHth;
+    
+    magic.addToMaxMagic(nMag);
+    health.addToMaxHealth(nHth);
+  }
+
+  @Override
+  public void giveXP(int xp) {
+    Caspian.xp += xp;
+    
+    if (Caspian.xp >= nextLevelUp)
+    {
+      levelUp();
+      Caspian.xp-=nextLevelUp;
+      
+      //TODO This is not the final incrementation of xp
+      nextLevelUp += 10;
+    }
   }
 
 

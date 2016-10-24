@@ -17,6 +17,7 @@ import komorebi.projsoul.script.Script;
 public class ThreadHandler {
   
   public static ArrayList<NewThread> threads = new ArrayList<NewThread>();
+  public static ArrayList<Lock> stragglers = new ArrayList<Lock>();
   
   /**
    * A thread object (extending java's Thread class) that can

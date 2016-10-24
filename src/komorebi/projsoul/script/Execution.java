@@ -198,6 +198,10 @@ public class Execution implements Runnable {
         break;
       case WAIT:
         taskNum = (TaskWithNumber) task;
+        npc.pause(taskNum.getNumber(), lock);
+        break;
+      case FREEZE:
+        taskNum = (TaskWithNumber) task;
         Main.getGame().pause(taskNum.getNumber(), lock);
         break;
       case JOG_LEFT:

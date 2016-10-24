@@ -67,4 +67,10 @@ public class MagicBar implements Renderable {
   {
     return magic>=magicNeeded;
   }
+  
+  public void addToMaxMagic(int add)
+  {
+    maxMagic += add;
+    magic += add;
+  }
 }

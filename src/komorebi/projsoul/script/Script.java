@@ -38,7 +38,7 @@ public abstract class Script {
   public String script;
   public Execution execution;
 
-  public boolean isRunning;
+  private boolean isRunning = false;
   public boolean isInterrupted;
 
   private BufferedReader read;
@@ -613,6 +613,20 @@ public abstract class Script {
       s = s.trim();
 
       return new Task(Instructions.SYNC);
+    } else if (s.startsWith("freeze"))
+    {
+      s = s.replace("freeze", "");
+      s = s.trim();
+      
+      try
+      {
+        int input = Integer.parseInt(s);
+        return new TaskWithNumber(Instructions.FREEZE, input);
+      } catch (NumberFormatException e)
+      {
+        return throwError(line, "freeze only takes integer arguments");
+      }
+      
     }
     else if (!(s.startsWith("//") || s.startsWith(" ") || s.isEmpty()))
     {
@@ -626,10 +640,12 @@ public abstract class Script {
    * Runs the script
    */
   public void run()
-  {        
-    if (!syntaxError) 
+  { 
+    
+    if (!syntaxError && !isRunning) 
     {
       ThreadHandler.newThread(this);
+      isRunning = true;
     }
   }
 

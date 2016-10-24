@@ -17,6 +17,10 @@ public class Flannery extends Player {
   
   private Animation currentAnimation;
   
+  public static int attack = 60, defense = 50, 
+      maxHealth = 50, maxMagic = 40; 
+  public static int level = 1, xp = 0, nextLevelUp = 10;
+
   public Flannery(float x, float y) {
     
     super(x,y);
@@ -105,11 +109,8 @@ public class Flannery extends Player {
     upThrow.add(333,180,18,32);
     upThrow.add(313,180,16,32);
     
-    magic = new MagicBar(40);
-    health = new HUD(50);
-    
-    attack = 60;
-    defense = 50;
+    magic = new MagicBar(maxMagic);
+    health = new HUD(maxHealth);
     
     projectile = new ProjectileAttack(Characters.FLANNERY);
     
@@ -183,6 +184,38 @@ public class Flannery extends Player {
   public void renderAttack() {
      currentAnimation.playCam(x, y);
   }
+
+  @Override
+  public void levelUp() {
+    int nAtt = (int) (Math.random()*3 + 1);
+    int nDef = (int) (Math.random()*3 + 1);
+    
+    int nMag = (int) (Math.random()*8 + 3);
+    int nHth = (int) (Math.random()*8 + 3);
+    
+    attack += nAtt;
+    defense += nDef;
+    maxMagic += nMag;
+    maxHealth += nHth;
+    
+    magic.addToMaxMagic(nMag);
+    health.addToMaxHealth(nHth);
+    
+  }
  
+  public void giveXP(int xp) {
+    Flannery.xp += xp;
+    
+    System.out.println("Flannery++");
+    
+    if (Flannery.xp >= nextLevelUp)
+    {
+      levelUp();
+      Flannery.xp-=nextLevelUp;
+      
+      //TODO This is not the final incrementation of xp
+      nextLevelUp += 10;
+    }
+  }
 
 }

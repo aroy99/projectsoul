@@ -286,6 +286,12 @@ public class HUD implements Renderable
     }
 
   }
+  
+  public void addToMaxHealth(int add)
+  {
+    baseHealth += add;
+    health += add;
+  }
 
 }
 

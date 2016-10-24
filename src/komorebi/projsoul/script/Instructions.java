@@ -43,6 +43,7 @@ public enum Instructions {
   CLYDE_TURN_UP,
   CLYDE_TURN_DOWN,
   WAIT,
+  FREEZE,
   SIMUL_RUN_BRANCH,
   RUN_BRANCHES,
   PLAY_SONG,

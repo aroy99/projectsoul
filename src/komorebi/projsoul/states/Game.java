@@ -13,11 +13,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import komorebi.projsoul.engine.GameHandler;
-import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Item;
 import komorebi.projsoul.engine.Item.Items;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.map.Map;
@@ -54,13 +54,15 @@ public class Game extends State{
   private SpeechHandler speaker;
 
   private BufferedReader read;
-
-  private ArrayList<Lock> waitingLocks;
-  private ArrayList<Int> pauseFrames;
   
   private int confidence, money;
   
+  public int framesToGo;
+  public boolean isPaused;
+  public Lock lock;
+  
   public static String testLoc;
+  
     
   public class Int {
     private int val;
@@ -94,9 +96,6 @@ public class Game extends State{
 
     npcs = new ArrayList<NPC>();
     scripts = new ArrayList<AreaScript>();
-
-    pauseFrames = new ArrayList<Int>();
-    waitingLocks = new ArrayList<Lock>();
 
     booleans = new boolean[256];
 
@@ -201,27 +200,21 @@ public class Game extends State{
   @Override
   public void update() {
     // TODO Auto-generated method stub    
-
-    
     KeyHandler.getInput();
+    
+    if (isPaused)
+    {
+      framesToGo--;
+      
+      if (framesToGo<=0)
+      {
+        isPaused = false;
+        lock.resumeThread();
+      }
+    }
 
     map.update();
     Fader.update();
-
-    for (Iterator<Int> it = pauseFrames.iterator(); it.hasNext();)
-    {      
-      Int i = it.next();
-      i.decrement();
-      if (i.intValue()==0)
-      {
-        waitingLocks.get(pauseFrames.indexOf(i)).resumeThread();
-        waitingLocks.remove(pauseFrames.indexOf(i));
-        it.remove();
-      }
-
-    }
-
-
 
   }
 
@@ -257,15 +250,6 @@ public class Game extends State{
    * @param ex The script execution whose thread will be locked while the game
    *        is paused
    */
-
-
-  public void pause(int frames, Lock lock)
-  {
-    pauseFrames.add(new Int(frames));
-    waitingLocks.add(lock);
-
-    lock.pauseThread();
-  }
 
   /**
    * Sets the speech bubble currently presenting a question to the player
@@ -407,5 +391,15 @@ public class Game extends State{
   public boolean checkFlag(int index)
   {
     return booleans[index];
+  }
+  
+  public void pause(int frames, Lock lock)
+  {
+    framesToGo = frames;
+    isPaused = true;
+    
+    this.lock = lock;
+    lock.pauseThread();
+    
   }
 }

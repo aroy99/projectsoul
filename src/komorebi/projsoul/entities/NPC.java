@@ -136,6 +136,8 @@ public class NPC extends Entity {
    */
   public void update() {
             
+    System.out.println(framesToGo);
+    
     if (framesToGo <= 0 && hasInstructions)
     {
       isMoving=false;
@@ -228,7 +230,7 @@ public class NPC extends Entity {
       leftAni.hStop();
       rightAni.hStop();
     }
-
+    
     x+=dx;
     xTravelled+=dx;
 
@@ -736,10 +738,12 @@ public class NPC extends Entity {
     if (isTalking)
     {
       walkScript.resume();
+      talkScript.setIsRunning(false);
       isWalking = true;
     } else
     {
       isWalking = false;
+      walkScript.setIsRunning(false);
     }
     isTalking = false;    
     
@@ -956,5 +960,16 @@ public class NPC extends Entity {
     text.write(s, 20, 58, new EarthboundFont(1));
     Main.getGame().setSpeaker(text);
     text.setAndLock(lock);
+  }
+  
+  public void pause(int frames, Lock lock)
+  {
+    framesToGo = frames;
+    isWaiting = true;
+    hasInstructions = true;
+    
+    this.lock = lock;
+    lock.pauseThread();
+    
   }
 }

@@ -135,7 +135,8 @@ public class Animation {
    * @param ty Y position on the picture, starting from the <i>top</i>   
    */
   public void add(int tx, int ty){
-    add(tx, ty, 0, false);
+    add(tx, ty, sx[cAddFrame], sy[cAddFrame], 0,
+        0, 0, false);
   }
 
   /**
@@ -147,7 +148,8 @@ public class Animation {
    * @param flip whether to flip the image or not
    */
   public void add(int tx, int ty, boolean flip){
-    add(tx, ty, 0, flip);
+    add(tx, ty, sx[cAddFrame], sy[cAddFrame], 0,
+        0, 0, flip);
   }
 
 
@@ -166,13 +168,22 @@ public class Animation {
    */
   public void add(int tx, int ty, float sx, float sy, int offX, int offY)
   {
+    add(tx, ty, sx, sy, offX, offY, 0, false);
+  }
+  
+  public void add(int tx, int ty, float sx, float sy, int offX, int offY, 
+      int rot, boolean flip)
+  {
     this.sx[cAddFrame] = sx;
     this.sy[cAddFrame] = sy;
     this.offX[cAddFrame] = offX;
     this.offY[cAddFrame] = offY;
-
-    add(tx, ty, 0, false);
-
+    
+    texx[cAddFrame] = tx;
+    texy[cAddFrame] = ty;
+    this.rot[cAddFrame] = rot;
+    flipped[cAddFrame] = flip;
+    cAddFrame++;
   }
 
   /**
@@ -191,12 +202,7 @@ public class Animation {
    */
   public void add(int tx, int ty, float sx, float sy, int offX, int offY, boolean flip)
   {
-    this.sx[cAddFrame] = sx;
-    this.sy[cAddFrame] = sy;
-    this.offX[cAddFrame] = offX;
-    this.offY[cAddFrame] = offY;
-
-    add(tx, ty, 0, flip);
+    add(tx, ty, sx, sy, offX, offY, 0, flip);
 
   }
 
@@ -208,8 +214,8 @@ public class Animation {
    * @param rot the rotation of the tile / 90 degrees
    */
   public void add(int tx, int ty, int rot){
-    add(tx, ty, rot, false);
-  }
+    add(tx, ty, sx[cAddFrame], sy[cAddFrame], 0,
+        0, rot, false);  }
 
   /**
    * Adds a frame to the animation, given  the texture coordinates, angle, and
@@ -221,11 +227,8 @@ public class Animation {
    * @param flip whether to flip the image or not
    */
   public void add(int tx, int ty, int rot, boolean flip){
-    texx[cAddFrame] = tx;
-    texy[cAddFrame] = ty;
-    this.rot[cAddFrame] = rot;
-    flipped[cAddFrame] = flip;
-    cAddFrame++;
+    add(tx, ty, sx[cAddFrame], sy[cAddFrame], 0,
+        0, rot, flip);
   }
 
   /**
@@ -238,9 +241,7 @@ public class Animation {
    * @param flip whether to flip the image or not
    */
   public void add(int tx, int ty, int sx, int sy, int rot, boolean flip){
-    this.sx[cAddFrame] = sx;
-    this.sy[cAddFrame] = sy;
-    add(tx, ty, rot, flip);
+    add(tx, ty, sx, sy, 0, 0, rot, flip);
   }
 
   /**
@@ -253,7 +254,7 @@ public class Animation {
    * @param sy The vertical size of the picture
    */
   public void add(int tx, int ty, int sx, int sy){
-    add(tx,ty,sx,sy,0,false);
+    add(tx,ty,sx,sy,0,0,0,false);
   }
 
 
@@ -264,7 +265,6 @@ public class Animation {
    * @param y y location for the animation
    */
   public void play(float x, float y){
-    
     if(!flipped[currFrame]){
       switch(rot[currFrame]){
         case 0:
@@ -312,9 +312,6 @@ public class Animation {
       }
     }
 
-
-
-
     if(playing){
       counter++;
       if(counter > time){
@@ -334,7 +331,7 @@ public class Animation {
    * @param y y location for the animation
    */
   public void playCam(float x, float y){
-    
+
     if(!flipped[currFrame]){
       switch(rot[currFrame]){
         case 0:

@@ -6,12 +6,16 @@ import komorebi.projsoul.engine.MagicBar;
 
 public class Sierra extends Player {
 
-public Sierra(float x, float y) {
-    
+  public static int attack = 50, defense = 45, 
+      maxHealth = 45, maxMagic = 60;    
+  public static int level = 1, xp = 0, nextLevelUp = 10;
+
+  public Sierra(float x, float y) {
+
     super(x,y);
-    
+
     character = Characters.SIERRA;
-    
+
     upAni =    new Animation(6, 8, 12);
     downAni =  new Animation(6, 8, 12);
     leftAni =  new Animation(6, 8, 12);
@@ -61,18 +65,45 @@ public Sierra(float x, float y) {
 
     hurtLeftAni.add(887,442,true);
     hurtLeftAni.add(914,442,true);
-    
-    magic = new MagicBar(60);
-    health = new HUD(45);
-    
-    attack = 50;
-    defense = 45;
-    
+
+    magic = new MagicBar(maxMagic);
+    health = new HUD(maxHealth);
   }
 
-@Override
-public void renderAttack() {
-  // TODO Auto-generated method stub
+  @Override
+  public void renderAttack() {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void levelUp() {
+    int nAtt = (int) (Math.random()*3 + 1);
+    int nDef = (int) (Math.random()*3 + 1);
+    
+    int nMag = (int) (Math.random()*8 + 3);
+    int nHth = (int) (Math.random()*8 + 3);
+    
+    attack += nAtt;
+    defense += nDef;
+    maxMagic += nMag;
+    maxHealth += nHth;
+    
+    magic.addToMaxMagic(nMag);
+    health.addToMaxHealth(nHth);
+    
+  }
   
-}
+  public void giveXP(int xp) {
+    Sierra.xp += xp;
+    
+    if (Sierra.xp >= nextLevelUp)
+    {
+      levelUp();
+      Sierra.xp-=nextLevelUp;
+      
+      //TODO This is not the final incrementation of xp
+      nextLevelUp += 10;
+    }
+  }
 }

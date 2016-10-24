@@ -5,8 +5,14 @@ import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.MagicBar;
 
 public class Bruno extends Player {
+  
+  public static int attack = 45, defense = 60, 
+      maxHealth = 55, maxMagic = 40;
+  public static int level = 1, xp = 0, nextLevelUp = 10;
+  
   public Bruno(float x, float y) {
 
+    
     super(x,y);
 
     character = Characters.BRUNO;
@@ -79,11 +85,9 @@ public class Bruno extends Player {
     hurtLeftAni.add(195,654);
     hurtLeftAni.add(426,763);
     
-    magic = new MagicBar(40);
-    health = new HUD(55);
-    
-    attack = 45;
-    defense = 60;
+    magic = new MagicBar(maxMagic);
+    health = new HUD(maxHealth);
+
 
   }
 
@@ -91,5 +95,35 @@ public class Bruno extends Player {
   public void renderAttack() {
     // TODO Auto-generated method stub
     
+  }
+
+  @Override
+  public void levelUp() {
+    int nAtt = (int) (Math.random()*3 + 1);
+    int nDef = (int) (Math.random()*3 + 1);
+    
+    int nMag = (int) (Math.random()*8 + 3);
+    int nHth = (int) (Math.random()*8 + 3);
+    
+    attack += nAtt;
+    defense += nDef;
+    maxMagic += nMag;
+    maxHealth += nHth;
+    
+    magic.addToMaxMagic(nMag);
+    health.addToMaxHealth(nHth);
+  }
+  
+  public void giveXP(int xp) {
+    Bruno.xp += xp;
+    
+    if (Bruno.xp >= nextLevelUp)
+    {
+      levelUp();
+      Bruno.xp-=nextLevelUp;
+      
+      //TODO This is not the final incrementation of xp
+      nextLevelUp += 10;
+    }
   }
 }

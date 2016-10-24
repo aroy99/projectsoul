@@ -31,11 +31,13 @@ import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.Player;
 import komorebi.projsoul.entities.Sierra;
 import komorebi.projsoul.entities.SignPost;
+import komorebi.projsoul.entities.XPObject;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.Script;
 import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.WalkingScript;
 import komorebi.projsoul.script.WarpScript;
+import komorebi.projsoul.states.Game.Int;
 
 
 /**
@@ -54,6 +56,7 @@ public class Map implements Playable{
   private ArrayList<NPC> npcs;
   private ArrayList<AreaScript> scripts;
   private ArrayList<SignPost> signs;
+  private ArrayList<XPObject> xpObj;
   
   private static Player play;
   
@@ -113,6 +116,7 @@ public class Map implements Playable{
       npcs = new ArrayList<NPC>();
       scripts = new ArrayList<AreaScript>();
       signs = new ArrayList<SignPost>();
+      xpObj = new ArrayList<XPObject>();
       
       for (int i = 0; i < tiles.length; i++) {
         String[] str = reader.readLine().split(" ");
@@ -220,7 +224,7 @@ public class Map implements Playable{
       e.printStackTrace();
     }
     
-    enemies.add(new Chaser(100, 100, 16, 21, 100));
+    enemies.add(new Chaser(100, 100, 16, 21, 100, 1));
 
   }
 
@@ -254,10 +258,14 @@ public class Map implements Playable{
 
     for (Enemy enemy: enemies)
     { 
-      if (play instanceof Caspian)
+      if (play == caspian)
       {
-        enemy.updateHits(((Caspian) play).getAttackHitBox().intersects(enemy.getHitBox()) 
-            && play.isAttacking(), (int) (25*(play.getAttack()/Player.MEAN_STAT)), play.getDirection());
+        if (caspian.getAttackHitBox().intersects(enemy.getHitBox()) 
+            && caspian.isAttacking() && !enemy.invincible())
+        {
+          enemy.inflictPain((int) (Player.getAttack(play.getCharacter())), play.getDirection(),
+              play.getCharacter());
+        }
       }
       enemy.update();
 
@@ -305,6 +313,36 @@ public class Map implements Playable{
     if (KeyHandler.keyClick(Key.SPACE))
     {
       switchPlayer();
+    }
+    
+    for (XPObject xp: xpObj)
+    {
+      if (xp.withinRadius(play.getHitBox()))
+      {
+        xp.guide(play.getX(), play.getY());
+      } else
+      {
+        xp.setSpeed(0, 0);
+      }
+      
+      xp.update();
+      
+      if (play.getHitBox().intersects(xp.getHitBox()))
+      {
+        xp.eat();
+      }
+      
+      
+    }
+    
+    for (Iterator<XPObject> it = xpObj.iterator(); it.hasNext();)
+    {      
+      XPObject xp = it.next();
+      if (xp.destroyed())
+      {
+        it.remove();
+      }
+
     }
 
     //Removes all dead enemies from the computer's memory
@@ -366,6 +404,12 @@ public class Map implements Playable{
     {
       sign.render();
     }
+    
+    for (XPObject xp: xpObj)
+    {
+      xp.render();
+    }
+    
     //TODO Debug
     if(isHitBox){
       Draw.rectCam((int)play.getX(), (int)play.getY(), 16, 16, 18, 16, 18, 16, 2);
@@ -670,6 +714,42 @@ public class Map implements Playable{
     return play.getCharacter();
   }
   
+  public void addXPObject(XPObject xp)
+  {
+    xpObj.add(xp);
+  }
+  
+  /**
+   * Calculates the distance between the enemy and the player
+   * @param x The x of the enemy
+   * @param y The y of the enemy
+   * @param tarX The target X (i.e., the x of the player)
+   * @param tarY The target Y (i.e., the y of the player)
+   * @return The distance, as a double
+   */
+  public static double distanceBetween(float x, float y, float tarX, float tarY)
+  {
+    return Math.sqrt(Math.pow((x-tarX), 2) + Math.pow((y-tarY), 2));
+  }
+  
+  public void giveXP(Characters c, int xp)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        caspian.giveXP(xp);
+        break;
+      case FLANNERY:
+        flannery.giveXP(xp);
+        break;
+      case SIERRA:
+        sierra.giveXP(xp);
+        break;
+      case BRUNO:
+        bruno.giveXP(xp);
+        break;
+    }
+  }
 
 }
 

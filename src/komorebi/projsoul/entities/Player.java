@@ -26,6 +26,8 @@ import komorebi.projsoul.states.Game;
  */
 public abstract class Player extends Entity implements Playable{
 
+  public abstract void levelUp();
+  
   private boolean up;
   private boolean down;
   private boolean left;
@@ -64,7 +66,7 @@ public abstract class Player extends Entity implements Playable{
 
   private Rectangle area;
   private boolean invincible, restoreMvmtX, restoreMvmtY;
-
+  
   private static final float SPEED = 1;
 
   public Face dir = Face.DOWN;    
@@ -76,9 +78,7 @@ public abstract class Player extends Entity implements Playable{
 
   public MagicBar magic;
   public HUD health;
-  
-  public int attack, defense;
-  
+    
   public boolean doNotRender;
   
   public static final double MEAN_STAT = 50.0;
@@ -347,7 +347,27 @@ public abstract class Player extends Entity implements Playable{
 
     magic.update();
 
-
+    //TODO: Auto-level up
+    if (KeyHandler.controlDown() && KeyHandler.keyClick(Key.PLUS))
+    {
+      levelUp();
+    }
+    
+    //TODO Stat Dump
+    if (KeyHandler.controlDown() && KeyHandler.keyClick(Key.S))
+    {
+      for (Characters c: Characters.values())
+      {
+        System.out.println(c + ": ");
+        System.out.println("Att: " + Player.getAttack(c)
+            + "\tDef: " + Player.getDefense(c));
+        System.out.println("Mag: " + Player.getMaxMagic(c)
+            + "\tHth: " + Player.getMaxHealth(c));
+        System.out.println("XP: " + Player.getXP(c) + " / " + 
+            Player.getXPToNextLevel(c) + "\tLevel " + Player.getLevel(c)
+            + "\n");
+      }
+    }
 
 
   }
@@ -720,7 +740,7 @@ public abstract class Player extends Entity implements Playable{
     return area;
   }
 
-  public void inflictPain(int damage, float dx, float dy)
+  public void inflictPain(int attack, float dx, float dy)
   {
     invincible = true;
     restoreMvmtX = false;
@@ -747,7 +767,10 @@ public abstract class Player extends Entity implements Playable{
 
     }
 
-    health.health -= (int) (damage / (defense / MEAN_STAT));
+    System.out.println("Damage = " + attack + " - " + 
+        getDefense(character) + "/2");
+    
+    health.health -= (int) (attack - (getDefense(character)/2));
 
     //Kills the enemy
     if (health.health<=0)
@@ -786,12 +809,128 @@ public abstract class Player extends Entity implements Playable{
     magic.render();
     health.render();
   }
+    
+  public abstract void renderAttack();
   
-  public int getAttack()
+  public static int getAttack(Characters c)
   {
-    return attack;
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.attack;
+      case FLANNERY:
+        return Flannery.attack;
+      case SIERRA:
+        return Sierra.attack;
+      case BRUNO:
+        return Bruno.attack;
+    }
+    
+    return 0;
   }
   
-  public abstract void renderAttack();
+  public static int getDefense(Characters c)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.defense;
+      case FLANNERY:
+        return Flannery.defense;
+      case SIERRA:
+        return Sierra.defense;
+      case BRUNO:
+        return Bruno.defense;
+    }
+    
+    return 0;
+  }
+  
+  public static int getMaxMagic(Characters c)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.maxMagic;
+      case FLANNERY:
+        return Flannery.maxMagic;
+      case SIERRA:
+        return Sierra.maxMagic;
+      case BRUNO:
+        return Bruno.maxMagic;
+    }
+    
+    return 0;  
+  }
+  
+  public static int getMaxHealth(Characters c)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.maxHealth;
+      case FLANNERY:
+        return Flannery.maxHealth;
+      case SIERRA:
+        return Sierra.maxHealth;
+      case BRUNO:
+        return Bruno.maxHealth;
+    }
+    
+    return 0;  
+  }
+  
+  public static int getXP(Characters c)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.xp;
+      case FLANNERY:
+        return Flannery.xp;
+      case SIERRA:
+        return Sierra.xp;
+      case BRUNO:
+        return Bruno.xp;
+    }
+    
+    return 0;  
+  }
+  
+  public static int getXPToNextLevel(Characters c)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.nextLevelUp;
+      case FLANNERY:
+        return Flannery.nextLevelUp;
+      case SIERRA:
+        return Sierra.nextLevelUp;
+      case BRUNO:
+        return Bruno.nextLevelUp;
+    }
+    
+    return 0;  
+  }
+  
+  public static int getLevel(Characters c)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.level;
+      case FLANNERY:
+        return Flannery.level;
+      case SIERRA:
+        return Sierra.level;
+      case BRUNO:
+        return Bruno.level;
+    }
+    
+    return 0;  
+  }
+  
+  public abstract void giveXP(int xp);
 
 }
