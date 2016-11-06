@@ -1,5 +1,6 @@
 /**
- * Camera.java		Aug 21, 2016, 9:01:33 PM
+ * Camera.java
+ * Aug 21, 2016, 9:01:33 PM
  */
 package komorebi.projsoul.engine;
 
@@ -43,7 +44,7 @@ public class Camera{
   }
 
   /**
-   * Centers the camera on clyde at the specified location
+   * Centers the camera on the player at the specified location
    * 
    * @param x new x
    * @param y new y
@@ -53,6 +54,16 @@ public class Camera{
     Camera.y = y-112+12;
   }
   
+  
+  /**
+   * Centers the camera on the player unless the player is near the edge of the
+   * map, in which case the camera centers as closely to the player's center as
+   * it can without exceeding the bounds of the map.
+   * @param x The player's current x
+   * @param y The player's current y
+   * @param mapSx The horizontal size of the map (in pixels)
+   * @param mapSy The vertical size of the map (in pixels)
+   */
   public static void center(float x, float y, int mapSx, int mapSy)
   {
     if (x-128+8>=0 && x-128+8<=mapSx-Main.WIDTH)

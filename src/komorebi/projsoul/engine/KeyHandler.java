@@ -4,7 +4,6 @@
 package komorebi.projsoul.engine;
 
 import org.lwjgl.LWJGLException;
-import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -76,7 +75,7 @@ public class KeyHandler {
   {
     if (isKeyDown[k.getGLKey()] && !wasKeyDown[k.getGLKey()] && !buffer[k.getGLKey()])
     {
-//      buffer[k.getGLKey()] = true;
+      buffer[k.getGLKey()] = true;
       return true;
     }
     return false;
@@ -105,20 +104,20 @@ public class KeyHandler {
       case TALK:  return keyClick(Key.Z);
       case MENU:  return keyClick(Key.ENTER);
              
-      case MAP_DOWN:   return keyDown(Key.DOWN)  || keyDown(Key.S) && !controlDown();
+      case MAP_DOWN:   return keyDown(Key.DOWN)  || keyDown(Key.S) && !keyDown(Key.CTRL);
       case MAP_LEFT:   return keyDown(Key.LEFT)  || keyDown(Key.A);
       case MAP_RIGHT:  return keyDown(Key.RIGHT) || keyDown(Key.D);
       case MAP_UP:     return keyDown(Key.UP)    || keyDown(Key.W);
-      case SAVE:       return !shiftDown()       && controlDown()  && keyClick(Key.S);
-      case NEW_SAVE:   return shiftDown()        && controlDown()   & keyClick(Key.S);
-      case LOAD:       return controlDown()      && keyClick(Key.L);
-      case NEW:        return controlDown()      && keyClick(Key.N);
-      case REVERT_MAP: return controlDown()      && keyClick(Key.R);
-      case RESET_LOC:  return !controlDown()     && keyClick(Key.R);
-      case GRID:       return controlDown()      && keyClick(Key.G);
-      case PLAY:       return controlDown()      && keyClick(Key.P);
-      case MOVE_SET:   return controlDown()      && keyClick(Key.M);
-      case NPC:        return controlDown()      && keyClick(Key.C);
+      case SAVE:       return !keyDown(Key.SHIFT) && keyDown(Key.CTRL) && keyClick(Key.S);
+      case NEW_SAVE:   return keyDown(Key.SHIFT) && keyDown(Key.CTRL) && keyClick(Key.S);
+      case LOAD:       return keyDown(Key.CTRL)  && keyClick(Key.L);
+      case NEW:        return keyDown(Key.CTRL)  && keyClick(Key.N);
+      case REVERT_MAP: return keyDown(Key.CTRL)  && keyClick(Key.R);
+      case RESET_LOC:  return !keyDown(Key.CTRL) && keyClick(Key.R);
+      case GRID:       return keyDown(Key.CTRL)  && keyClick(Key.G);
+      case PLAY:       return keyDown(Key.CTRL)  && keyClick(Key.P);
+      case MOVE_SET:   return keyDown(Key.CTRL)  && keyClick(Key.M);
+      case NPC:        return keyDown(Key.CTRL)  && keyClick(Key.C);
 
       default:         return false;
       
@@ -164,7 +163,6 @@ public class KeyHandler {
     try {
       Keyboard.create();
     } catch (LWJGLException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
 

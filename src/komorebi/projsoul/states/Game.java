@@ -18,8 +18,11 @@ import komorebi.projsoul.engine.Item;
 import komorebi.projsoul.engine.Item.Items;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.MagicBar;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.Player;
+import komorebi.projsoul.entities.SignPost;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.Execution;
@@ -27,6 +30,7 @@ import komorebi.projsoul.script.Fader;
 import komorebi.projsoul.script.InstructionList;
 import komorebi.projsoul.script.Instructions;
 import komorebi.projsoul.script.Lock;
+import komorebi.projsoul.script.SpeechHandler;
 import komorebi.projsoul.script.Task;
 import komorebi.projsoul.script.Task.TaskWithNumber;
 import komorebi.projsoul.script.Task.TaskWithString;
@@ -42,14 +46,14 @@ public class Game extends State{
   public ArrayList<NPC> npcs;
   public ArrayList<AreaScript> scripts;
   public ArrayList<Item> items = new ArrayList<Item>();
-  
+ 
   public boolean[] booleans;
 
   private boolean hasText, hasChoice;
   private int pickIndex;
   private int maxOpt;
 
-  private NPC speaker;
+  private SpeechHandler speaker;
 
   private BufferedReader read;
 
@@ -61,6 +65,7 @@ public class Game extends State{
   public static String testLoc;
   
   public HUD hud;
+  public Death death;
   
   public class Int {
     private int val;
@@ -104,6 +109,7 @@ public class Game extends State{
     money = 15;
     
     hud = new HUD();
+    death = new Death();
 
 
   }
@@ -124,14 +130,14 @@ public class Game extends State{
           System.out.println("Next");
           speaker.nextParagraph();
         } else {
-          if (!speaker.doneAsking())
+          if (!speaker.alreadyAsked())
           {
             speaker.skipScroll();
           } else
           {
             if (hasText)
             {
-              speaker.clearText();
+              speaker.clear();
 
               if (hasChoice) {
                 speaker.branch(pickIndex);
@@ -196,9 +202,10 @@ public class Game extends State{
    */
   @Override
   public void update() {
-    // TODO Auto-generated method stub    
-
-    
+    // TODO Auto-generated method stub  
+	  hud.update();
+	  death.update();
+	  
     KeyHandler.getInput();
 
     map.update();
@@ -227,11 +234,10 @@ public class Game extends State{
   @Override
   public void render() {
     map.render();
-
-    Fader.render();
-    
+    Map.getPlayer().magicBar().render();
     hud.render();
-   
+    death.render();
+    Fader.render();
 
   }
 
@@ -244,9 +250,9 @@ public class Game extends State{
     map = m;
   }
 
-  public void setSpeaker(NPC npc)
+  public void setSpeaker(SpeechHandler talk)
   {
-    this.speaker = npc;
+    this.speaker = talk;
     this.hasText = true;
   }
 
@@ -270,9 +276,9 @@ public class Game extends State{
    * Sets the NPC currently presenting a question to the player
    * @param npc The asking NPCS
    */
-  public void setAsker(NPC npc)
+  public void setAsker(SpeechHandler talk)
   {
-    this.speaker = npc;
+    this.speaker = talk;
     this.hasText = true;
     this.hasChoice = true;
     //this.choosesLeft = true;

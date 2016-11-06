@@ -1,6 +1,7 @@
 package komorebi.projsoul.entities;
 
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.states.Death;
 
 public class Chaser extends Enemy {
   
@@ -9,6 +10,10 @@ public class Chaser extends Enemy {
   private final float speed = 0.5f;
   
   private float maxClydeDist;
+  
+  public static final int baseAttack = 35;
+  public static final int baseDefense = 50;
+  public static final int baseHealth = 50;
 
   
   /**
@@ -21,11 +26,15 @@ public class Chaser extends Enemy {
    *      and still chase him/her
    */
   public Chaser(float x, float y, int sx, int sy, float distanceFromPlay) {
-    super(x, y, sx, sy);
+    this(x,y,sx,sy,distanceFromPlay,1);
+  }
+  
+  public Chaser(float x, float y, int sx, int sy, float distanceFromPlay, int level) {
+    super(x, y, sx, sy, level);
     
     maxClydeDist = distanceFromPlay;
   }
-
+  
   /**
    * Updates the chaser's status and location
    */
@@ -33,16 +42,17 @@ public class Chaser extends Enemy {
   {   
     super.update();
     
-    targetX = Map.getClyde().getX();
-    targetY = Map.getClyde().getY();
-    
-    if (distanceBetween(x,y,targetX,targetY)>maxClydeDist && (dx!=0 || dy!=0))
+    targetX = Map.getPlayer().getX();
+    targetY = Map.getPlayer().getY();
+   if(Death.playable)
+   {
+    if (Map.distanceBetween(x,y,targetX,targetY)>maxClydeDist && (dx!=0 || dy!=0))
     {
       dx = 0;
       dy = 0;
     }
     
-    if (!invincible && distanceBetween(x,y,targetX,targetY)<=maxClydeDist)
+    if (!invincible && Map.distanceBetween(x,y,targetX,targetY)<=maxClydeDist)
     {
       if (targetX>x && Math.abs(targetX-x)>12)
       {
@@ -60,6 +70,28 @@ public class Chaser extends Enemy {
         dy = -speed;
       }
     }
+   }
    
+  }
+
+  @Override
+  public int xpPerLevel() {
+    return 10;
+  }
+
+  @Override
+  public int baseAttack() {
+    return baseAttack;
+  }
+
+  @Override
+  public int baseDefense() {
+    return baseDefense;
+  }
+
+  @Override
+  public int baseHealth() {
+    return baseHealth;
+
   }
 }

@@ -4,6 +4,9 @@
 
 package komorebi.projsoul.engine;
 
+import java.io.File;
+import java.io.FileInputStream;
+
 import static org.lwjgl.opengl.GL11.GL_NEAREST;
 import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
@@ -19,9 +22,6 @@ import static org.lwjgl.opengl.GL11.glTexParameteri;
 import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.opengl.GL11.glVertex2f;
 
-import java.io.File;
-import java.io.FileInputStream;
-
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
@@ -36,7 +36,7 @@ public class Draw {
   private static final int RIGHT_ANGLE = 90;
 
   /** Holds all of the textures for this class.*/
-  private static Texture[] tex = new Texture[12];
+  private static Texture[] tex = new Texture[14];
 
   /** Determines whether textures are loaded.*/
   private static boolean texLoaded;
@@ -62,25 +62,18 @@ public class Draw {
     try {
       tex[0] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/Terra.png")));
-
       tex[1] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/PokeTiles.png")));
-
       tex[2] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/EditorSheet.png")));
-
       tex[3] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/NPCFiller.png")));
-
       tex[4] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/NPCFiller2.png")));
-
       tex[5] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/FillerFont.png")));
-
       tex[6] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/Textfield2.png")));
-
       tex[7] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/Picker.png")));
       tex[8] = TextureLoader.getTexture("PNG", new FileInputStream(
@@ -91,6 +84,10 @@ public class Draw {
           new File("res/Items.png")));
       tex[11] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/Fillers.png")));
+      tex[12] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/Shadow.png")));
+      tex[13] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/Death.png")));
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -154,7 +151,8 @@ public class Draw {
         loadTextures();
         texLoaded = true;
       }
-
+      //This keeps messing up my shit
+      //TODO Change Death png that has to be 256 by 256
       int imgX = tex[texID].getImageWidth();
       int imgY = tex[texID].getImageHeight();
 

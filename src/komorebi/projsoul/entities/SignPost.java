@@ -3,6 +3,7 @@ package komorebi.projsoul.entities;
 import java.awt.Rectangle;
 
 import komorebi.projsoul.engine.Main;
+import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.SignHandler;
 
 public class SignPost extends Entity {
@@ -31,7 +32,7 @@ public class SignPost extends Entity {
   public void show()
   {
     shown = true;
-    text.write(message, 20, 58, 8);
+    //text.write(message, 20, 58, new EarthboundFont(1));
     Main.getGame().setSpeaker(text);
    }
 
