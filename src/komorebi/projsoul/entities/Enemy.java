@@ -86,10 +86,10 @@ public abstract class Enemy extends Entity {
     if (invincible)
     {
       hitCounter--;
-      if (dx>0) dx--;
-      if (dx<0) dx++;
-      if (dy>0) dy--;
-      if (dy<0) dy++;
+      if (dx>0) dx-=0.25;
+      if (dx<0) dx+=0.25;
+      if (dy>0) dy-=0.25;
+      if (dy<0) dy+=0.25;
     }
 
     if (hitCounter<=0)
@@ -151,6 +151,27 @@ public abstract class Enemy extends Entity {
     }
   }
 
+  public void knockBack(int attack, Characters c)
+  {
+    health -= attack - (defense/2);
+    hitBy[c.getNumber()] = true;
+    
+    dx*=-5;
+    dy*=-5;
+    
+    //Kills the enemy
+    if (health<=0)
+    {
+      deathAni.resume();
+      dying = true;
+    } else
+    {
+      //Knocks back the enemy
+      invincible = true;
+      hitCounter = 50;
+      hitAni.resume();
+    }
+  }
 
 
   /*
@@ -216,7 +237,14 @@ public abstract class Enemy extends Entity {
     if (hypothetical.intersects(Map.getPlayer().getHitBox()))
     { 
       
-      if (!Map.getPlayer().invincible())
+      boolean can = true;
+      
+      if (Map.getPlayer() instanceof Bruno)
+      {
+        can = !((Bruno) Map.getPlayer()).isCharging();
+      }
+      
+      if (!Map.getPlayer().invincible() && can)
       {
         Map.getPlayer().inflictPain(attack, 12*dx, 12*dy);
       }

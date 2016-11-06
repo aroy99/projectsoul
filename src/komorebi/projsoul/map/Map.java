@@ -52,6 +52,7 @@ public class Map implements Playable{
   private boolean[][] collision;
 
   public static final int SIZE = 16;  //Width and height of a tile
+  private static final float TOLERANCE = 0.5f;
 
   private ArrayList<NPC> npcs;
   private ArrayList<AreaScript> scripts;
@@ -258,17 +259,7 @@ public class Map implements Playable{
 
     for (Enemy enemy: enemies)
     { 
-      if (play == caspian)
-      {
-        if (caspian.getAttackHitBox().intersects(enemy.getHitBox()) 
-            && caspian.isAttacking() && !enemy.invincible())
-        {
-          enemy.inflictPain((int) (Player.getAttack(play.getCharacter())), play.getDirection(),
-              play.getCharacter());
-        }
-      }
       enemy.update();
-
     }
 
     for (NPC npc: npcs) {
@@ -732,6 +723,48 @@ public class Map implements Playable{
     return Math.sqrt(Math.pow((x-tarX), 2) + Math.pow((y-tarY), 2));
   }
   
+  public static double angleOf(float x, float y, float tarX, float tarY)
+  {
+    float triX = x - tarX, triY = y - tarY;
+    double ret = Math.atan(triY / triX)* (180 / Math.PI);
+    
+    if (triX < 0 && triY > 0)
+    {
+      ret+=180;
+    } else if (triX < 0 && triY < 0)
+    {
+      ret-=180;
+    }
+        
+    return ret;
+  }
+  
+  public static int quadrantOf(float x, float y, float tarX, float tarY)
+  {
+    double angle = angleOf(x,y,tarX,tarY);
+    
+    if (angle > 0.5 && angle < 89.5)
+    {
+      return 1;
+    } else if (angle > 90.5 && angle < 179.5)
+    {
+      return 2;
+    } else if (angle > -179.5 && angle < -90.5)
+    {
+      return 3;
+    } else if (angle > -89.5 && angle < -0.5)
+    {
+      return 4;
+    } else if (Math.abs(angle)<TOLERANCE || Math.abs(angle-180)<TOLERANCE 
+        || Math.abs(angle+180)<TOLERANCE)
+    {
+      return 0;
+    } else
+    {
+      return -1;
+    }
+  }
+  
   public void giveXP(Characters c, int xp)
   {
     switch (c)
@@ -749,6 +782,16 @@ public class Map implements Playable{
         bruno.giveXP(xp);
         break;
     }
+  }
+  
+  public static float[] coordinatesAt(float cx, float cy, float dist, double ang)
+  {
+    float[] ret  = new float[2];
+    
+    ret[0] = (float) (cx + Math.cos(ang*(Math.PI / 180))*dist);
+    ret[1] = (float) (cy + Math.sin(ang*(Math.PI / 180))*dist);
+    
+    return ret;
   }
 
 }

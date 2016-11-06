@@ -1,18 +1,24 @@
 package komorebi.projsoul.entities;
 
+import komorebi.projsoul.attack.Charge;
+import komorebi.projsoul.attack.MeleeAttack;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.HUD;
+import komorebi.projsoul.engine.Key;
+import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MagicBar;
 
 public class Bruno extends Player {
-  
+
   public static int attack = 45, defense = 60, 
       maxHealth = 55, maxMagic = 40;
   public static int level = 1, xp = 0, nextLevelUp = 10;
   
+  private MeleeAttack<Charge> melee = new MeleeAttack<Charge>(new Charge());
+
   public Bruno(float x, float y) {
 
-    
+
     super(x,y);
 
     character = Characters.BRUNO;
@@ -35,7 +41,7 @@ public class Bruno extends Player {
     downAni.add(246,760,24,31);
     downAni.add(218,759,24,32);
     downAni.add(191,761,24,30);
-    
+
     upAni.add(204,514,24,32);
     upAni.add(232,515,24,31);
     upAni.add(260,515,24,31);
@@ -84,46 +90,109 @@ public class Bruno extends Player {
 
     hurtLeftAni.add(195,654);
     hurtLeftAni.add(426,763);
-    
+
     magic = new MagicBar(maxMagic);
     health = new HUD(maxHealth);
 
+    attack1 = melee;
 
   }
 
   @Override
   public void renderAttack() {
-    // TODO Auto-generated method stub
+    if (attack1 == melee)
+    {
+      melee.getAttackInstance().play(x, y);
+    }
+   
     
+  }
+  
+  public void update()
+  {
+    
+    super.update();
+    
+    if (isAttacking && attack1 == melee)
+    {
+      melee.update();
+      x = melee.getAttackInstance().getX();
+      y = melee.getAttackInstance().getY();
+      
+      if (melee.getAttackInstance().isStopped())
+      {
+        isAttacking = false;
+        noContact = false;
+      }
+    }
+    
+    if (KeyHandler.keyClick(Key.X) && !isAttacking)
+    {
+      isAttacking = true;
+      
+      float aDx = 0f, aDy = 0f;
+      
+      switch (dir)
+      {
+        case UP:
+          aDy = 5f;
+          break;
+        case DOWN:
+          aDy = -5f;
+          break;
+        case LEFT:
+          aDx = -5f;
+          break;
+        case RIGHT:
+          aDx = 5f;
+          break;
+      }
+      
+      if (attack1 == melee)
+      {
+        attack1.newAttack(x, y, aDx, aDy, dir, attack);
+        isAttacking = true;
+        
+        magic.changeMagicBy(-10);
+      }
+      
+    }
   }
 
   @Override
   public void levelUp() {
+
+    level++;
+
+    Bruno.xp-=nextLevelUp;
+    nextLevelUp += 10;
+
     int nAtt = (int) (Math.random()*3 + 1);
     int nDef = (int) (Math.random()*3 + 1);
-    
+
     int nMag = (int) (Math.random()*8 + 3);
     int nHth = (int) (Math.random()*8 + 3);
-    
+
     attack += nAtt;
     defense += nDef;
     maxMagic += nMag;
     maxHealth += nHth;
-    
+
     magic.addToMaxMagic(nMag);
     health.addToMaxHealth(nHth);
   }
-  
+
   public void giveXP(int xp) {
     Bruno.xp += xp;
-    
+
     if (Bruno.xp >= nextLevelUp)
     {
       levelUp();
-      Bruno.xp-=nextLevelUp;
-      
-      //TODO This is not the final incrementation of xp
-      nextLevelUp += 10;
     }
+  }
+  
+  public boolean isCharging()
+  {
+    return noContact && isAttacking;
   }
 }

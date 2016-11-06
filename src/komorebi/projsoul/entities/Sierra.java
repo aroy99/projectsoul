@@ -78,32 +78,34 @@ public class Sierra extends Player {
 
   @Override
   public void levelUp() {
+
+    level++;
+
+    Sierra.xp-=nextLevelUp;
+    nextLevelUp += 10;
+
     int nAtt = (int) (Math.random()*3 + 1);
     int nDef = (int) (Math.random()*3 + 1);
-    
+
     int nMag = (int) (Math.random()*8 + 3);
     int nHth = (int) (Math.random()*8 + 3);
-    
+
     attack += nAtt;
     defense += nDef;
     maxMagic += nMag;
     maxHealth += nHth;
-    
+
     magic.addToMaxMagic(nMag);
     health.addToMaxHealth(nHth);
-    
+
   }
-  
+
   public void giveXP(int xp) {
     Sierra.xp += xp;
-    
+
     if (Sierra.xp >= nextLevelUp)
     {
       levelUp();
-      Sierra.xp-=nextLevelUp;
-      
-      //TODO This is not the final incrementation of xp
-      nextLevelUp += 10;
     }
   }
 }

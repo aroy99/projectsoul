@@ -91,4 +91,5 @@ public class Chaser extends Enemy {
     return baseHealth;
 
   }
+ 
 }
