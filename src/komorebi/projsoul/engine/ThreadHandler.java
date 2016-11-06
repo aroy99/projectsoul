@@ -1,5 +1,5 @@
 /**
- * ThreadHandler.java		Aug 6, 2016, 2:32:04 PM
+ * ThreadHandler.java  Aug 6, 2016, 2:32:04 PM
  */
 package komorebi.projsoul.engine;
 
@@ -17,7 +17,14 @@ import komorebi.projsoul.script.Script;
 public class ThreadHandler {
   
   public static ArrayList<NewThread> threads = new ArrayList<NewThread>();
+  public static ArrayList<Lock> stragglers = new ArrayList<Lock>();
   
+  /**
+   * A thread object (extending java's Thread class) that can
+   * interact with the ThreadHandler class
+   * @author Andrew Faulkenberry
+   *
+   */
   public static class NewThread extends Thread
   {
     Script script;
@@ -25,6 +32,11 @@ public class ThreadHandler {
     Lock lock;
     int waitIndex;
     
+    /**
+     * Creates a new thread that will run the script's instructions when the
+     * Thread.start() method is called
+     * @param script The script to run on a separate thread
+     */
     public NewThread(Script script)
     {
       super(script.getExecution());
@@ -35,6 +47,11 @@ public class ThreadHandler {
       waitIndex = 0;
     }
     
+    /**
+     * Creates a new thread that will run the execution's instructions when the
+     * Thread.start() method is called
+     * @param ex The execution to run on a separate thread
+     */
     public NewThread(Execution ex)
     {
       super(ex);
@@ -43,33 +60,54 @@ public class ThreadHandler {
       waitIndex = 0;
     }
     
+    /**
+     * @return The script associated with the Thread (or null if the Thread was
+     * not instantiated with a script)
+     */
     public Script getScript()
     {
       return script;
     }
     
+    /**
+     * @param b If true, halts the thread; if false, resumes the thread
+     */
     public void setInterrupted(boolean b)
     {
       interrupted = b;
     }
     
+    /** 
+     * @return Whether the thread is currently halted
+     */
     public boolean flagged()
     {
       return interrupted;
     }
     
+    /**
+     * Sets the Thread's lock object
+     * @param lock The lock object to be set
+     */
     public void setLock(Lock lock)
     {
       this.lock = lock;
     }
     
+    /**
+     * @return The thread's current lock object
+     */
     public Lock getLock()
     {
       return lock;
     }
   }
   
-  
+  /**
+   * Creates and beings a new thread which will run the instructions of the
+   * script
+   * @param script 
+   */
   public static void newThread(Script script)
   {
     NewThread thr = new NewThread(script);
@@ -77,6 +115,10 @@ public class ThreadHandler {
     thr.start();
   }
   
+  /**
+   * Adds a given NewThread to 
+   * @param thread
+   */
   public static void newThread(NewThread thread)
   {
     threads.add(thread);

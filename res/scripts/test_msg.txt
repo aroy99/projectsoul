@@ -1,0 +1,4 @@
+lock
+say I'm the first new test NPC\nYaaaaaaay!
+unlock
+end

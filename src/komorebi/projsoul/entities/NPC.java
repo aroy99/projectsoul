@@ -12,6 +12,7 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
 import komorebi.projsoul.script.SpeechHandler;
@@ -61,8 +62,12 @@ public class NPC extends Entity {
   Animation rightAni, leftAni, downAni, upAni;
 
   private int prevdx, prevdy;
+  private int prevFrames;
+  private Face prevDir;
+  private boolean wasHangingOn;
   
   private Lock lock;
+  private Lock prevLock;
 
   boolean hangOn;
   
@@ -113,7 +118,7 @@ public class NPC extends Entity {
 
     isVisible = false;
 
-    isMoving=false;
+    isMoving = false;
     hasInstructions=false;
 
     text = new SpeechHandler();
@@ -126,10 +131,12 @@ public class NPC extends Entity {
    */
   @Override
 
-  /**
+  /**z
    * Updates the behavior of the NPC, such as speed and movement
    */
   public void update() {
+            
+    System.out.println(framesToGo);
     
     if (framesToGo <= 0 && hasInstructions)
     {
@@ -144,10 +151,10 @@ public class NPC extends Entity {
       if (lock != null)
       {
         lock.resumeThread();
-      }
+      } 
 
     }
-
+    
     if (isMoving)
     {      
       if (!hangOn && !frontClear() && isWalking)
@@ -159,6 +166,8 @@ public class NPC extends Entity {
 
         dx=0;
         dy=0;
+        
+        prevDir = direction;
 
         downAni.hStop();
         upAni.hStop();
@@ -167,11 +176,13 @@ public class NPC extends Entity {
 
 
       } else if (hangOn && frontClear() && isWalking)
-      {
+      {        
         hangOn = false;
 
         dx = prevdx;
         dy = prevdy;
+        
+        direction = prevDir;
       }
 
       rx+=dx;
@@ -219,7 +230,7 @@ public class NPC extends Entity {
       leftAni.hStop();
       rightAni.hStop();
     }
-
+    
     x+=dx;
     xTravelled+=dx;
 
@@ -238,7 +249,7 @@ public class NPC extends Entity {
       r.y += dy;
     }
 
-    if (!hangOn)
+    if (!hangOn || isTalking)
     {
       if (dx != 0) {
         framesToGo-=Math.abs(dx);
@@ -603,12 +614,12 @@ public class NPC extends Entity {
    */
   public String ask(String[] args, Execution ex, Lock lock)
   {
-    text.write(args[0], 20, 58, 8);
-    if (args.length>1) text.write(args[1], 30, 40, 8);
-    if (args.length>2) text.write(args[2], 100, 40, 8);
-    if (args.length>3) text.write(args[3], 30, 22, 8);
-    if (args.length>4) text.write(args[4], 100, 22, 8);
-
+    /*text.write(args[0], 20, 58, new EarthboundFont(1));
+    if (args.length>1) text.write(args[1], 30, 40, new EarthboundFont(1));
+    if (args.length>2) text.write(args[2], 100, 40, new EarthboundFont(1));
+    if (args.length>3) text.write(args[3], 30, 22, new EarthboundFont(1));
+    if (args.length>4) text.write(args[4], 100, 22, new EarthboundFont(1));
+*/
     this.instructor = ex;
     this.lock = lock;
 
@@ -713,6 +724,11 @@ public class NPC extends Entity {
    */
   public void approach()
   {
+    prevFrames = framesToGo;
+    wasHangingOn = hangOn;
+    
+    prevLock = lock;
+    
     abortWalkingScript();
     talkScript.run();
   }
@@ -722,11 +738,26 @@ public class NPC extends Entity {
     if (isTalking)
     {
       walkScript.resume();
+      talkScript.setIsRunning(false);
+      isWalking = true;
     } else
     {
       isWalking = false;
+      walkScript.setIsRunning(false);
     }
     isTalking = false;    
+    
+    if (prevFrames > 0)
+    {
+      isMoving = true;
+      hasInstructions = true;
+    }
+    
+    hangOn = wasHangingOn;
+    framesToGo = prevFrames;
+    
+    lock = prevLock;
+
   }
 
   public void setTalkingScript(TalkingScript nScript)
@@ -841,6 +872,12 @@ public class NPC extends Entity {
     }
   }
 
+  /**
+   * Directs the NPC to a specific tile location
+   * @param horizontal Whether to move horizontally (true) or vertically (false)
+   * @param tx The tile to move to
+   * @param lock Lock to wait on
+   */
   public void goTo(boolean horizontal, int tx, Lock lock)
   {
     if (horizontal)
@@ -865,6 +902,9 @@ public class NPC extends Entity {
 
   }
 
+  /**
+   * @return Whether the player is standing right in the NPC's path
+   */
   public boolean frontClear()
   {
     boolean get;
@@ -880,7 +920,7 @@ public class NPC extends Entity {
       future.grow(0, 1);
     }
     
-    get = !future.intersects(Map.getClyde().getArea());
+    get = !future.intersects(Map.getPlayer().getArea());
 
     if (direction == Face.LEFT || direction == Face.RIGHT)
     {
@@ -892,8 +932,7 @@ public class NPC extends Entity {
     
     future.x-=dx;
     future.y-=dy;
-
-
+    
     return get;
   }
   
@@ -918,10 +957,19 @@ public class NPC extends Entity {
   
   public void say(String s, Lock lock)
   {
-
-    text.write(s, 20, 58, 8);
-    this.lock = lock;
+    //text.write(s, 20, 58, new EarthboundFont(1));
     Main.getGame().setSpeaker(text);
+    //text.setAndLock(lock);
+  }
+  
+  public void pause(int frames, Lock lock)
+  {
+    framesToGo = frames;
+    isWaiting = true;
+    hasInstructions = true;
+    
+    this.lock = lock;
     lock.pauseThread();
+    
   }
 }

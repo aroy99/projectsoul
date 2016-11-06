@@ -12,7 +12,9 @@ import komorebi.projsoul.map.Map;
  * 
  * @author Aaron Roy
  */
+
 public abstract class State{
+	
   protected static Map map;
 
   /**

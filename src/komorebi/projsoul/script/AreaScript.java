@@ -129,8 +129,16 @@ public class AreaScript extends Script{
     return script;
   }
   
+  public void setScript(String newScript){
+    script = newScript;
+  }
+  
   public NPC getNPC(){
     return npc;
+  }
+  
+  public void setNPC(NPC newNPC){
+    npc = newNPC;
   }
   
   public boolean hasNPC(){
@@ -152,5 +160,34 @@ public class AreaScript extends Script{
   public void render() {
     Draw.rect(x, y, 16, 16, 32, 0, 2);
   }
+  
+  /**
+   * @return Whether the script is repeatable
+   */
+  public boolean isRepeatable() {
+    return isRepeatable;
+  }
+  
+  /**
+   * @param isRepeatable Whether the script will repeat or not
+   */
+  public void setRepeatable(boolean isRepeatable) {
+    this.isRepeatable = isRepeatable;
+  }
+
+  /**
+   * Moves the Script to a new tile (should only be used in Editor)
+   * 
+   * @param tx The tile x location of the bottom left corner of the Script
+   * @param ty The tile y location of the bottom left corner of the Script
+   */
+  public void setTileLocation(int tx, int ty){
+    this.x=tx*16+EditorMap.getX();
+    this.y=ty*16+EditorMap.getY();
+    
+    this.tx = tx;
+    this.ty = ty;
+  }
+
 
 }

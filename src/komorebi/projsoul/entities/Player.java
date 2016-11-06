@@ -1,5 +1,5 @@
 /**
- * Clyde.java       May 15, 2016, 11:58:06 PM
+ * Player.java       May 15, 2016, 11:58:06 PM
  */
 package komorebi.projsoul.entities;
 
@@ -7,23 +7,28 @@ import java.awt.Rectangle;
 
 import org.lwjgl.input.Keyboard;
 
+import komorebi.projsoul.attack.Attack;
 import komorebi.projsoul.attack.MeleeAttack;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Camera;
+import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MagicBar;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
+import komorebi.projsoul.states.Death;
 import komorebi.projsoul.states.Game;
 
 /**
  * @author Aaron Roy
  * @author Andrew Faulkenberry
  */
-public class Player extends Entity implements Playable{
+public abstract class Player extends Entity implements Playable{
 
+  public abstract void levelUp();
+  
   private boolean up;
   private boolean down;
   private boolean left;
@@ -31,10 +36,13 @@ public class Player extends Entity implements Playable{
   private boolean run;
   private boolean pause;
   private boolean guiding;
-  
-  private int health;
 
-  private boolean isAttacking;
+  private boolean dying;
+  private boolean dead; 
+
+  public Characters character;
+
+  public static boolean isAttacking;
 
   private boolean canMove = true;
 
@@ -44,32 +52,37 @@ public class Player extends Entity implements Playable{
   private int framesToGo;
   private boolean hasInstructions;
 
-  private Animation upAni;
-  private Animation downAni;
-  private Animation leftAni;
-  private Animation rightAni;
+  public Animation upAni;
+  public Animation downAni;
+  public Animation leftAni;
+  public Animation rightAni;
 
-  private Animation hurtLeftAni;
-  private Animation hurtRightAni;
-  private Animation hurtUpAni;
-  private Animation hurtDownAni;
+  public Animation hurtLeftAni;
+  public Animation hurtRightAni;
+  public Animation hurtUpAni;
+  public Animation hurtDownAni;
+  public Animation deathAni;
+
   private int hurtCount;
 
   private Rectangle area;
   private boolean invincible, restoreMvmtX, restoreMvmtY;
-
+  
   private static final float SPEED = 1;
 
-  private Face dir = Face.DOWN;    
+  public Face dir = Face.DOWN;    
   private Execution ex;
 
   private Lock lock;
 
   public Rectangle future;
 
-  private MeleeAttack melee;
+  public MagicBar magic;
+  public HUD health;
+    
+  public boolean doNotRender;
   
-  private MagicBar magic;
+  public static final double MEAN_STAT = 50.0;
 
   /**
    * @param x x pos, from left
@@ -78,67 +91,18 @@ public class Player extends Entity implements Playable{
   public Player(float x, float y) {
     super(x, y, 16, 24);
     ent = Entities.CLYDE;
-    
+
     restoreMvmtX = true;
     restoreMvmtY = true;
 
     area = new Rectangle((int) x, (int) y, 16, 24);
     future = new Rectangle((int) x, (int) y, 16, 24);
 
-    upAni =    new Animation(6, 8, 11);
-    downAni =  new Animation(6, 8, 11);
-    leftAni =  new Animation(6, 8, 11);
-    rightAni = new Animation(6, 8, 11);
-
-    hurtUpAni = new Animation(2,8,16,35,11);
-    hurtDownAni = new Animation(2,8,16,34,11);
-    hurtRightAni = new Animation(2,8,14,33,11);
-    hurtLeftAni = new Animation(2,8,14,33,11);
-
-    downAni.add(8,162,16,34);
-    downAni.add(28,164,17,32);
-    downAni.add(49,161,18,35);
-    downAni.add(71,162,16,34);
-    downAni.add(91,164,17,32);
-    downAni.add(112,161,18,35);
-
-    upAni.add(8,204,16,35);
-    upAni.add(28,207,18,32);
-    upAni.add(50,206,18,33);
-    upAni.add(71,204,16,35);
-    upAni.add(91,207,18,32);
-    upAni.add(113,206,18,33);
-
-    rightAni.add(3,247,21,32);
-    rightAni.add(30,246,14,33);
-    rightAni.add(52,245,14,34);
-    rightAni.add(72,247,22,32);
-    rightAni.add(99,246,14,33);
-    rightAni.add(120,245,15,34);
-
-    leftAni.add(3,247,21,32,0,true);
-    leftAni.add(30,246,14,33,0,true);
-    leftAni.add(52,245,14,34,0,true);
-    leftAni.add(72,247,22,32,0,true);
-    leftAni.add(99,246,14,33,0,true);
-    leftAni.add(120,245,15,34,0,true);
-
-    hurtUpAni.add(8,204);
-    hurtUpAni.add(141, 205);
-
-    hurtDownAni.add(8, 162);
-    hurtDownAni.add(141, 163);
-
-    hurtRightAni.add(30, 246);
-    hurtRightAni.add(141, 246);
-
-    hurtLeftAni.add(30, 246, true);
-    hurtLeftAni.add(141, 246, true);
-
-
-    melee = new MeleeAttack();
-    magic = new MagicBar(200);
-    health = 200;
+    deathAni = new Animation(4,8,16,21,11,false);
+    deathAni.add(0, 57);
+    deathAni.add(0, 82);
+    deathAni.add(0, 103);
+    deathAni.add(0, 124);
 
   }
 
@@ -147,7 +111,7 @@ public class Player extends Entity implements Playable{
    */
   public void getInput(){
 
-    if (canMove)
+    if (Death.playable)
     {
       up =    Keyboard.isKeyDown(Keyboard.KEY_UP) && 
           !Keyboard.isKeyDown(Keyboard.KEY_DOWN);
@@ -157,7 +121,6 @@ public class Player extends Entity implements Playable{
           !Keyboard.isKeyDown(Keyboard.KEY_RIGHT);
       right = Keyboard.isKeyDown(Keyboard.KEY_RIGHT) && 
           !Keyboard.isKeyDown(Keyboard.KEY_LEFT);
-
       run = KeyHandler.keyDown(Key.Z);
     }
 
@@ -168,7 +131,27 @@ public class Player extends Entity implements Playable{
    */
   @Override
   public void update() {
-
+	  if (Death.playable)
+	    {
+	      up =    Keyboard.isKeyDown(Keyboard.KEY_UP) && 
+	          !Keyboard.isKeyDown(Keyboard.KEY_DOWN);
+	      down =  Keyboard.isKeyDown(Keyboard.KEY_DOWN) && 
+	          !Keyboard.isKeyDown(Keyboard.KEY_UP);
+	      left =  Keyboard.isKeyDown(Keyboard.KEY_LEFT) && 
+	          !Keyboard.isKeyDown(Keyboard.KEY_RIGHT);
+	      right = Keyboard.isKeyDown(Keyboard.KEY_RIGHT) && 
+	          !Keyboard.isKeyDown(Keyboard.KEY_LEFT);
+	      run = KeyHandler.keyDown(Key.Z);
+	    }
+	  
+	if(!Death.playable)
+	{
+		up = false;
+		down = false;
+		left = false;
+		right = false;
+		
+	}
     int aniSpeed = 8;
 
     if (canMove) {
@@ -246,30 +229,7 @@ public class Player extends Entity implements Playable{
       }
        */
 
-      if (isAttacking && !melee.playing())
-      {
-        isAttacking = false;
-      }
-      
-      if (KeyHandler.keyClick(Key.X) && !isAttacking && magic.hasEnoughMagic(29))
-      {        
-        upAni.hStop();
-        downAni.hStop();
-        leftAni.hStop();
-        rightAni.hStop();
 
-        isAttacking = true;
-        melee.newAttack(dir);
-        
-        magic.changeMagicBy(-10);
-      }
-
-      if (!isAttacking)
-      {
-        melee.setDirection(dir);
-      } 
-
-      melee.update((int) x, (int) y);
 
       upAni.setSpeed(aniSpeed);
       downAni.setSpeed(aniSpeed);
@@ -290,7 +250,7 @@ public class Player extends Entity implements Playable{
           if (dx>0) dx-=0.5;
           if (dx<0) dx+=0.5;
         }
-        
+
         if (!restoreMvmtY)
         {
           if (Math.abs(dy)<=0.5 && Math.abs(dy)>=0)
@@ -301,7 +261,7 @@ public class Player extends Entity implements Playable{
           if (dy>0) dy-=0.5;
           if (dy<0) dy+=0.5;
         }
-       
+
         if (hurtCount<=0)
         {
           invincible = false;
@@ -330,6 +290,7 @@ public class Player extends Entity implements Playable{
           }
         }
       }
+
 
       //TODO Debug
       if(!KeyHandler.keyDown(Key.G)){
@@ -404,9 +365,32 @@ public class Player extends Entity implements Playable{
     future.y = (int) y;
 
     guiding = false;
-    
+
     magic.update();
+
+    //TODO: Auto-level up
+    if (KeyHandler.controlDown() && KeyHandler.keyClick(Key.PLUS))
+    {
+      levelUp();
+    }
     
+    //TODO Stat Dump
+    if (KeyHandler.controlDown() && KeyHandler.keyClick(Key.S))
+    {
+      for (Characters c: Characters.values())
+      {
+        System.out.println(c + ": ");
+        System.out.println("Att: " + Player.getAttack(c)
+            + "\tDef: " + Player.getDefense(c));
+        System.out.println("Mag: " + Player.getMaxMagic(c)
+            + "\tHth: " + Player.getMaxHealth(c));
+        System.out.println("XP: " + Player.getXP(c) + " / " + 
+            Player.getXPToNextLevel(c) + "\tLevel " + Player.getLevel(c)
+            + "\n");
+      }
+    }
+
+
   }
 
   /**
@@ -414,14 +398,11 @@ public class Player extends Entity implements Playable{
    */
   @Override
   public void render() {
-
+if(Death.playable)
+{
     if (!invincible)
     {
-      if (isAttacking)
-      {
-        melee.play(x, y);
-      } else
-      {
+      if (!isAttacking) {
         switch (dir) {
           case DOWN:
             downAni.playCam(x,y);
@@ -438,6 +419,9 @@ public class Player extends Entity implements Playable{
           default:
             break;
         }
+      } else
+      {
+        renderAttack();
       }
     } else
     {
@@ -457,10 +441,10 @@ public class Player extends Entity implements Playable{
           break;
         default:
           break;
-
       }
     }
-    
+}
+
   }
 
   public void pause(int frames, Lock lock)
@@ -476,7 +460,6 @@ public class Player extends Entity implements Playable{
 
   public void walk(Face dir, int tiles)
   {
-
     hasInstructions=true;
     framesToGo = tiles*16;
     //isMoving=true;
@@ -500,7 +483,6 @@ public class Player extends Entity implements Playable{
       default:
         break;
     }
-
   }
 
   public void walk(Face dir, int tiles, Execution ex)
@@ -656,6 +638,7 @@ public class Player extends Entity implements Playable{
       }
     }
 
+
   }
 
   public void stop()
@@ -743,10 +726,6 @@ public class Player extends Entity implements Playable{
     return isAttacking;
   }
 
-  public Rectangle getAttackHitBox()
-  {
-    return melee.getHitBox();
-  }
 
 
   public void setDelta(float dx, float dy)
@@ -783,15 +762,13 @@ public class Player extends Entity implements Playable{
     return area;
   }
 
-  public void inflictPain(float dx, float dy)
+  public void inflictPain(int attack, float dx, float dy)
   {
     invincible = true;
     restoreMvmtX = false;
     restoreMvmtY = false;
-    
+
     hurtCount = 40;
-    
-    health-=25;
 
     switch (dir)
     {
@@ -812,6 +789,18 @@ public class Player extends Entity implements Playable{
 
     }
 
+    System.out.println("Damage = " + attack + " - " + 
+        getDefense(character) + "/2");
+    
+    health.health -= (int) (attack - (getDefense(character)/2));
+
+    //Kills the enemy
+    if (health.health<=0)
+    {
+      deathAni.resume();
+      dying = true;
+    }
+
     this.dx = dx;
     this.dy = dy;
   }
@@ -820,10 +809,149 @@ public class Player extends Entity implements Playable{
   {
     return invincible;
   }
-  
+
   public MagicBar magicBar()
   {
     return magic;
   }
 
+  public Characters getCharacter()
+  {
+    return character;
+  }
+
+  public void setLocation(float x, float y)
+  {
+    this.x = x;
+    this.y = y;
+  }
+  
+  public void renderHUD()
+  {
+    magic.render();
+    health.render();
+  }
+    
+  public abstract void renderAttack();
+  
+  public static int getAttack(Characters c)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.attack;
+      case FLANNERY:
+        return Flannery.attack;
+      case SIERRA:
+        return Sierra.attack;
+      case BRUNO:
+        return Bruno.attack;
+    }
+    
+    return 0;
+  }
+  
+  public static int getDefense(Characters c)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.defense;
+      case FLANNERY:
+        return Flannery.defense;
+      case SIERRA:
+        return Sierra.defense;
+      case BRUNO:
+        return Bruno.defense;
+    }
+    
+    return 0;
+  }
+  
+  public static int getMaxMagic(Characters c)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.maxMagic;
+      case FLANNERY:
+        return Flannery.maxMagic;
+      case SIERRA:
+        return Sierra.maxMagic;
+      case BRUNO:
+        return Bruno.maxMagic;
+    }
+    
+    return 0;  
+  }
+  
+  public static int getMaxHealth(Characters c)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.maxHealth;
+      case FLANNERY:
+        return Flannery.maxHealth;
+      case SIERRA:
+        return Sierra.maxHealth;
+      case BRUNO:
+        return Bruno.maxHealth;
+    }
+    
+    return 0;  
+  }
+  
+  public static int getXP(Characters c)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.xp;
+      case FLANNERY:
+        return Flannery.xp;
+      case SIERRA:
+        return Sierra.xp;
+      case BRUNO:
+        return Bruno.xp;
+    }
+    
+    return 0;  
+  }
+  
+  public static int getXPToNextLevel(Characters c)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.nextLevelUp;
+      case FLANNERY:
+        return Flannery.nextLevelUp;
+      case SIERRA:
+        return Sierra.nextLevelUp;
+      case BRUNO:
+        return Bruno.nextLevelUp;
+    }
+    
+    return 0;  
+  }
+  
+  public static int getLevel(Characters c)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        return Caspian.level;
+      case FLANNERY:
+        return Flannery.level;
+      case SIERRA:
+        return Sierra.level;
+      case BRUNO:
+        return Bruno.level;
+    }
+    
+    return 0;  
+  }
+  
+  public abstract void giveXP(int xp);
 }

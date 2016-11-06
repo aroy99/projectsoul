@@ -74,7 +74,7 @@ public class MainT {
     //create display
     try {
       Display.setDisplayMode(new DisplayMode(272 * scale, 256 * scale));
-      Display.setTitle("Clyde\'s Tile Editor");
+      Display.setTitle("Project Soul Tile Editor");
       //      Display.setResizable(true);
       Display.create();
       Display.setVSyncEnabled(true);

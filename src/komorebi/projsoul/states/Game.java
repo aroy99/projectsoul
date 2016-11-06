@@ -13,12 +13,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import komorebi.projsoul.engine.GameHandler;
+import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Item;
 import komorebi.projsoul.engine.Item.Items;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.MagicBar;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.Player;
+import komorebi.projsoul.entities.SignPost;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.Execution;
@@ -26,7 +30,6 @@ import komorebi.projsoul.script.Fader;
 import komorebi.projsoul.script.InstructionList;
 import komorebi.projsoul.script.Instructions;
 import komorebi.projsoul.script.Lock;
-import komorebi.projsoul.script.SignHandler;
 import komorebi.projsoul.script.SpeechHandler;
 import komorebi.projsoul.script.Task;
 import komorebi.projsoul.script.Task.TaskWithNumber;
@@ -43,7 +46,7 @@ public class Game extends State{
   public ArrayList<NPC> npcs;
   public ArrayList<AreaScript> scripts;
   public ArrayList<Item> items = new ArrayList<Item>();
-  
+ 
   public boolean[] booleans;
 
   private boolean hasText, hasChoice;
@@ -60,6 +63,9 @@ public class Game extends State{
   private int confidence, money;
   
   public static String testLoc;
+  
+  public HUD hud;
+  public Death death;
   
   public class Int {
     private int val;
@@ -101,6 +107,10 @@ public class Game extends State{
 
     confidence = 0;
     money = 15;
+    
+    hud = new HUD();
+    death = new Death();
+    
 
 
   }
@@ -111,12 +121,14 @@ public class Game extends State{
   @Override
   public void getInput() {
     
-    if (KeyHandler.keyClick(Key.C))
+    if (KeyHandler.keyClick(Key.SPACE))
     {
       if (speaker!=null)
       {
         if (speaker.isWaitingOnParagraph())
         {
+        //TODO Debug
+          System.out.println("Next");
           speaker.nextParagraph();
         } else {
           if (!speaker.alreadyAsked())
@@ -129,20 +141,11 @@ public class Game extends State{
               speaker.clear();
 
               if (hasChoice) {
-                
                 speaker.branch(pickIndex);
               }
 
               hasChoice=false;
               hasText=false;
-              
-              if (speaker instanceof SignHandler)
-              {
-                SignHandler sign = (SignHandler) speaker;
-                sign.disengage();
-              }
-              
-              speaker = null;
             }
           }
         } 
@@ -152,6 +155,9 @@ public class Game extends State{
 
     //TODO Debug
     map.getInput();
+  
+
+
 
     if (KeyHandler.keyClick(Key.LEFT))
     {
@@ -161,8 +167,8 @@ public class Game extends State{
         if (pickIndex < 1) {
           pickIndex = maxOpt;
         }
-        
         speaker.setPickerIndex(pickIndex);
+        //choosesLeft=!choosesLeft;
 
       }  
     }
@@ -175,7 +181,6 @@ public class Game extends State{
         if (pickIndex > maxOpt) {
           pickIndex = 1;
         }
-        
         speaker.setPickerIndex(pickIndex);
       }
     } 
@@ -198,7 +203,10 @@ public class Game extends State{
    */
   @Override
   public void update() {
-    // TODO Auto-generated method stub    
+    // TODO Auto-generated method stub  
+	  hud.update();
+	  death.update();
+	  
 
     
     KeyHandler.getInput();
@@ -229,9 +237,13 @@ public class Game extends State{
   @Override
   public void render() {
     map.render();
-    Map.getClyde().magicBar().render();
+    Map.getPlayer().magicBar().render();
+    hud.render();
+    death.render();
 
     Fader.render();
+    
+   
 
   }
 
@@ -267,12 +279,12 @@ public class Game extends State{
   }
 
   /**
-   * Sets the speech bubble currently presenting a question to the player
-   * @param text The asking NPC's SpeechHandler object
+   * Sets the NPC currently presenting a question to the player
+   * @param npc The asking NPCS
    */
-  public void setAsker(SpeechHandler text)
+  public void setAsker(SpeechHandler talk)
   {
-    this.speaker = text;
+    this.speaker = talk;
     this.hasText = true;
     this.hasChoice = true;
     //this.choosesLeft = true;

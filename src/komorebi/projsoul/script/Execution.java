@@ -202,11 +202,11 @@ public class Execution implements Runnable {
         npc.setTileLocation(taskLoc.getX(), taskLoc.getY());
         break;
       case LOCK:
-        Map.getClyde().stop();
-        Map.getClyde().lock();
+        Map.getPlayer().stop();
+        Map.getPlayer().lock();
         break;
       case UNLOCK:
-        Map.getClyde().unlock();
+        Map.getPlayer().unlock();
         break;
       case SAY:
         taskStr = (TaskWithString) task;
@@ -242,20 +242,20 @@ public class Execution implements Runnable {
             taskNumLoc.getX(), taskNumLoc.getY());
         break;
       case CLYDE_WALK_LEFT:
-        Map.getClyde().walk(Face.LEFT, 1, lock);
+        Map.getPlayer().walk(Face.LEFT, 1, lock);
         break;
       case CLYDE_WALK_RIGHT:
-        Map.getClyde().walk(Face.RIGHT, 1, lock);
+        Map.getPlayer().walk(Face.RIGHT, 1, lock);
         break;
       case CLYDE_WALK_UP:
-        Map.getClyde().walk(Face.UP, 1, lock);
+        Map.getPlayer().walk(Face.UP, 1, lock);
         break;
       case CLYDE_WALK_DOWN:
-        Map.getClyde().walk(Face.DOWN, 1, lock);
+        Map.getPlayer().walk(Face.DOWN, 1, lock);
         break;
       case CLYDE_PAUSE:
         taskNum = (TaskWithNumber) task;
-        Map.getClyde().pause(taskNum.getNumber(), lock);
+        Map.getPlayer().pause(taskNum.getNumber(), lock);
         break;
       case SIMUL_RUN_BRANCH:
         //TODO Debug
@@ -265,31 +265,31 @@ public class Execution implements Runnable {
         ThreadHandler.newThread(new NewThread(ex));
         break;
       case CLYDE_TURN_LEFT:
-        Map.getClyde().turn(Face.LEFT);
+        Map.getPlayer().turn(Face.LEFT);
         break;
       case CLYDE_TURN_RIGHT:
-        Map.getClyde().turn(Face.RIGHT);
+        Map.getPlayer().turn(Face.RIGHT);
         break;
       case CLYDE_TURN_UP:
-        Map.getClyde().turn(Face.UP);
+        Map.getPlayer().turn(Face.UP);
         break;
       case CLYDE_TURN_DOWN:
-        Map.getClyde().turn(Face.DOWN);
+        Map.getPlayer().turn(Face.DOWN);
         break;
       case ALIGN_LEFT:
-        Map.getClyde().align(Face.LEFT, lock);
+        Map.getPlayer().align(Face.LEFT, lock);
         break;
       case ALIGN_RIGHT:
-        Map.getClyde().align(Face.RIGHT, lock);
+        Map.getPlayer().align(Face.RIGHT, lock);
         break;
       case ALIGN_DOWN:
-        Map.getClyde().align(Face.DOWN, lock);
+        Map.getPlayer().align(Face.DOWN, lock);
         break;
       case ALIGN_UP:
-        Map.getClyde().align(Face.UP, lock);
+        Map.getPlayer().align(Face.UP, lock);
         break;
       case ALIGN:
-        Map.getClyde().align(npc, lock);
+        Map.getPlayer().align(npc, lock);
         break;
       case PLAY_SONG:
         taskStr = (TaskWithString) task;
@@ -302,8 +302,8 @@ public class Execution implements Runnable {
         break;
       case CLYDE_GO_TO:
         taskLoc = (TaskWithLocation) task;
-        Map.getClyde().goToPixX(taskLoc.getX()*16, lock);
-        Map.getClyde().goToPixY(taskLoc.getY()*16, lock);
+        Map.getPlayer().goToPixX(taskLoc.getX()*16, lock);
+        Map.getPlayer().goToPixY(taskLoc.getY()*16, lock);
         break;
       case STOP_SONG:
         AudioHandler.stop();

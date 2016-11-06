@@ -20,18 +20,24 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.entities.Bruno;
+import komorebi.projsoul.entities.Caspian;
+import komorebi.projsoul.entities.Characters;
 import komorebi.projsoul.entities.Chaser;
 import komorebi.projsoul.entities.Enemy;
-import komorebi.projsoul.entities.Entity;
+import komorebi.projsoul.entities.Flannery;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.Player;
+import komorebi.projsoul.entities.Sierra;
 import komorebi.projsoul.entities.SignPost;
+import komorebi.projsoul.entities.XPObject;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.Script;
 import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.WalkingScript;
 import komorebi.projsoul.script.WarpScript;
+import komorebi.projsoul.states.Game.Int;
 
 
 /**
@@ -49,8 +55,15 @@ public class Map implements Playable{
 
   private ArrayList<NPC> npcs;
   private ArrayList<AreaScript> scripts;
-  private static Player play;
   private ArrayList<SignPost> signs;
+  private ArrayList<XPObject> xpObj;
+  
+  private static Player play;
+  
+  private static Caspian caspian;
+  private static Flannery flannery;
+  private static Sierra sierra;
+  private static Bruno bruno;
 
   //TODO Debug
   private ArrayList<Enemy> enemies = new ArrayList<Enemy>();
@@ -59,8 +72,6 @@ public class Map implements Playable{
   private boolean isHitBox;
   private boolean isGrid;
 
-  //TODO Debug
-  private int debugCount;
 
 
   /**
@@ -105,6 +116,7 @@ public class Map implements Playable{
       npcs = new ArrayList<NPC>();
       scripts = new ArrayList<AreaScript>();
       signs = new ArrayList<SignPost>();
+      xpObj = new ArrayList<XPObject>();
       
       for (int i = 0; i < tiles.length; i++) {
         String[] str = reader.readLine().split(" ");
@@ -198,15 +210,21 @@ public class Map implements Playable{
       }
 
       reader.close();
-
-      play = new Player(tiles[0].length/2*16,0);
+      
+      caspian = new Caspian(tiles[0].length/2*16,0);
+      flannery = new Flannery(tiles[0].length/2*16,0);
+      sierra = new Sierra(tiles[0].length/2*16,0);
+      bruno = new Bruno(tiles[0].length/2*16,0);
+      
+      play = caspian;
+      
       Camera.center(play.getX(), play.getY(), tiles[0].length*16, tiles.length*16);
 
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
     }
     
-    enemies.add(new Chaser(100, 100, 16, 21, 100));
+    enemies.add(new Chaser(100, 100, 16, 21, 100, 1));
 
   }
 
@@ -239,10 +257,18 @@ public class Map implements Playable{
     play.update();
 
     for (Enemy enemy: enemies)
-    {
-      enemy.updateHits(play.getAttackHitBox().intersects(enemy.getHitBox()) 
-          && play.isAttacking(), play.getDirection());
+    { 
+      if (play == caspian)
+      {
+        if (caspian.getAttackHitBox().intersects(enemy.getHitBox()) 
+            && caspian.isAttacking() && !enemy.invincible())
+        {
+          enemy.inflictPain((int) (Player.getAttack(play.getCharacter())), play.getDirection(),
+              play.getCharacter());
+        }
+      }
       enemy.update();
+
     }
 
     for (NPC npc: npcs) {
@@ -276,11 +302,45 @@ public class Map implements Playable{
 
 
     for (SignPost sign: signs)
-    {            
+    { 
       if (sign.isApproached(play.getArea(), play.getDirection())
           && KeyHandler.keyClick(Key.C))
       {
         sign.show();
+      }
+    }
+    
+    if (KeyHandler.keyClick(Key.SPACE))
+    {
+      switchPlayer();
+    }
+    
+    for (XPObject xp: xpObj)
+    {
+      if (xp.withinRadius(play.getHitBox()))
+      {
+        xp.guide(play.getX(), play.getY());
+      } else
+      {
+        xp.setSpeed(0, 0);
+      }
+      
+      xp.update();
+      
+      if (play.getHitBox().intersects(xp.getHitBox()))
+      {
+        xp.eat();
+      }
+      
+      
+    }
+    
+    for (Iterator<XPObject> it = xpObj.iterator(); it.hasNext();)
+    {      
+      XPObject xp = it.next();
+      if (xp.destroyed())
+      {
+        it.remove();
       }
 
     }
@@ -344,6 +404,12 @@ public class Map implements Playable{
     {
       sign.render();
     }
+    
+    for (XPObject xp: xpObj)
+    {
+      xp.render();
+    }
+    
     //TODO Debug
     if(isHitBox){
       Draw.rectCam((int)play.getX(), (int)play.getY(), 16, 16, 18, 16, 18, 16, 2);
@@ -452,13 +518,13 @@ public class Map implements Playable{
   public void guidePlayer(float x, float y, float dx, float dy)
   {
     
+    
       //Speed affected
       int x1 = (int)((x-16+dx)/16)+1; //Left
       int y1 = (int)((y-16+dy)/16)+1; //Bottom
 
       int bufX = Math.abs(x1*16 - (int) (x +dx));
-      int bufY = Math.abs(y1*16 - (int) (y +dy));
-
+      int bufY = Math.abs(y1*16 - (int) (y +dy));      
       int x2 = (int)((x-1+dx)/16)+1;  //Right
       int y2 = (int)((y-1+dy)/16)+1;  //Top
 
@@ -479,20 +545,43 @@ public class Map implements Playable{
       
        if (ret[0] && (collision[y2][x3] ^ collision[y2][x4]))
        {
+         //Player moving up
          if (collision[y2][x3] && (16 - bufX) >=10)
          {
            play.guide(-1, 0);
-         } else if (collision[y2][x4] && bufX>=10) {
+         } else if (collision[y2][x4] && bufX >= 10) {
            play.guide(1, 0);
          }
        } else if (ret[2] && (collision[y1][x3] ^ collision[y1][x4]))
        {
-         if (collision[y1][x3] && (16 - bufY) >= 10)
+         //Player moving down
+         if (collision[y1][x3] && (16 - bufX) >= 10)
          {
-           System.out.println("Guide 1");
-         } else if (collision[y1][x4] && bufY>=10)
+           play.guide(-1, 0);
+         } else if (collision[y1][x4] && bufX>=10)
          {
-           System.out.println("Guide 2");
+           play.guide(1, 0);
+         }
+       } else if (ret[1] && (collision[y3][x2] ^ collision[y4][x2]))
+       {
+         //Player moving right
+         if (collision[y3][x2] && (bufY <= 6))
+         {
+           play.guide(0, -1);
+         } else if (collision[y4][x2] && (16 - bufY) <= 6)
+         {
+           play.guide(0, 1);
+         }
+         
+       } else if (ret[3] && (collision[y3][x1] ^ collision[y4][x1]))
+       {
+         //Player moving left
+         if (collision[y3][x1] && (bufY <= 6))
+         {
+           play.guide(0, -1);
+         } else if (collision[y4][x1] && (16 - bufY) <= 6)
+         {
+           play.guide(0, 1);
          }
        }
      
@@ -556,7 +645,7 @@ public class Map implements Playable{
     tiles[x][y] = tile;
   }
 
-  public static Player getClyde()
+  public static Player getPlayer()
   {
     return play;
   }
@@ -592,6 +681,73 @@ public class Map implements Playable{
         it.remove();
       }
 
+    }
+  }
+  
+  public void switchPlayer()
+  {
+    switch (play.getCharacter())
+    {
+      case CASPIAN:
+        flannery.setLocation(caspian.getX(), caspian.getY());
+        play = flannery;
+        break;
+      case FLANNERY:
+        sierra.setLocation(flannery.getX(), flannery.getY());
+        play = sierra;
+        break;
+      case SIERRA:
+        bruno.setLocation(sierra.getX(), sierra.getY());
+        play = bruno;
+        break;
+      case BRUNO:
+        caspian.setLocation(bruno.getX(), bruno.getY());
+        play = caspian;
+        break;
+      default:
+        break;
+    }
+  }
+  
+  public static Characters currentPlayer()
+  {
+    return play.getCharacter();
+  }
+  
+  public void addXPObject(XPObject xp)
+  {
+    xpObj.add(xp);
+  }
+  
+  /**
+   * Calculates the distance between the enemy and the player
+   * @param x The x of the enemy
+   * @param y The y of the enemy
+   * @param tarX The target X (i.e., the x of the player)
+   * @param tarY The target Y (i.e., the y of the player)
+   * @return The distance, as a double
+   */
+  public static double distanceBetween(float x, float y, float tarX, float tarY)
+  {
+    return Math.sqrt(Math.pow((x-tarX), 2) + Math.pow((y-tarY), 2));
+  }
+  
+  public void giveXP(Characters c, int xp)
+  {
+    switch (c)
+    {
+      case CASPIAN:
+        caspian.giveXP(xp);
+        break;
+      case FLANNERY:
+        flannery.giveXP(xp);
+        break;
+      case SIERRA:
+        sierra.giveXP(xp);
+        break;
+      case BRUNO:
+        bruno.giveXP(xp);
+        break;
     }
   }
 

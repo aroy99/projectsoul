@@ -713,13 +713,13 @@ public class TileSetEditor implements Playable {
       if (name.length()>5)
       {
         if(name.substring(name.length()-5).equals(".tset")){
-          Display.setTitle("Clyde\'s Tile Editor - " + name);
+          Display.setTitle("Project Soul Tile Editor - " + name);
         }else{
-          Display.setTitle("Clyde\'s Tile Editor - " + name + ".tset");
+          Display.setTitle("Project Soul Tile Editor - " + name + ".tset");
         }
       } else
       {
-        Display.setTitle("Clyde\'s Tile Editor - " + name + ".tset");
+        Display.setTitle("Project Soul Tile Editor - " + name + ".tset");
       }
       
 
@@ -772,7 +772,7 @@ public class TileSetEditor implements Playable {
           }
         }
 
-        Display.setTitle("Clyde\'s Editor - "+saveName);
+        Display.setTitle("Project Soul Editor - "+saveName);
 
         save = true;
         newSave = true;
