@@ -954,5 +954,4 @@ if(Death.playable)
   }
   
   public abstract void giveXP(int xp);
-
 }

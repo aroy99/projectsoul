@@ -310,15 +310,5 @@ public class HUD implements Renderable
 		}
 		
 	}
-		
-		
-		
-		
-		
-		
 }
-	
-	
-		
-	
 

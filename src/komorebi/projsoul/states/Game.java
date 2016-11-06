@@ -110,6 +110,7 @@ public class Game extends State{
     
     hud = new HUD();
     death = new Death();
+    
 
 
   }
@@ -206,6 +207,8 @@ public class Game extends State{
 	  hud.update();
 	  death.update();
 	  
+
+    
     KeyHandler.getInput();
 
     map.update();
@@ -237,7 +240,10 @@ public class Game extends State{
     Map.getPlayer().magicBar().render();
     hud.render();
     death.render();
+
     Fader.render();
+    
+   
 
   }
 
