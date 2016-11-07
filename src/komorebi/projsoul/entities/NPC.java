@@ -614,12 +614,12 @@ public class NPC extends Entity {
    */
   public String ask(String[] args, Execution ex, Lock lock)
   {
-    /*text.write(args[0], 20, 58, new EarthboundFont(1));
+    text.write(args[0], 20, 58, new EarthboundFont(1));
     if (args.length>1) text.write(args[1], 30, 40, new EarthboundFont(1));
     if (args.length>2) text.write(args[2], 100, 40, new EarthboundFont(1));
     if (args.length>3) text.write(args[3], 30, 22, new EarthboundFont(1));
     if (args.length>4) text.write(args[4], 100, 22, new EarthboundFont(1));
-*/
+
     this.instructor = ex;
     this.lock = lock;
 
@@ -955,11 +955,11 @@ public class NPC extends Entity {
         (surround[3].intersects(clyde) && direction == Face.RIGHT)) && !isTalking;
   }
   
-  public void say(String s, Lock lock)
+   public void say(String s, Lock lock)
   {
-    //text.write(s, 20, 58, new EarthboundFont(1));
+    text.write(s, 20, 58, new EarthboundFont(1));
     Main.getGame().setSpeaker(text);
-    //text.setAndLock(lock);
+    text.setAndLock(lock);
   }
   
   public void pause(int frames, Lock lock)

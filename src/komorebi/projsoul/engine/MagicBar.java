@@ -32,7 +32,7 @@ public class MagicBar implements Renderable {
     proportion = (double) this.magic/maxMagic;
     
     text.clear();
-    //text.write(String.valueOf(magic), 127, 207, new EarthboundFont(1));
+    text.write(String.valueOf(magic), 127, 207, new EarthboundFont(1));
   }
 
   public void render()

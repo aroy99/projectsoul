@@ -5,8 +5,7 @@ package komorebi.projsoul.script;
 
 import java.util.ArrayList;
 
-import komorebi.projsoul.entities.NPC;
-import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.script.Task.TaskWithBranches;
 
 /**
  * 
@@ -18,7 +17,7 @@ public class InstructionList {
   private String branchName;
 
   ArrayList<Task> instructions;
-
+  public TaskWithBranches superTask;
 
   private int instructionIndex;
 
@@ -67,11 +66,19 @@ public class InstructionList {
   {
     instructionIndex = num;
   }
+  
+  public TaskWithBranches getSuperTask() {
+    return superTask;
+  }
 
   public int getInstructionIndex()
   {
     return instructionIndex;
   }
 
+  public void setTaskWithBranches(TaskWithBranches t)
+  {
+    superTask = t;
+  }
 
 }

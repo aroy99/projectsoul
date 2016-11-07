@@ -1,47 +1,31 @@
 package komorebi.projsoul.attack;
 
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import komorebi.projsoul.entities.Characters;
 import komorebi.projsoul.entities.Face;
 
-public class ProjectileAttack extends Attack {
-
-  private Rectangle hitBox;
+public class ProjectileAttack<T extends Projectile> extends Attack<T> {
   
-  private ArrayList<FireBall> projs = new ArrayList<FireBall>();
-
-  private Characters character;
+  private static ArrayList<Projectile> projs = new ArrayList<Projectile>();
   
   private boolean playing;
-  
-  public ProjectileAttack(Characters c)
+ 
+  public ProjectileAttack(T factory)
   {
-    switch (c)
-    {
-      case FLANNERY:
-        
-        
-        break;
-      default:
-        break;
-    }
+    super(factory);
   }
 
-  public void newAttack(float x, float y, float dx, float dy, Face dir,
-      int attack)
-  {
-    projs.add(new FireBall(x,y,dx,dy,dir,attack));
-    
+  public void newAttack(T add)
+  { 
+    projs.add(add);
     playing = true;
   }
   
-  public void play() {
-    for (FireBall fire: projs)
+  public static void play() {
+    for (Projectile proj: projs)
     {
-      fire.play();
+      proj.play();
     }
   }
   
@@ -50,21 +34,34 @@ public class ProjectileAttack extends Attack {
     return playing;
   }
   
-  public void update()
+  public static void update()
   {
-    for (FireBall fire: projs)
+    for (Projectile proj: projs)
     {
-      fire.update();
+      proj.update();
     }
     
-    for (Iterator<FireBall> it = projs.iterator(); it.hasNext();)
+    for (Iterator<Projectile> it = projs.iterator(); it.hasNext();)
     {      
-      FireBall fire = it.next();
-      if (fire.destroyed())
+      Projectile proj = it.next();
+      if (proj.destroyed())
       {
         it.remove();
       }
 
     }
   }
+
+  @SuppressWarnings("unchecked")
+  public void newAttack(float x, float y, float dx, float dy, Face dir,
+      int attack) {
+      projs.add((T) factory.build(x, y, dx, dy, dir, attack));
+  }
+  
+  
+  public static boolean empty()
+  {
+    return projs.isEmpty();
+  }
+
 }

@@ -46,6 +46,7 @@ public class Chaser extends Enemy {
     targetY = Map.getPlayer().getY();
    if(Death.playable)
    {
+    
     if (Map.distanceBetween(x,y,targetX,targetY)>maxClydeDist && (dx!=0 || dy!=0))
     {
       dx = 0;
@@ -94,4 +95,5 @@ public class Chaser extends Enemy {
     return baseHealth;
 
   }
+
 }

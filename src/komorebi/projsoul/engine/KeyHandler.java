@@ -80,6 +80,12 @@ public class KeyHandler {
     }
     return false;
   }
+  
+  public static boolean keyRelease(Key k)
+  {
+    return (!isKeyDown[k.getGLKey()] && wasKeyDown[k.getGLKey()]);
+
+  }
 
   /**
    * Returns a boolean value which is true if the specified key is down

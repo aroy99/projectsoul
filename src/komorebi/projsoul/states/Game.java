@@ -19,6 +19,7 @@ import komorebi.projsoul.engine.Item.Items;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MagicBar;
+import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.Player;
@@ -30,6 +31,7 @@ import komorebi.projsoul.script.Fader;
 import komorebi.projsoul.script.InstructionList;
 import komorebi.projsoul.script.Instructions;
 import komorebi.projsoul.script.Lock;
+import komorebi.projsoul.script.SignHandler;
 import komorebi.projsoul.script.SpeechHandler;
 import komorebi.projsoul.script.Task;
 import komorebi.projsoul.script.Task.TaskWithNumber;
@@ -56,11 +58,12 @@ public class Game extends State{
   private SpeechHandler speaker;
 
   private BufferedReader read;
-
-  private ArrayList<Lock> waitingLocks;
-  private ArrayList<Int> pauseFrames;
   
   private int confidence, money;
+  
+  public int framesToGo;
+  public boolean isPaused;
+  public Lock lock;
   
   public static String testLoc;
   
@@ -100,15 +103,12 @@ public class Game extends State{
     npcs = new ArrayList<NPC>();
     scripts = new ArrayList<AreaScript>();
 
-    pauseFrames = new ArrayList<Int>();
-    waitingLocks = new ArrayList<Lock>();
-
     booleans = new boolean[256];
 
     confidence = 0;
     money = 15;
     
-    hud = new HUD();
+    hud = new HUD(confidence);
     death = new Death();
     
 
@@ -118,17 +118,15 @@ public class Game extends State{
   /* (non-Javadoc)
    * @see komorebi.clyde.states.State#getInput()
    */
-  @Override
+@Override
   public void getInput() {
     
-    if (KeyHandler.keyClick(Key.SPACE))
+    if (KeyHandler.keyClick(Key.C))
     {
       if (speaker!=null)
       {
         if (speaker.isWaitingOnParagraph())
         {
-        //TODO Debug
-          System.out.println("Next");
           speaker.nextParagraph();
         } else {
           if (!speaker.alreadyAsked())
@@ -141,16 +139,28 @@ public class Game extends State{
               speaker.clear();
 
               if (hasChoice) {
+                
                 speaker.branch(pickIndex);
               }
 
               hasChoice=false;
               hasText=false;
+              
+              if (speaker instanceof SignHandler)
+              {
+                SignHandler sign = (SignHandler) speaker;
+                sign.disengage();
+              }
+              
+              speaker.releaseLocks();
+              speaker = null;
             }
           }
         } 
       } 
     }
+              
+             
 
 
     //TODO Debug
@@ -207,27 +217,21 @@ public class Game extends State{
 	  hud.update();
 	  death.update();
 	  
-
-    
     KeyHandler.getInput();
+    
+    if (isPaused)
+    {
+      framesToGo--;
+      
+      if (framesToGo<=0)
+      {
+        isPaused = false;
+        lock.resumeThread();
+      }
+    }
 
     map.update();
     Fader.update();
-
-    for (Iterator<Int> it = pauseFrames.iterator(); it.hasNext();)
-    {      
-      Int i = it.next();
-      i.decrement();
-      if (i.intValue()==0)
-      {
-        waitingLocks.get(pauseFrames.indexOf(i)).resumeThread();
-        waitingLocks.remove(pauseFrames.indexOf(i));
-        it.remove();
-      }
-
-    }
-
-
 
   }
 
@@ -237,15 +241,11 @@ public class Game extends State{
   @Override
   public void render() {
     map.render();
-    Map.getPlayer().magicBar().render();
-    hud.render();
-    death.render();
-
+    Map.getPlayer().renderHUD();
     Fader.render();
-    
-   
 
   }
+
 
   public static Map getMap(){
     return map;
@@ -272,10 +272,12 @@ public class Game extends State{
 
   public void pause(int frames, Lock lock)
   {
-    pauseFrames.add(new Int(frames));
-    waitingLocks.add(lock);
-
+    framesToGo = frames;
+    isPaused = true;
+    
+    this.lock = lock;
     lock.pauseThread();
+    
   }
 
   /**

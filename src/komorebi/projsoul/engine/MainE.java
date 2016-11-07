@@ -227,8 +227,8 @@ public class MainE {
   private static void updateFPS(int delta) {
     if (getTime() - lastFPS > 1000) {
       handler.clear();
-      //handler.write("FPS: " + fps, 1, 10, new EarthboundFont(1));
-      //handler.write("Delta: " + delta, 1, 1, new EarthboundFont(1));
+      handler.write("FPS: " + fps, 1, 10, new EarthboundFont(1));
+      handler.write("Delta: " + delta, 1, 1, new EarthboundFont(1));
       fps = 0; //reset the FPS counter
       lastFPS += 1000; //add one second
     }

@@ -4,7 +4,6 @@
 package komorebi.projsoul.script;
 
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.entities.Player;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.map.EditorMap;
 
@@ -128,7 +127,7 @@ public class AreaScript extends Script{
   {
     return script;
   }
-  
+
   public void setScript(String newScript){
     script = newScript;
   }
@@ -136,7 +135,7 @@ public class AreaScript extends Script{
   public NPC getNPC(){
     return npc;
   }
-  
+
   public void setNPC(NPC newNPC){
     npc = newNPC;
   }
@@ -151,7 +150,7 @@ public class AreaScript extends Script{
    */
   @Override
   public void abort() {
-    
+
   }
 
   /**

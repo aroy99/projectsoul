@@ -35,7 +35,7 @@ public class Death extends State
 	public void render()
 	{
 		// TODO Auto-generated method stub
-		if (HUD.health <= 0)
+		if (Map.allPlayersDead())
 		{
 			playable = false;
 			death = true;

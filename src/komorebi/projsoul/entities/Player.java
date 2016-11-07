@@ -8,7 +8,9 @@ import java.awt.Rectangle;
 import org.lwjgl.input.Keyboard;
 
 import komorebi.projsoul.attack.Attack;
-import komorebi.projsoul.attack.MeleeAttack;
+import komorebi.projsoul.attack.AttackInstance;
+import komorebi.projsoul.attack.ProjectileAttack;
+import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Camera;
 import komorebi.projsoul.engine.HUD;
@@ -18,7 +20,6 @@ import komorebi.projsoul.engine.MagicBar;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
-import komorebi.projsoul.states.Death;
 import komorebi.projsoul.states.Game;
 
 /**
@@ -36,18 +37,18 @@ public abstract class Player extends Entity implements Playable{
   private boolean run;
   private boolean pause;
   private boolean guiding;
-
+  
   private boolean dying;
   private boolean dead; 
 
   public Characters character;
 
-  public static boolean isAttacking;
+  public boolean isAttacking;
 
-  private boolean canMove = true;
+  protected boolean canMove = true;
 
-  private float dx;
-  private float dy;
+  protected float dx;
+  protected float dy;
 
   private int framesToGo;
   private boolean hasInstructions;
@@ -66,7 +67,9 @@ public abstract class Player extends Entity implements Playable{
   private int hurtCount;
 
   private Rectangle area;
-  private boolean invincible, restoreMvmtX, restoreMvmtY;
+  protected boolean invincible;
+  private boolean restoreMvmtX;
+  private boolean restoreMvmtY;
   
   private static final float SPEED = 1;
 
@@ -80,10 +83,10 @@ public abstract class Player extends Entity implements Playable{
   public MagicBar magic;
   public HUD health;
     
-  public boolean doNotRender;
+  protected boolean noContact;
   
-  public static final double MEAN_STAT = 50.0;
-
+  public Attack<? extends AttackInstance> attack1, attack2, attack3;
+  
   /**
    * @param x x pos, from left
    * @param y y pos from bottom
@@ -111,7 +114,7 @@ public abstract class Player extends Entity implements Playable{
    */
   public void getInput(){
 
-    if (Death.playable)
+    if (canMove)
     {
       up =    Keyboard.isKeyDown(Keyboard.KEY_UP) && 
           !Keyboard.isKeyDown(Keyboard.KEY_DOWN);
@@ -121,6 +124,7 @@ public abstract class Player extends Entity implements Playable{
           !Keyboard.isKeyDown(Keyboard.KEY_RIGHT);
       right = Keyboard.isKeyDown(Keyboard.KEY_RIGHT) && 
           !Keyboard.isKeyDown(Keyboard.KEY_LEFT);
+
       run = KeyHandler.keyDown(Key.Z);
     }
 
@@ -131,27 +135,7 @@ public abstract class Player extends Entity implements Playable{
    */
   @Override
   public void update() {
-	  if (Death.playable)
-	    {
-	      up =    Keyboard.isKeyDown(Keyboard.KEY_UP) && 
-	          !Keyboard.isKeyDown(Keyboard.KEY_DOWN);
-	      down =  Keyboard.isKeyDown(Keyboard.KEY_DOWN) && 
-	          !Keyboard.isKeyDown(Keyboard.KEY_UP);
-	      left =  Keyboard.isKeyDown(Keyboard.KEY_LEFT) && 
-	          !Keyboard.isKeyDown(Keyboard.KEY_RIGHT);
-	      right = Keyboard.isKeyDown(Keyboard.KEY_RIGHT) && 
-	          !Keyboard.isKeyDown(Keyboard.KEY_LEFT);
-	      run = KeyHandler.keyDown(Key.Z);
-	    }
-	  
-	if(!Death.playable)
-	{
-		up = false;
-		down = false;
-		left = false;
-		right = false;
-		
-	}
+
     int aniSpeed = 8;
 
     if (canMove) {
@@ -291,7 +275,6 @@ public abstract class Player extends Entity implements Playable{
         }
       }
 
-
       //TODO Debug
       if(!KeyHandler.keyDown(Key.G)){
         Game.getMap().guidePlayer(x, y, dx, dy);
@@ -367,6 +350,9 @@ public abstract class Player extends Entity implements Playable{
     guiding = false;
 
     magic.update();
+    
+    ProjectileAttack.update();
+    RingOfFire.updateAll();
 
     //TODO: Auto-level up
     if (KeyHandler.controlDown() && KeyHandler.keyClick(Key.PLUS))
@@ -389,6 +375,14 @@ public abstract class Player extends Entity implements Playable{
             + "\n");
       }
     }
+    
+    if (KeyHandler.keyClick(Key.A))
+    {
+      switchAttack(false);
+    } else if (KeyHandler.keyClick(Key.S))
+    {
+      switchAttack(true);
+    }
 
 
   }
@@ -398,27 +392,11 @@ public abstract class Player extends Entity implements Playable{
    */
   @Override
   public void render() {
-if(Death.playable)
-{
+
     if (!invincible)
     {
       if (!isAttacking) {
-        switch (dir) {
-          case DOWN:
-            downAni.playCam(x,y);
-            break;
-          case UP:
-            upAni.playCam(x,y);
-            break;
-          case LEFT:
-            leftAni.playCam(x,y);
-            break;
-          case RIGHT:
-            rightAni.playCam(x,y);
-            break;
-          default:
-            break;
-        }
+        playWalk();
       } else
       {
         renderAttack();
@@ -443,8 +421,9 @@ if(Death.playable)
           break;
       }
     }
-}
-
+    
+    ProjectileAttack.play();
+    RingOfFire.play();
   }
 
   public void pause(int frames, Lock lock)
@@ -460,6 +439,7 @@ if(Death.playable)
 
   public void walk(Face dir, int tiles)
   {
+
     hasInstructions=true;
     framesToGo = tiles*16;
     //isMoving=true;
@@ -483,6 +463,7 @@ if(Death.playable)
       default:
         break;
     }
+
   }
 
   public void walk(Face dir, int tiles, Execution ex)
@@ -637,7 +618,6 @@ if(Death.playable)
         walk(Face.UP, tx-getTileY(), lock);
       }
     }
-
 
   }
 
@@ -954,4 +934,48 @@ if(Death.playable)
   }
   
   public abstract void giveXP(int xp);
+  
+  public void switchAttack(boolean fwd)
+  {
+    Attack<? extends AttackInstance> temp = attack1;
+    
+    if (fwd)
+    {
+      attack1 = attack2;
+      attack2 = attack3;
+      attack3 = temp;
+    } else
+    {
+      attack1 = attack3;
+      attack3 = attack2;
+      attack2 = temp;
+    }
+  }
+  
+  public void playWalk()
+  {
+    switch (dir) {
+      case DOWN:
+        downAni.playCam(x,y);
+        break;
+      case UP:
+        upAni.playCam(x,y);
+        break;
+      case LEFT:
+        leftAni.playCam(x,y);
+        break;
+      case RIGHT:
+        rightAni.playCam(x,y);
+        break;
+      default:
+        break;
+    }
+  }
+  
+  public int getHealth()
+  {
+    return health.getHealth();
+  }
+
+
 }

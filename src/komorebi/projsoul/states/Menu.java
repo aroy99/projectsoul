@@ -6,6 +6,7 @@ package komorebi.projsoul.states;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
 
 /**
@@ -24,8 +25,8 @@ public class Menu extends State {
   public Menu()
   {
     text = new TextHandler();
-    text.write("Clyde's", 72, 160, 16);
-    text.write("Controls", 72, 64, 12);
+    text.write("Clyde's", 72, 160, new EarthboundFont(2));
+    text.write("Controls", 72, 64, new EarthboundFont(1));
     pickIndex = 1;
   }
 

@@ -9,6 +9,8 @@ import komorebi.projsoul.engine.Item;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Main;
+import komorebi.projsoul.script.EarthboundFont;
+import komorebi.projsoul.script.Font;
 import komorebi.projsoul.script.SpeechHandler;
 import komorebi.projsoul.script.TextHandler;
 
@@ -63,8 +65,8 @@ public class Pause extends State {
             text.write(item.type().getIDString().replace(
                 item.type().getIDString().substring(0, 1), 
                 item.type().getIDString().substring(0, 1).toUpperCase()), 
-                x, y-12, 8);
-            text.write(item.type().getNiftyTidbit(), x+44, y, 8);
+                x, y-12, new EarthboundFont(1));
+            text.write(item.type().getNiftyTidbit(), x+44, y, new EarthboundFont(1));
             y-=40;
           }
           break;
@@ -100,9 +102,9 @@ public class Pause extends State {
 
     }
     
-    public void write(String s, int x, int y, int fontPt)
+    public void write(String s, int x, int y, Font font)
     {
-      text.write(s, x, y, fontPt);
+      text.write(s, x, y, font);
     }
     
     public void click(Pause p)
@@ -157,14 +159,14 @@ public class Pause extends State {
   public Pause()
   {
     super();
-    text.write("Hats", 188, 200, 8);
-    text.write("Items", 188, 185, 8);
-    text.write("Options", 188, 170, 8);
-    text.write("Save", 188, 155, 8);
-    text.write("Cancel", 188, 140, 8);
+    text.write("Hats", 188, 200, new EarthboundFont(1));
+    text.write("Items", 188, 185, new EarthboundFont(1));
+    text.write("Options", 188, 170, new EarthboundFont(1));
+    text.write("Save", 188, 155, new EarthboundFont(1));
+    text.write("Cancel", 188, 140, new EarthboundFont(1));
     
-    text.write(Main.getGame().getMoney() + " Cs", 6, 195, 8);
-    text.write(Main.getGame().getConfidence() + " conf", 6, 205, 8);
+    text.write(Main.getGame().getMoney() + " Cs", 6, 195, new EarthboundFont(1));
+    text.write(Main.getGame().getConfidence() + " conf", 6, 205, new EarthboundFont(1));
     pickIndex = 1;
     
     prevMon = Main.getGame().getMoney();
@@ -196,7 +198,7 @@ public class Pause extends State {
         if (pickIndex<1) pickIndex = 5;
         if (pickIndex>5) pickIndex = 1;
         
-        if (KeyHandler.keyClick(Key.SPACE))
+        if (KeyHandler.keyClick(Key.ENTER))
         {
           click();
         }
@@ -283,12 +285,12 @@ public class Pause extends State {
         break;
       case 3:
         pop = PopUp.OPTIONS;
-        pop.write("Text Scrolling:", 10, 185, 8);
-        pop.write("Off", 22, 170, 8);
-        pop.write("Fast",62, 170, 8);
-        pop.write("Normal",108,170,8);
-        pop.write("Slow", 162, 170, 8);
-        pop.write("Return", 22, 15, 8);
+        pop.write("Text Scrolling:", 10, 185, new EarthboundFont(1));
+        pop.write("Off", 22, 170, new EarthboundFont(1));
+        pop.write("Fast",62, 170, new EarthboundFont(1));
+        pop.write("Normal",108,170, new EarthboundFont(1));
+        pop.write("Slow", 162, 170, new EarthboundFont(1));
+        pop.write("Return", 22, 15, new EarthboundFont(1));
         
         pop.setPickIndex(1);
         

@@ -141,7 +141,7 @@ public class SpeechHandler extends TextHandler {
 
     int horiz = word.getX();
     int vert = word.getY();
-    int size = word.getFontSize();
+    int size = word.getFont().getFontPoint()*word.getFont().getScale();
     char[] letters = word.currentParagraph();
 
     int ohor = horiz;
@@ -190,14 +190,16 @@ public class SpeechHandler extends TextHandler {
           letters[i] == 'q' || letters[i] == 'y')
       {   
         under = size;
-        texUnder = 8;
+        texUnder = word.getFont().getFontPoint();
       }
 
 
       Draw.rect(horiz, vert-under, size, size+under, 
-          getTexX(letters[i]), getTexY(letters[i]), 
-          getTexX(letters[i])+8, getTexY(letters[i]) + 8+texUnder, 5);
-      horiz+=(getLength(letters[i])+1);
+          word.getFont().getTexX(letters[i]), word.getFont().getTexY(letters[i]), 
+          word.getFont().getTexX(letters[i])+word.getFont().getFontPoint(), 
+          word.getFont().getTexY(letters[i]) + word.getFont().getFontPoint()+texUnder, 
+          word.getFont().getTexture());
+      horiz+=(word.getFont().getLength(letters[i])+1);
     }
     
     /* Signifies that the scrolling is done, so if the user clicks "C",
@@ -280,9 +282,9 @@ public class SpeechHandler extends TextHandler {
   /**
    * Writes a String for to be shown in a speech box to the object's memory
    */
-  public void write(String s, int x, int y, int fontPt)
+  public void write(String s, int x, int y, Font font)
   {
-    super.write(s,x,y,fontPt);
+    super.write(s,x,y,font);
   }
 
   /**
@@ -361,6 +363,21 @@ public class SpeechHandler extends TextHandler {
   public String getAnswer()
   {
     return answerToQuestion;
+  }
+  
+  public void setAndLock(Lock lock)
+  {
+   this.lock = lock; 
+   lock.pauseThread();
+  }
+  
+  public void releaseLocks()
+  {
+    if (lock!=null)
+    {
+      lock.resumeThread();
+      lock = null;
+    }
   }
 
 }

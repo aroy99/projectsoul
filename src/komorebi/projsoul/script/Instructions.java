@@ -43,7 +43,9 @@ public enum Instructions {
   CLYDE_TURN_UP,
   CLYDE_TURN_DOWN,
   WAIT,
+  FREEZE,
   SIMUL_RUN_BRANCH,
+  RUN_BRANCHES,
   PLAY_SONG,
   STOP_SONG,
   ALIGN,
@@ -59,10 +61,12 @@ public enum Instructions {
   IF_BOOLEAN,
   IF_MONEY,
   IF_CONFIDENCE,
+  IF_CHAR,
   ELSE,
   FLAG_BOOLEAN,
   BLOCK,
   UNBLOCK,
+  SYNC,
   END;
 }
 

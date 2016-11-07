@@ -32,7 +32,7 @@ public class SignPost extends Entity {
   public void show()
   {
     shown = true;
-    //text.write(message, 20, 58, new EarthboundFont(1));
+    text.write(message, 20, 58, new EarthboundFont(1));
     Main.getGame().setSpeaker(text);
    }
 

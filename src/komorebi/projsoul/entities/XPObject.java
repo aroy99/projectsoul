@@ -24,11 +24,6 @@ public class XPObject extends Entity {
     area = new Rectangle((int) x, (int) y, 8, 8);
     this.hitBy = hitBy; 
     
-    for (int i = 0; i < 4; i++)
-    {
-      System.out.println(hitBy[i]);
-    }
-    
     this.xp = xp;
   }
 
