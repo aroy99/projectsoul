@@ -168,6 +168,7 @@ public class EventMode extends Mode{
       EditEventDialog dialog = new EditEventDialog(selectedType);
       dialog.pack();
       dialog.setVisible(true);
+      EditorMap.setUnsaved();
     }
     
     if(KeyHandler.keyClick(Key.LBUTTON) && checkButtonBounds()){
@@ -176,6 +177,7 @@ public class EventMode extends Mode{
           NewEventDialog dialog = new NewEventDialog();
           dialog.pack();
           dialog.setVisible(true);
+          EditorMap.setUnsaved();
           break;
         case WIDTH/BUTTON_SIZE-2:
           if(selected != -1){
@@ -184,6 +186,7 @@ public class EventMode extends Mode{
             selected = -1;
             selX = -16;
             selY = -16;
+            EditorMap.setUnsaved();
           }
           break;
         default:
@@ -204,10 +207,37 @@ public class EventMode extends Mode{
 
   @Override
   public void render() {
+    for (NPC npc: npcs) {
+      if(EditorMap.checkTileInBounds(npc.getX(), npc.getY())){
+        npc.render();
+      }
+    }
+
+    for (AreaScript script: scripts) {
+      if(EditorMap.checkTileInBounds(script.getX(), script.getY())){
+        script.render();
+      }
+    }
+
+    for(Enemy enemy: enemies){
+      if(EditorMap.checkTileInBounds(enemy.getX(), enemy.getY())){
+        enemy.render();
+      }
+    }
+
+    for(SignPost sign: signs){
+      if(EditorMap.checkTileInBounds(sign.getX(), sign.getY())){
+        sign.render();
+      }
+    }
+
+    EditorMap.renderGrid();
+    
     if(EditorMap.checkTileInBounds(selX, selY)){
       selection.play(selX, selY);
     }
 
+    
     Draw.rect(WIDTH-BUTTON_SIZE*3, HEIGHT-BUTTON_SIZE, 64, 32, 32, 16, 64, 32, 2);
 
     if(checkButtonBounds()){
@@ -218,6 +248,7 @@ public class EventMode extends Mode{
 
 
     }
+    
 
   }
 
@@ -547,21 +578,7 @@ public class EventMode extends Mode{
 
       editScriptText.addActionListener(this);
 
-
-      for(Component c: signContents){
-        c.setVisible(false);
-      }
-
-      for(Component c: enemyContents){
-        c.setVisible(false);
-      }
-      for(Component c: (Component[])scriptContents){
-        c.setVisible(false);
-      }
-      for(Component c: (Component[])warpContents){
-        c.setVisible(false);
-      }
-
+      hideEverything(EventTypes.NPC);
     }
 
     @Override

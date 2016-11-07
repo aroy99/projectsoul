@@ -28,7 +28,7 @@ public enum EnemyType {
    * Takes in a string and returns its respective EnemyType
    * 
    * @param s The input string
-   * @return the corespondent EnemyType
+   * @return the corespondent EnemyType, null if not found
    */
   public static EnemyType toEnum(String s){
     switch (s){

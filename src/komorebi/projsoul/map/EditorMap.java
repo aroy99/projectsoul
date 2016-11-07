@@ -9,6 +9,7 @@ import static komorebi.projsoul.engine.KeyHandler.controlDown;
 
 import komorebi.projsoul.audio.AudioHandler;
 import komorebi.projsoul.audio.Song;
+import komorebi.projsoul.editor.modes.ConnectMode;
 import komorebi.projsoul.editor.modes.EventMode;
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.editor.modes.MoveMode;
@@ -23,6 +24,7 @@ import komorebi.projsoul.entities.EnemyType;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.SignPost;
+import komorebi.projsoul.map.ConnectMap.Side;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.WalkingScript;
@@ -45,11 +47,9 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.security.KeyStore.PrivateKeyEntry;
 import java.util.ArrayList;
 
 import javax.swing.Box;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -61,7 +61,7 @@ import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
- * Represents a map of tiles
+ * Represents a map of tiles for use by the Editor
  * 
  * @author Aaron Roy
  */
@@ -94,10 +94,12 @@ public class EditorMap implements Playable, Serializable{
 
   public static final int SIZE = 16;         //Width and height of a tile
 
-  private ArrayList<NPC> npcs;
-  private ArrayList<AreaScript> scripts;
-  private ArrayList<Enemy> enemies;
-  private ArrayList<SignPost> signs;
+  private static ArrayList<NPC> npcs;              //Events
+  private static ArrayList<AreaScript> scripts;    //^
+  private static ArrayList<Enemy> enemies;         //^
+  private static ArrayList<SignPost> signs;        //^
+  
+  private static ArrayList<ConnectMap> maps;   //Maps that connect to this one
 
   private static float x, y;       //Current location
   private static float dx, dy;
@@ -112,6 +114,7 @@ public class EditorMap implements Playable, Serializable{
   private TileMode tileMode;
   private MoveMode moveMode;
   private EventMode npcMode;
+  private ConnectMode connectMode;
 
   /**
    * The various modes this map can be in
@@ -119,7 +122,7 @@ public class EditorMap implements Playable, Serializable{
    * @author Aaron Roy
    */
   public enum Modes{
-    TILE, MOVE, EVENT;
+    TILE, MOVE, EVENT, CONNECT;
   }
 
   private static Modes mode = Modes.TILE;
@@ -137,6 +140,7 @@ public class EditorMap implements Playable, Serializable{
     scripts = new ArrayList<AreaScript>();
     enemies = new ArrayList<Enemy>();
     signs = new ArrayList<SignPost>();
+    maps = new ArrayList<ConnectMap>();
 
 
     Display.setTitle("Project Soul Editor - "+ "Untitled Map");
@@ -150,6 +154,7 @@ public class EditorMap implements Playable, Serializable{
     tileMode = new TileMode();
     moveMode = new MoveMode(collision);
     npcMode = new EventMode(npcs, scripts, enemies, signs);
+    connectMode = new ConnectMode(maps);
     Mode.setMap(tiles);
     
   }
@@ -178,6 +183,8 @@ public class EditorMap implements Playable, Serializable{
       scripts = new ArrayList<AreaScript>();
       enemies = new ArrayList<Enemy>();
       signs = new ArrayList<SignPost>();
+      
+      maps = new ArrayList<ConnectMap>();
       
       reader.mark(50);
       
@@ -302,6 +309,16 @@ public class EditorMap implements Playable, Serializable{
           
           signs.add(new SignPost(x+arg0*16, y+arg1*16, split[2]));
 
+        } else if (s.startsWith("connect")){
+          s = s.replace("connect ", "");
+          String[] split = s.split(" ");
+          
+          ConnectMap newMap = (new ConnectMap("res/maps/"+split[0]+".map", split[0], 
+              Side.toEnum(split[1])));
+          
+          newMap.setLoc(x+Integer.parseInt(split[2])*SIZE, y+Integer.parseInt(split[3])*SIZE);
+          
+          maps.add(newMap);
         }
         
       } while ((s=reader.readLine()) != null);
@@ -312,16 +329,8 @@ public class EditorMap implements Playable, Serializable{
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
       JOptionPane.showMessageDialog(null, 
-          "The file was not found / was corrupt, therefore, the " + 
-          "default settings were used");
-      tiles = new TileList[10][10];
-
-
-      for (int i = tiles.length-1; i >= 0; i--) {
-        for (int j = 0; j < tiles[0].length; j++) {
-          tiles[i][j] = TileList.BLANK;
-        }
-      }
+          "The file was not found, was corrupt, or used an outdated map format, " +
+          "therefore, some things might not be right");
 
       KeyHandler.reloadKeyboard();
     }         
@@ -329,6 +338,7 @@ public class EditorMap implements Playable, Serializable{
     tileMode = new TileMode();
     moveMode = new MoveMode(collision);
     npcMode = new EventMode(npcs, scripts, enemies, signs);
+    connectMode = new ConnectMode(maps);
     Mode.setMap(tiles);
   }
 
@@ -407,6 +417,9 @@ public class EditorMap implements Playable, Serializable{
     if(button(Control.EVENT)){
       mode = Modes.EVENT;
     }
+    if(button(Control.CONNECT)){
+      mode = Modes.CONNECT;
+    }
     
     if(button(Control.HEADER)){
       editMapHeader();
@@ -421,6 +434,9 @@ public class EditorMap implements Playable, Serializable{
         break;
       case TILE:
         tileMode.update();
+        break;
+      case CONNECT:
+        connectMode.update();
         break;
       default:
         break;
@@ -448,44 +464,7 @@ public class EditorMap implements Playable, Serializable{
         }
       }
     }
-  
-    
-    if(mode == Modes.EVENT){
-      for (NPC npc: npcs) {
-        if(checkTileInBounds(npc.getX(), npc.getY())){
-          npc.render();
-        }
-      }
-  
-      for (AreaScript script: scripts) {
-        if(checkTileInBounds(script.getX(), script.getY())){
-          script.render();
-        }
-      }
-      
-      for(Enemy enemy: enemies){
-        if(checkTileInBounds(enemy.getX(), enemy.getY())){
-          enemy.render();
-        }
-      }
-      
-      for(SignPost sign: signs){
-        if(checkTileInBounds(sign.getX(), sign.getY())){
-          sign.render();
-        }
-      }
-    }
-    
-    if(grid){
-      for (int i = 0; i < tiles.length; i++) {
-        for (int j = 0; j < tiles[0].length; j++) {
-          if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
-            Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, 0, 16, SIZE, 16+SIZE, 2);
-          }
-        }
-      }
-    }
-    
+          
     switch(mode){
       case MOVE:
         moveMode.render();
@@ -496,10 +475,28 @@ public class EditorMap implements Playable, Serializable{
       case TILE:
         tileMode.render();
         break;
+      case CONNECT:
+        connectMode.render();
+        break;
       default:
         break;
     }
   
+  }
+  
+  /**
+   * Renders the grid of the map
+   */
+  public static void renderGrid(){
+    if(grid){
+      for (int i = 0; i < tiles.length; i++) {
+        for (int j = 0; j < tiles[0].length; j++) {
+          if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
+            Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, 0, 16, SIZE, 16+SIZE, 2);
+          }
+        }
+      }
+    }
   }
   
   /**
@@ -509,6 +506,7 @@ public class EditorMap implements Playable, Serializable{
     EditMapHeader header = new EditMapHeader();
     header.pack();
     header.setVisible(true);
+    setUnsaved();
   }
 
 
@@ -577,7 +575,11 @@ public class EditorMap implements Playable, Serializable{
       for(SignPost sign:signs){
         writer.println("sign " + sign.getOrigTX() + 
             " " + sign.getOrigTY() + " " + sign.getText());
-
+      }
+      
+      for(ConnectMap map: maps){
+        writer.println("connect " + map.getName() + " " + map.getSide() + " " +
+            map.getTileX() + " " + map.getTileY());
       }
       
       saved = true;
@@ -689,7 +691,7 @@ public class EditorMap implements Playable, Serializable{
       /**
        * Don't feel too bad Aaron, I have no clue either
        */
-      private static final long serialVersionUID = 3881189161552826430L;
+      private static final long serialVersionUID = 3881189165152826430L;
 
       @Override
       public void approveSelection(){
@@ -797,18 +799,24 @@ public class EditorMap implements Playable, Serializable{
     return x;
   }
 
+  public static float getY() {
+    return y;
+  }
+  
+  public static void setLocation(float x, float y){
+    move(x-EditorMap.x, y-EditorMap.y);
+  }
+  
   public String getPath() {
     return path;
   }
+
 
   public String getName() {
     return name;
   }
 
-  public static float getY() {
-    return y;
-  }
-  
+
   public String getTitle(){
     return title;
   }
@@ -857,6 +865,9 @@ public class EditorMap implements Playable, Serializable{
   }
   
   /**
+   * @param x The x to check in pixels
+   * @param y The y to check in pixels
+   * 
    * @return Whether the tile is on the map
    */
   public static boolean checkTileInBounds(float x, float y) {
@@ -879,7 +890,7 @@ public class EditorMap implements Playable, Serializable{
    * @param dx pixels to move left/right
    * @param dy pixels to move up/down
    */
-  public void move(float dx, float dy) {
+  public static void move(float dx, float dy) {
 
     x+=dx;
     y+=dy;
@@ -900,8 +911,21 @@ public class EditorMap implements Playable, Serializable{
     for (SignPost sign:signs) {
       sign.setPixLocation((int)(sign.getX()+dx),(int)(sign.getY()+dy));
     }
+    
+    for(ConnectMap map:maps){
+      map.setLoc(map.getX()+dx, map.getY()+dy);
+    }
 
   }
+  
+  public static int getPxHeight(){
+    return tiles.length*SIZE;
+  }
+  
+  public static int getPxWidth(){
+    return tiles[0].length*SIZE;
+  }
+
   
   public static Modes getMode(){
     return mode;
@@ -1044,7 +1068,7 @@ public class EditorMap implements Playable, Serializable{
             
             tiles = newMap;
             collision = newCol;
-            
+                        
             clearAndHide();
           }
           else{

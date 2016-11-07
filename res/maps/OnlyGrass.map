@@ -1,5 +1,8 @@
 20
 20
+Only Grass
+None
+1
 226 227 226 227 227 227 226 227 226 227 227 227 227 226 227 227 226 227 226 227 
 226 227 70 71 70 71 70 71 70 71 70 71 70 71 70 71 70 71 226 227 
 226 227 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 226 227 
@@ -44,3 +47,4 @@ enemy 16 16 SATURN chaser 3
 enemy 5 15 SATURN chaser 6
 enemy 13 6 SATURN chaser 5
 sign 2 18 This is a forest
+connect Bigger_Town up 0 20

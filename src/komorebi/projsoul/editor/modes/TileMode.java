@@ -114,6 +114,8 @@ public class TileMode extends Mode implements Playable{
       }
     }
     
+    EditorMap.renderGrid();
+    
     pal.render();
   }
 
