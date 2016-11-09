@@ -197,10 +197,12 @@ public class Flannery extends Player {
     } else if (KeyHandler.keyRelease(Key.X) && !isAttacking && magic.hasEnoughMagic(
         10) && attack1 == ring)
     {
+      //TODO: replace final 0 with atatck
       ring.newAttack(0, 0, 0, 0, dir, attack);
       canMove = true;
       magic.changeMagicBy(-10);
     }
+    
 
   }
 

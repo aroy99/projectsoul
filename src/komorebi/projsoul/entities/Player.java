@@ -9,6 +9,7 @@ import org.lwjgl.input.Keyboard;
 
 import komorebi.projsoul.attack.Attack;
 import komorebi.projsoul.attack.AttackInstance;
+import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.ProjectileAttack;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.engine.Animation;
@@ -18,6 +19,7 @@ import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MagicBar;
 import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
 import komorebi.projsoul.states.Game;
@@ -303,6 +305,8 @@ public abstract class Player extends Entity implements Playable{
       rightAni.hStop();
     }
 
+    overrideImproperMovements();
+    
     Camera.move(dx, dy);
     x += dx;
     y += dy;
@@ -378,9 +382,11 @@ public abstract class Player extends Entity implements Playable{
     
     if (KeyHandler.keyClick(Key.A))
     {
+      isAttacking = false;
       switchAttack(false);
     } else if (KeyHandler.keyClick(Key.S))
     {
+      isAttacking = false;
       switchAttack(true);
     }
 
@@ -735,6 +741,29 @@ public abstract class Player extends Entity implements Playable{
       dy = 0;
       y = Game.getMap().getHeight() * 16 - sy;
     }
+    
+    for (FireRingInstance ring: RingOfFire.allInstances())
+    {
+      if (ring.intersectsCirc(new Rectangle((int)(x+dx),(int)(y+dy),sx,sy)))
+      {
+        float[] center = ring.getCenter();
+        double ang = Map.angleOf(x, y, center[0], center[1]);
+        
+        if (ring.inRing(new Rectangle((int)(x+dx),(int)(y+dy),sx,sy)))
+        {
+           ang -= 180;
+        }
+        float chgx = (float) Math.cos(ang * (Math.PI/180)) * 5;
+        float chgy = (float) Math.sin(ang * (Math.PI/180)) * 5;
+        
+        System.out.println(ring.getDamage());
+        
+        if (this instanceof Flannery)
+          inflictPain(0, chgx, chgy);
+        else
+          inflictPain(ring.getDamage(), chgx, chgy);
+      }
+    }
   }
 
   public Rectangle getHitBox()
@@ -772,8 +801,10 @@ public abstract class Player extends Entity implements Playable{
     System.out.println("Damage = " + attack + " - " + 
         getDefense(character) + "/2");
     
-    health.health -= (int) (attack - (getDefense(character)/2));
-
+    if (attack - getDefense(character)/2 > 0)
+    {
+      health.health -= (int) (attack - (getDefense(character)/2));
+    }
     //Kills the enemy
     if (health.health<=0)
     {

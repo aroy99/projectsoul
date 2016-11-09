@@ -2,6 +2,8 @@ package komorebi.projsoul.entities;
 
 import java.awt.Rectangle;
 
+import komorebi.projsoul.attack.FireRingInstance;
+import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.map.Map;
@@ -100,6 +102,16 @@ public abstract class Enemy extends Entity {
 
     //Stops the enemy from moving places it shouldn't
     overrideImproperMovements();
+    
+    for (FireRingInstance ring: RingOfFire.allInstances())
+    {
+        if (ring.intersects(new Rectangle((int) (x+dx),(int) (y+dy),sx,sy)) && !invincible)
+        {          
+          float[] coords = ring.getCenter();
+          inflictPain(ring.getDamage(), Map.angleOf(x, y, coords[0], coords[1]), 
+              Characters.FLANNERY);
+        }
+    }
 
     //Update the enemy
     x += dx;
@@ -111,54 +123,41 @@ public abstract class Enemy extends Entity {
   
   public void inflictPain(int attack, Face dir, Characters c)
   {
-    health -= attack - (defense/2);
-    hitBy[c.getNumber()] = true;
+    int chgx = 0, chgy = 0;
     
-    //Kills the enemy
-    if (health<=0)
+    switch (dir)
     {
-      deathAni.resume();
-      dying = true;
-    } else
-    {
-      //Knocks back the enemy
-      invincible = true;
-      hitCounter = 50;
-      hitAni.resume();
-
-      switch (dir)
-      {
-        case DOWN:
-          dx = 0;
-          dy = -5;
-          break;
-        case LEFT:
-          dx = -5;
-          dy = 0;
-          break;
-        case RIGHT:
-          dx = 5;
-          dy = 0;
-          break;
-        case UP:
-          dx = 0;
-          dy = 5;
-          break;
-        default:
-          break;
-      }
+      case DOWN:
+        chgx = 0;
+        chgy = -5;
+        break;
+      case LEFT:
+        chgx = -5;
+        chgy = 0;
+        break;
+      case RIGHT:
+        chgx = 5;
+        chgy = 0;
+        break;
+      case UP:
+        chgx = 0;
+        chgy = 5;
+        break;
+      default:
+        break;
     }
+    
+    inflictPain(attack, chgx, chgy, c);
   }
-      
-
-  public void knockBack(int attack, Characters c)
+    
+  
+    
+  
+  private void inflictPain(int attack, float dx, float dy, Characters c)
   {
     health -= attack - (defense/2);
     hitBy[c.getNumber()] = true;
     
-    dx*=-5;
-    dy*=-5;
-    
     //Kills the enemy
     if (health<=0)
     {
@@ -170,7 +169,21 @@ public abstract class Enemy extends Entity {
       invincible = true;
       hitCounter = 50;
       hitAni.resume();
+      
+      System.out.println(dx + " " + dy);
+      
+      this.dx = dx;
+      this.dy = dy;
     }
+  }
+      
+
+  public void inflictPain(int attack, double ang, Characters c)
+  {
+    float chgx = (float) Math.cos(ang * (Math.PI/180)) * 5;
+    float chgy = (float) Math.sin(ang * (Math.PI/180)) * 5;
+    
+    inflictPain(attack, chgx, chgy, c);
   }
 
  

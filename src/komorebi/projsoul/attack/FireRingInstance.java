@@ -21,6 +21,7 @@ public class FireRingInstance implements AttackInstance {
   private boolean destroyMe;
   
   private Animation ani;
+  private Rectangle[] flames;
   
   private FireRingInstance(float x, float y, int attack)
   {
@@ -32,6 +33,14 @@ public class FireRingInstance implements AttackInstance {
     
     ani = new Animation(1, 8, 12, true);
     ani.add(810, 61, 13, 16);
+    
+    flames = new Rectangle[12];
+    
+    for (int i = 0; i < flames.length; i++)
+    {
+      float[] coords = Map.coordinatesAt(x,y,RING_RADIUS,i*30);
+      flames[i] = new Rectangle((int) coords[0], (int) coords[1], 13, 16);
+    }
   }
   
   public FireRingInstance()
@@ -54,16 +63,6 @@ public class FireRingInstance implements AttackInstance {
       destroyMe = true;
     }
     
-    for (Enemy enemy: Game.getMap().getEnemies())
-    {
-        if (intersects(enemy.getHitBox()) && !enemy.invincible())
-        {
-            enemy.knockBack(attack, Characters.FLANNERY);
-            System.out.println("Knock Back");
-          
-        }
-        
-    }
   }
   
   public void render()
@@ -80,7 +79,19 @@ public class FireRingInstance implements AttackInstance {
     return destroyMe;
   }
   
-  private boolean intersects(Rectangle r)
+  public boolean intersects(Rectangle r)
+  {
+    
+    for (Rectangle flame: flames)
+    {      
+      if (flame.intersects(r))
+        return true;
+    }
+    
+    return false;
+  }
+  
+  public boolean intersectsCirc(Rectangle r)
   {
     double norY = r.getY() + r.getHeight();
     double sthY = r.getY();
@@ -89,22 +100,64 @@ public class FireRingInstance implements AttackInstance {
     double eastX = r.getX()+r.getHeight();
     
     double dist = Map.distanceBetween((float) wstX, (float) sthY, x, y);
-    if (dist > 37 && dist < 53)
+    if (dist > 36 && dist < 48)
        return true;
     
     dist = Map.distanceBetween((float) wstX, (float) norY, x, y);
-    if (dist > 37 && dist < 53)
+
+    if (dist > 36 && dist < 48)
       return true;
     
     dist = Map.distanceBetween((float) eastX, (float) sthY, x, y);
-    if (dist > 37 && dist < 53)
+    if (dist > 36 && dist < 48)
       return true;
     
     dist = Map.distanceBetween((float) eastX, (float) norY, x, y);
-    if (dist > 37 && dist < 53)
+    if (dist > 36 && dist < 48)
       return true;
     
     return false;
+  }
+  
+  public boolean inRing(Rectangle r)
+  {
+    double norY = r.getY() + r.getHeight();
+    double sthY = r.getY();
+    
+    double wstX = r.getX();
+    double eastX = r.getX()+r.getHeight();
+    
+    double dist = Map.distanceBetween((float) wstX, (float) sthY, x, y);
+    if (dist < 36)
+       return true;
+    
+    dist = Map.distanceBetween((float) wstX, (float) norY, x, y);
+
+    if (dist < 36)
+      return true;
+    
+    dist = Map.distanceBetween((float) eastX, (float) sthY, x, y);
+    if (dist < 36)
+      return true;
+    
+    dist = Map.distanceBetween((float) eastX, (float) norY, x, y);
+    if (dist < 36)
+      return true;
+    
+    return false;
+  }
+  
+  public int getDamage()
+  {
+    return attack;
+  }
+  
+  public float[] getCenter()
+  {
+    float[] ret = new float[2];
+    ret[0] = x;   
+    ret[1] = y;
+    return ret;
   }
 
 }

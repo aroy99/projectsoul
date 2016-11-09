@@ -233,5 +233,10 @@ public class RingOfFire extends Attack<FireRingInstance> {
   {
     return !rings.isEmpty();
   }
+  
+  public static ArrayList<FireRingInstance> allInstances()
+  {
+    return rings;
+  }
 
 }
