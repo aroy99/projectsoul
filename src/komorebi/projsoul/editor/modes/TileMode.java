@@ -83,7 +83,7 @@ public class TileMode extends Mode implements Playable{
     if(isSelection && lButtonIsDown && checkMapBounds() && !lButtonWasDown){
       for(int i = 0; i < selection.length; i++){
         for (int j = 0; j < selection[0].length; j++) {
-          if(checkTileBounds(getMouseY()+i, getMouseX()+j)){
+          if(checkTileBounds(getMouseX()+j, getMouseY()+i)){
             tiles[getMouseY()+i][getMouseX()+j] = 
                 selection[i][j];
           }

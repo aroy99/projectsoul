@@ -79,16 +79,16 @@ public class EventMode extends Mode{
    * @author Aaron Roy
    */
   enum EventTypes{
-    NPC(npcs), SIGN(signs), ENEMY(enemies), SCRIPT(scripts), WARP(scripts);
+    NPC, SIGN, ENEMY, SCRIPT, WARP;
 
     ArrayList<? extends Editable> currEvents;
-    
-    EventTypes(ArrayList<? extends Editable> arr){
-      currEvents = arr;
-    }
-    
+        
     public ArrayList<? extends Editable> getEvents(){
       return currEvents;
+    }
+    
+    public void setEvents(ArrayList<? extends Editable> arr){
+      currEvents = arr;
     }
     
     public String toString(){
@@ -115,6 +115,12 @@ public class EventMode extends Mode{
     EventMode.scripts = scripts;
     EventMode.enemies = enemies;
     EventMode.signs = signs;
+    
+    EventTypes.NPC.setEvents(npcs);
+    EventTypes.SCRIPT.setEvents(scripts);
+    EventTypes.WARP.setEvents(scripts);
+    EventTypes.ENEMY.setEvents(enemies);
+    EventTypes.SIGN.setEvents(signs);
 
     selection = new Animation(8, 8, 16, 16, 2);
     for(int i=3; i >= 0; i--){

@@ -186,7 +186,7 @@ public class Editor implements Playable{
   public static void loadMap(String name, float x, float y){
     if(requestSave()){
       map = new EditorMap("res/maps/" + name + ".map", 
-          name);
+          name + ".map");
       EditorMap.setLocation(x, y);
       buttons.setMap(map);
     }
