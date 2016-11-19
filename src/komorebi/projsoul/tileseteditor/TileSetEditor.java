@@ -813,7 +813,7 @@ public class TileSetEditor implements Playable {
         }
         writer.println();
       }
-      //TODO Debug
+    //DEBUG Save message
       save = true;
       writer.close();
       if (name.length()>5)

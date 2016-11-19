@@ -24,6 +24,7 @@ import static org.lwjgl.opengl.GL11.glOrtho;
 import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
+import komorebi.projsoul.states.Game;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
@@ -45,7 +46,7 @@ import java.io.IOException;
 public class MainE {
 
   public static Editor edit;
-  public static int scale = 1;
+  public static int scale;
   private static BufferedReader read;
 
   private static TextHandler handler;
@@ -56,16 +57,20 @@ public class MainE {
   
   public static final int WIDTH = 800;
   public static final int HEIGHT = 608;
+  
+  public static String testLoc;
 
   /**
    * Starts the program, reading an int from settings and using it for the scale.
+   * Now starts with a specified map too
+   * 
    * @param args not used
    */
   public static void main(String[] args) {
 
     try {
       read = new BufferedReader(
-          new FileReader(new File("res/settings")));
+          new FileReader(new File("res/settingsE")));
       String str;
 
       while ((str = read.readLine()) != null) {
@@ -74,13 +79,18 @@ public class MainE {
         }
         if (scale == 0) {
           scale = Integer.parseInt(str);
+        }else if(testLoc == null){
+          testLoc = str;
         }
+
       }
 
     } catch (IOException ex) {
+      System.out.println("bleh, scale is 0");
       ex.printStackTrace();
       scale = 1;
     } catch (NumberFormatException ex) {
+      System.out.println("bleh, scale is 0");
       ex.printStackTrace();
       scale = 1;
     }
@@ -192,17 +202,18 @@ public class MainE {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     //sets the clearing color to light gray
-    glClearColor(246f / 255,246f / 255,246f / 255,1);
+    glClearColor(246f/255, 246f/255, 246f/255, 1);
 
     glDisable(GL_DEPTH_TEST);      //kills off the third dimension
   }
   
   /**
-   *  Destroys the display and keyboard, closing the window.
+   *  Destroys the display and keyboard, closing all open windows.
    */
   private static void cleanUp() {
     Display.destroy();
     AL.destroy();
+    System.exit(0); //to Force lingering JDialogs to close
   }
 
   public static int getScale() {

@@ -4,14 +4,7 @@
  */
 package komorebi.projsoul.states;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-
+import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Item;
@@ -20,12 +13,14 @@ import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MagicBar;
 import komorebi.projsoul.engine.ThreadHandler;
+import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.Player;
 import komorebi.projsoul.entities.SignPost;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.AreaScript;
+import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Fader;
 import komorebi.projsoul.script.InstructionList;
@@ -36,6 +31,17 @@ import komorebi.projsoul.script.SpeechHandler;
 import komorebi.projsoul.script.Task;
 import komorebi.projsoul.script.Task.TaskWithNumber;
 import komorebi.projsoul.script.Task.TaskWithString;
+import komorebi.projsoul.script.TextHandler;
+import komorebi.projsoul.script.Word;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.security.KeyStore.PrivateKeyEntry;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Represents the game
@@ -45,8 +51,6 @@ import komorebi.projsoul.script.Task.TaskWithString;
  */
 public class Game extends State{
 
-  public ArrayList<NPC> npcs;
-  public ArrayList<AreaScript> scripts;
   public ArrayList<Item> items = new ArrayList<Item>();
  
   public boolean[] booleans;
@@ -56,6 +60,11 @@ public class Game extends State{
   private int maxOpt;
 
   private SpeechHandler speaker;
+  
+  private TextHandler currMap;
+  
+  private int mapDisplayCount = 120;
+  private int displayY = 15;
 
   private BufferedReader read;
   
@@ -75,9 +84,9 @@ public class Game extends State{
    */
   public Game(){
     map = new Map("res/maps/"+testLoc);
-
-    npcs = new ArrayList<NPC>();
-    scripts = new ArrayList<AreaScript>();
+    
+    currMap = new TextHandler();
+    currMap.write(map.getTitle(), 5, Main.HEIGHT-13);
 
     booleans = new boolean[256];
 
@@ -95,8 +104,7 @@ public class Game extends State{
    * @see komorebi.clyde.states.State#getInput()
    */
 @Override
-  public void getInput() {
-    
+  public void getInput() {    
     if (KeyHandler.keyClick(Key.C))
     {
       if (speaker!=null)
@@ -139,7 +147,7 @@ public class Game extends State{
              
 
 
-    //TODO Debug
+    //TODO Remove map debug features
     map.getInput();
   
 
@@ -218,11 +226,23 @@ public class Game extends State{
   public void render() {
     map.render();
     Map.getPlayer().renderHUD();
+    if(mapDisplayCount > 0 || displayY > 0){
+      Draw.rect(2, Main.HEIGHT-displayY, 100, 12, 1, 1, 2, 2, 6);
+      currMap.render(new Word(map.getTitle(), 5, Main.HEIGHT-displayY+2, new EarthboundFont(1)));
+      mapDisplayCount--;
+      
+      if(mapDisplayCount < 0){
+        displayY--;
+      }
+    }
     Fader.render();
 
   }
 
 
+  /**
+   * @return The current map
+   */
   public static Map getMap(){
     return map;
   }
@@ -240,12 +260,11 @@ public class Game extends State{
 
   /**
    * Pauses the game for a specified number of frames
+   * 
    * @param frames The number of frames to be paused
-   * @param ex The script execution whose thread will be locked while the game
+   * @param lock The script execution whose thread will be locked while the game
    *        is paused
    */
-
-
   public void pause(int frames, Lock lock)
   {
     framesToGo = frames;
@@ -291,47 +310,6 @@ public class Game extends State{
       }
     }
     return null;
-  }
-
-  /**
-   * Loads a given map into the game
-   * @param mapFile The name of the file (sans .txt) in the res/ folder
-   */
-  public void loadMap(String mapFile)
-  {
-    try {
-      read = new BufferedReader(
-          new FileReader(new File("res/maps/"+mapFile+".txt")));
-    } catch (FileNotFoundException e1) {
-      e1.printStackTrace();
-    }
-    String s;
-
-    try {
-      while ((s = read.readLine()) != null) {
-        if (s.startsWith("npc"))
-        {
-          s = s.replace("npc ", "");
-          String[] split = s.split(" ");
-
-          NPC.add(new NPC(split[0], Integer.parseInt(split[1]), 
-              Integer.parseInt(split[2]), NPCType.toEnum(split[3])));
-        } else if (s.startsWith("script"))
-        {
-          s = s.replace("script ", "");
-          String[] split = s.split(" ");
-
-          scripts.add(new AreaScript(split[0], Integer.parseInt(split[1]), 
-              Integer.parseInt(split[2]), false, NPC.get(split[3])));
-        }
-
-      }
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-
-
   }
 
   /**

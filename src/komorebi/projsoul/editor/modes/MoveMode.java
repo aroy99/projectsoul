@@ -82,13 +82,17 @@ public class MoveMode extends Mode{
       for (int j = 0; j < collision[0].length; j++) {
         if(EditorMap.checkTileInBounds(x+j*SIZE, y+i*SIZE)){
           if(collision[i][j]){
+            //Red transparent pixel
             Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, 16, 16, 16, 16, 2);
           }else{
+            //Green transparent pixel
             Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, 17, 16, 17, 16, 2);
           }
         }
       }
     }
+    
+    EditorMap.renderGrid();
 
   }
 

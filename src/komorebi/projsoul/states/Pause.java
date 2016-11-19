@@ -1,5 +1,5 @@
 /**
- * Pause.java		Jul 26, 2016, 11:29:54 AM
+ * Pause.java    Jul 26, 2016, 11:29:54 AM
  */
 package komorebi.projsoul.states;
 
@@ -11,13 +11,13 @@ import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.Font;
+import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.SpeechHandler;
 import komorebi.projsoul.script.TextHandler;
 
 /**
  * 
- * @author Aaron Roy
- * @version 
+ * @author Andrew Faulkenberry
  */
 public class Pause extends State {
 
@@ -122,7 +122,7 @@ public class Pause extends State {
           {
             case 1:
               SpeechHandler.setScrolling(false);
-            //TODO Debug
+            //DEBUG Scrolling speeds
               System.out.println("Off");
               break;
             case 2:
@@ -175,9 +175,6 @@ public class Pause extends State {
     pop = PopUp.NONE;
   }
   
-  /* (non-Javadoc)
-   * @see komorebi.clyde.states.State#getInput()
-   */
   @Override
   public void getInput() {
     switch (pop)
@@ -217,7 +214,7 @@ public class Pause extends State {
         
         if (KeyHandler.keyClick(Key.SPACE))
         {
-         pop.click(this); 
+          pop.click(this); 
         }
         break;
       default:
@@ -227,18 +224,12 @@ public class Pause extends State {
      
   }
 
-  /* (non-Javadoc)
-   * @see komorebi.clyde.states.State#update()
-   */
   @Override
   public void update() {
     
     pop.update();
   }
 
-  /* (non-Javadoc)
-   * @see komorebi.clyde.states.State#render()
-   */
   @Override
   public void render() {
     Draw.rect(245, 3, 220, 75, 0, 0, 220, 59, 1, 6); //draws the menu
@@ -296,7 +287,7 @@ public class Pause extends State {
         
         break;
       case 4:
-      //TODO Debug
+      //TODO Implement saving
         System.out.println("Save!");
         break;
       case 5:

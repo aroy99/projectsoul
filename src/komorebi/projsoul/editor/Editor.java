@@ -8,10 +8,13 @@ import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glOrtho;
 import static org.lwjgl.opengl.GL11.glViewport;
 
+import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.audio.Song;
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.engine.MainE;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.map.EditorMap;
 
@@ -26,7 +29,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
+import javax.print.attribute.standard.RequestingUserName;
 import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -49,16 +56,14 @@ public class Editor implements Playable{
   
   private static EditorMap map;
   private static Buttons buttons;
-  public static float aspect;
-  public static float xSpan = 1;
-  public static float ySpan = 1;
-
 
   /**
    * Creates a new editor with a map that is 20*20
    */
   public Editor(){
-    map = new EditorMap(20, 20);
+    map = new EditorMap("res/maps/"+MainE.testLoc, MainE.testLoc);
+//    map = new EditorMap(20, 20);
+
     buttons = new Buttons(map);
   }
 
@@ -131,11 +136,16 @@ public class Editor implements Playable{
   
       int width = dialog.getActWidth();
       int height = dialog.getActHeight();
-  
+
       if(width != 0 && height != 0){
         map = new EditorMap(width, height);
+        map.setTitle(dialog.getTitleText());
+        map.setSong(dialog.getSong());
+        map.setOutside(dialog.getOutside());
+
         buttons.setMap(map);
       }
+      
       KeyHandler.reloadKeyboard();
     }
   
@@ -165,6 +175,23 @@ public class Editor implements Playable{
     }
   
   }
+  
+  /**
+   * Loads a new map at the selected location
+   * 
+   * @param name The name of the map to load (will assume in res/map)
+   * @param x The x in pixels
+   * @param y The y in pixels
+   */
+  public static void loadMap(String name, float x, float y){
+    if(requestSave()){
+      map = new EditorMap("res/maps/" + name + ".map", 
+          name + ".map");
+      EditorMap.setLocation(x, y);
+      buttons.setMap(map);
+    }
+
+  }
 
 
   /**
@@ -175,12 +202,14 @@ public class Editor implements Playable{
     if(!EditorMap.wasSaved()){
       
       int returnee = JOptionPane.showConfirmDialog(null, "Would you like to save?");
-      
-      KeyHandler.reloadKeyboard();
-      
+            
       switch(returnee){
         case JFileChooser.APPROVE_OPTION:
-          continyu = map.newSave();
+          if(map.getPath() == null){
+            continyu = map.newSave();
+          }else{
+            continyu = map.save();
+          }
           break;
         case JFileChooser.CANCEL_OPTION:
           continyu = true;
@@ -190,6 +219,9 @@ public class Editor implements Playable{
           break;
       }
     }
+    
+    KeyHandler.reloadKeyboard();
+
     return continyu;    
   }
 
@@ -217,29 +249,6 @@ public class Editor implements Playable{
   public static boolean wasSaved(){
     return EditorMap.wasSaved();
   }
-
-  /**
-   * Resizes the window, broken, so do not use
-   */
-  @Deprecated
-  private static void resize() {
-    final int height = Display.getHeight();
-    final int width = Display.getWidth();
-    aspect = (float)width/height;
-    xSpan = 1;
-    ySpan = 1;
-
-    if(aspect > 1){
-      xSpan *= aspect;
-    }else{
-      ySpan = xSpan/aspect;
-    }
-    glViewport(0, 0, width, height);
-
-    glLoadIdentity();
-    glOrtho(0,width,0,height,-1,1);     //Updates 3D space
-    //        glOrtho(-xSpan,xSpan,-ySpan,ySpan,-1,1);     //Updates 3D space
-  }
   
   /**
    * The Dialog that is created when Ctrl-N is pressed
@@ -253,8 +262,43 @@ public class Editor implements Playable{
      */
     private static final long serialVersionUID = -7199179946667631093L;
 
+    JTextField title = new JTextField(10);
+    
+    Box titleBox = Box.createHorizontalBox();
+    {
+      titleBox.add(new JLabel("Displayed Name:  "));
+      titleBox.add(title);
+    }
+    
     JTextField width = new JTextField(3);
     JTextField height = new JTextField(3);
+    
+    Box dimensions = Box.createHorizontalBox();
+    {
+      dimensions.add(new JLabel("Width:  "));
+      dimensions.add(width);
+      dimensions.add(Box.createHorizontalStrut(30));
+      dimensions.add(new JLabel("Height:  "));
+      dimensions.add(height);
+    }
+
+    JComboBox<Song> songs = new JComboBox<Song>(Song.values());
+    
+    Box songBox = Box.createHorizontalBox();
+    {
+      songBox.add(new JLabel("Song: "));
+      songBox.add(songs);
+      songBox.add(Box.createGlue());
+    }
+    JCheckBox isOutside = new JCheckBox("Is this map outside?");
+    
+    Object[] contents = {
+        titleBox,   Box.createVerticalStrut(5),
+        dimensions, Box.createVerticalStrut(5),
+        songBox,    Box.createVerticalStrut(5),
+        isOutside
+    };
+    
     String entWidth, entHeight;
     int actWidth, actHeight;
     JOptionPane options;
@@ -265,13 +309,8 @@ public class Editor implements Playable{
       super((Frame)null, true);
       setTitle("Create a New Map");
       setLocationRelativeTo(null);
-      
-      
-      Object[] contents = {
-          new JLabel("Width: "),width,
-          Box.createHorizontalStrut(15),
-          new JLabel("Height: "), height
-      };
+      setAlwaysOnTop(true);
+      setResizable(false);
       
       Object[] buttons = {btnCreate, btnCancel};
       
@@ -280,7 +319,7 @@ public class Editor implements Playable{
       
       addComponentListener(new ComponentAdapter() {
         public void componentShown(ComponentEvent ce) {
-            width.requestFocusInWindow();
+            title.requestFocusInWindow();
         }
       });
       
@@ -288,15 +327,29 @@ public class Editor implements Playable{
       
       width.addActionListener(this);
       height.addActionListener(this);
-
+      
       options.addPropertyChangeListener(this);
 
 
     }
     
+    public boolean getOutside() {
+      return isOutside.isSelected();
+    }
+
+    public Song getSong() {
+      return (Song)songs.getSelectedItem();
+    }
+
+    public String getTitleText() {
+      return title.getText();
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
-      options.setValue(btnCreate);
+      if(e.getSource() == options){
+        options.setValue(btnCreate);
+      }
     }
 
     
@@ -320,7 +373,7 @@ public class Editor implements Playable{
         //property change event will be fired.
         options.setValue(JOptionPane.UNINITIALIZED_VALUE);
         
-        if(btnCreate.equals(value)){
+        if(btnCreate.equals(value)){          
           entWidth = width.getText();
           entHeight = height.getText();
           
@@ -332,6 +385,11 @@ public class Editor implements Playable{
             if(tWidth <= 128 && tHeight <= 128){
               actWidth = tWidth;
               actHeight = tHeight;
+              
+              if(actWidth > 0 && actHeight > 0){
+                
+              }
+              
               clearAndHide();
             }else{
               complain();
@@ -368,6 +426,7 @@ public class Editor implements Playable{
       width.setText(null);
       height.setText(null);
       setVisible(false);
+      dispose();
     }
 
   }

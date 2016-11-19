@@ -123,7 +123,7 @@ public class Encryptor {
           try
           {
             tiles[i][j] = Integer.parseInt(m.substring(x, x+3));
-          //TODO Debug
+          //DEBUG Print tiles?
             System.out.println(i + ", " + j+ ": "+tiles[i][j]);
             
             j++;

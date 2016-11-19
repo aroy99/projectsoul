@@ -8,6 +8,7 @@ package komorebi.projsoul.engine;
  * Represents a set of pictures
  * 
  * @author Aaron Roy
+ * @author Andrew Faulkenberry
  */
 public class Animation {
 
@@ -28,7 +29,7 @@ public class Animation {
   private int cAddFrame;
   private int texID;
   private boolean playing = true;
-  private boolean onlyOnce = false;
+  private boolean onlyOnce = false;  
   
   private boolean hasCustomFrame;
   
@@ -92,11 +93,8 @@ public class Animation {
    * 
    * @param f Max number of frames
    * @param t Time till next frame in frames
-   * @param sx size x for the animation 
-   *             *used to calculate other tex coordinates too
-   * @param sy size y for the animation 
-   *             *used to calculate other tex coordinates too
    * @param id The Texture ID
+   * @param loop Whether the animation should play on loop
    */
   public Animation(int f, int t, int id, boolean loop){
 
@@ -162,9 +160,9 @@ public class Animation {
    * @param sx Horizontal size of the sprite on the picture
    * @param sy Veritcal size of the sprite on the picture
    * @param offX Amount of pixels the frame should be moved when drawn on the screen
-   * (+ means right, - means left)
+   *                  (+ means right, - means left)
    * @param offY Amount of pixels the frame should be moved when drawn on the screen
-   * (+ means up, - means down)
+   *                  (+ means up, - means down)
    */
   public void add(int tx, int ty, float sx, float sy, int offX, int offY)
   {
@@ -195,9 +193,9 @@ public class Animation {
    * @param sx Horizontal size of the sprite on the picture
    * @param sy Veritcal size of the sprite on the picture
    * @param offX Amount of pixels the frame should be moved when drawn on the screen
-   * (+ means right, - means left)
+   *                  (+ means right, - means left)
    * @param offY Amount of pixels the frame should be moved when drawn on the screen
-   * (+ means up, - means down)
+   *                  (+ means up, - means down)
    * @param flip Whether the image is flipped or not
    */
   public void add(int tx, int ty, float sx, float sy, int offX, int offY, boolean flip)
@@ -346,7 +344,8 @@ public class Animation {
     if(!flipped[currFrame]){
       switch(rot[currFrame]){
         case 0:
-          Draw.rectCam(x+offX[currFrame], y+offY[currFrame], sx[currFrame], sy[currFrame], texx[currFrame], texy[currFrame], 
+          Draw.rectCam(x+offX[currFrame], y+offY[currFrame], sx[currFrame], 
+              sy[currFrame], texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], texID);
           break;
         case 1:
@@ -477,7 +476,11 @@ public class Animation {
    */
   public boolean lastFrame()
   {
-    return (currFrame+1==frames);
+    return (currFrame+1 == frames);
+  }
+  
+  public void setStopFrame(){
+    
   }
 
   public void reset()

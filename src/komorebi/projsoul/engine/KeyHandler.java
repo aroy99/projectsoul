@@ -17,7 +17,6 @@ public class KeyHandler {
 
   private static boolean[] isKeyDown = new boolean[Keyboard.KEYBOARD_SIZE + 3];
   private static boolean[] wasKeyDown = new boolean[Keyboard.KEYBOARD_SIZE + 3];
-  private static boolean[] buffer = new boolean[Keyboard.KEYBOARD_SIZE + 3];
     
   /**
    * All of the possible controls that can be used in-game
@@ -28,8 +27,9 @@ public class KeyHandler {
     UP, DOWN, LEFT, RIGHT, TALK, MENU, 
     
     MAP_UP, MAP_DOWN, MAP_LEFT, MAP_RIGHT, SAVE, NEW_SAVE, LOAD, NEW, GRID, 
-    REVERT_MAP, RESET_LOC, PLAY, MOVE_SET, NPC;
-  }  
+    REVERT_MAP, RESET_LOC, PLAY, 
+    TILE, MOVE_SET, EVENT, CONNECT, HEADER;
+  }
   
   public static int totalKeys()
   {
@@ -47,20 +47,12 @@ public class KeyHandler {
       wasKeyDown[i]=isKeyDown[i];
       isKeyDown[i]=Keyboard.isKeyDown(i);
 
-      if (buffer[i] && !isKeyDown[i])
-      {
-        buffer[i] = false;
-      }
     }
     for (int i=Keyboard.KEYBOARD_SIZE; i < Keyboard.KEYBOARD_SIZE+3; i++)
     {
       wasKeyDown[i]=isKeyDown[i];
       isKeyDown[i]=Mouse.isButtonDown(i-Keyboard.KEYBOARD_SIZE);
 
-      if (buffer[i] && !isKeyDown[i])
-      {
-        buffer[i] = false;
-      }
     }
 
     
@@ -73,9 +65,8 @@ public class KeyHandler {
    */
   public static boolean keyClick(Key k)
   {
-    if (isKeyDown[k.getGLKey()] && !wasKeyDown[k.getGLKey()] && !buffer[k.getGLKey()])
+    if (isKeyDown[k.getGLKey()] && !wasKeyDown[k.getGLKey()])
     {
-      buffer[k.getGLKey()] = true;
       return true;
     }
     return false;
@@ -109,21 +100,24 @@ public class KeyHandler {
       case RIGHT: return keyDown(Key.RIGHT);
       case TALK:  return keyClick(Key.Z);
       case MENU:  return keyClick(Key.ENTER);
-             
+
       case MAP_DOWN:   return keyDown(Key.DOWN)  || keyDown(Key.S) && !keyDown(Key.CTRL);
       case MAP_LEFT:   return keyDown(Key.LEFT)  || keyDown(Key.A);
       case MAP_RIGHT:  return keyDown(Key.RIGHT) || keyDown(Key.D);
       case MAP_UP:     return keyDown(Key.UP)    || keyDown(Key.W);
-      case SAVE:       return !keyDown(Key.SHIFT) && keyDown(Key.CTRL) && keyClick(Key.S);
-      case NEW_SAVE:   return keyDown(Key.SHIFT) && keyDown(Key.CTRL) && keyClick(Key.S);
-      case LOAD:       return keyDown(Key.CTRL)  && keyClick(Key.L);
-      case NEW:        return keyDown(Key.CTRL)  && keyClick(Key.N);
-      case REVERT_MAP: return keyDown(Key.CTRL)  && keyClick(Key.R);
-      case RESET_LOC:  return !keyDown(Key.CTRL) && keyClick(Key.R);
-      case GRID:       return keyDown(Key.CTRL)  && keyClick(Key.G);
-      case PLAY:       return keyDown(Key.CTRL)  && keyClick(Key.P);
-      case MOVE_SET:   return keyDown(Key.CTRL)  && keyClick(Key.M);
-      case NPC:        return keyDown(Key.CTRL)  && keyClick(Key.C);
+      case SAVE:       return !shiftDown()       && controlDown()  && keyClick(Key.S);
+      case NEW_SAVE:   return shiftDown()        && controlDown()  && keyClick(Key.S);
+      case LOAD:       return controlDown()      && keyClick(Key.L);
+      case NEW:        return controlDown()      && keyClick(Key.N);
+      case REVERT_MAP: return controlDown()      && keyClick(Key.R);
+      case RESET_LOC:  return !controlDown()     && keyClick(Key.R);
+      case GRID:       return controlDown()      && keyClick(Key.G);
+      case PLAY:       return controlDown()      && keyClick(Key.P);
+      case TILE:       return controlDown()      && keyClick(Key.ROW1);
+      case MOVE_SET:   return controlDown()      && keyClick(Key.ROW2);
+      case EVENT:      return controlDown()      && keyClick(Key.ROW3);
+      case CONNECT:    return controlDown()      && keyClick(Key.ROW4);
+      case HEADER:     return controlDown()      && keyClick(Key.ROW5);
 
       default:         return false;
       

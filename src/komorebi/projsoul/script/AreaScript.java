@@ -3,6 +3,7 @@
  */
 package komorebi.projsoul.script;
 
+import komorebi.projsoul.editor.Editable;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.map.EditorMap;
@@ -11,7 +12,7 @@ import komorebi.projsoul.map.EditorMap;
  * 
  * @author Andrew Faulkenberry
  */
-public class AreaScript extends Script{
+public class AreaScript extends Script implements Editable{
 
   private boolean hasRun = false;
   private boolean isRepeatable;
@@ -29,13 +30,13 @@ public class AreaScript extends Script{
    */
   public AreaScript(String s, float x, float y, boolean repeat)
   {
+    this.x=x;
+    this.y=y;
+    
     tx = (int)(x-EditorMap.getX())/16;
     ty = (int)(y-EditorMap.getY())/16;
     script = s;
     isRepeatable = repeat;
-    this.x=x*16;
-    this.y=y*16;
-
   }
 
   /**
@@ -48,13 +49,14 @@ public class AreaScript extends Script{
    */
   public AreaScript(String s, float x, float y, boolean repeat, NPC person)
   {
+    this.x=x;
+    this.y=y;
+    
     tx = (int)(x-EditorMap.getX())/16;
     ty = (int)(y-EditorMap.getY())/16;
-    
     script = s;
     isRepeatable = repeat;
-    this.x=x*16;
-    this.y=y*16;
+    
     npc = person;
 
   }
@@ -88,16 +90,10 @@ public class AreaScript extends Script{
     return (int) (y/16);
   }
   
-  /**
-   * @return the original tile x of this Script
-   */
   public int getOrigTX(){
     return tx;
   }
 
-  /**
-   * @return the original tile y of this Script
-   */
   public int getOrigTY(){
     return ty;
   }
@@ -111,7 +107,7 @@ public class AreaScript extends Script{
     return y;
   }
   
-  public void setAbsoluteLocation(float x, float y)
+  public void setPixLocation(int x, int y)
   {
     this.x=x;
     this.y=y;

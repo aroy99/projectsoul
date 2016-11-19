@@ -38,6 +38,8 @@ public class GameHandler implements Playable{
    * @see komorebi.projsoul.engine.Playable#getInput()
    */
   public void getInput() {
+    KeyHandler.getInput();
+
     switch(state){
       case GAME:
         game.getInput();
@@ -65,7 +67,6 @@ public class GameHandler implements Playable{
         menu.update();
         break;
       case PAUSE:
-        game.update();
         pause.update();
         break;
       default:
@@ -87,6 +88,7 @@ public class GameHandler implements Playable{
       case PAUSE:
         game.render();
         pause.render();
+        break;
       default:
         break;
     }

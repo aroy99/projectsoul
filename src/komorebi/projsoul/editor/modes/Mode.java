@@ -13,6 +13,7 @@ import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.engine.Renderable;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.TileList;
+import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
 
 import org.lwjgl.input.Mouse;
@@ -67,11 +68,11 @@ public abstract class Mode implements Renderable{
     my = getMouseY();
     
     status.clear();
-    if(checkMapBounds()){
-      status.write("Mouse location: " + mx + ", " + my, 50, 1);
-    }else{
-      status.write("Mouse location: ", 50, 1);
-    }
+    status.write("Mouse location: " + mx + ", " + my, 50, 1, new EarthboundFont(1));
+    System.out.println("Mouse location: " + mx + ", " + my);
+    System.out.println("P-Mouse location: " + pmx + ", " + pmy + ", " + mouseSame);
+
+    
     lButtonWasDown = lButtonIsDown;
     lButtonIsDown = Mouse.isButtonDown(0);
     
@@ -79,7 +80,8 @@ public abstract class Mode implements Renderable{
       clickTimer = DOUBLE_CLICK_TIME;
     }
 
-    if(lButtonIsDown && !lButtonWasDown && clickTimer > 0 && clickTimer != DOUBLE_CLICK_TIME){
+    if(lButtonIsDown && !lButtonWasDown && clickTimer > 0 && 
+        clickTimer != DOUBLE_CLICK_TIME){
       System.out.println("Double click");
       lButtonDoubleClicked = true;
       clickTimer = 0;

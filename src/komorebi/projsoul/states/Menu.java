@@ -4,6 +4,7 @@
 package komorebi.projsoul.states;
 
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.script.EarthboundFont;
@@ -12,7 +13,6 @@ import komorebi.projsoul.script.TextHandler;
 /**
  * 
  * @author Andrew Faulkenberry
- * @version 
  */
 public class Menu extends State {
 
@@ -25,35 +25,32 @@ public class Menu extends State {
   public Menu()
   {
     text = new TextHandler();
-    text.write("Clyde's", 72, 160, new EarthboundFont(2));
-    text.write("Controls", 72, 64, new EarthboundFont(1));
+    text.write("Project Soul", 32, 160, new EarthboundFont(2));
+    text.write("Start", 72, 64, new EarthboundFont(1));
     pickIndex = 1;
   }
 
-  /* (non-Javadoc)
-   * @see komorebi.clyde.states.State#getInput()
-   */
   @Override
   public void getInput() {
-    if (KeyHandler.keyClick(Key.SPACE))
+    if (KeyHandler.keyClick(Key.C))
     {
+      System.out.println("I acknowladge yall");
+
       //Blah
+    }
+    if(KeyHandler.keyClick(Key.ENTER)){
+      System.out.println("I acknowladge youy");
+      GameHandler.switchState(States.GAME);
     }
 
   }
 
-  /* (non-Javadoc)
-   * @see komorebi.clyde.states.State#update()
-   */
   @Override
   public void update() {
 
 
   }
 
-  /* (non-Javadoc)
-   * @see komorebi.clyde.states.State#render()
-   */
   @Override
   public void render() {
     Draw.rect(0, 0, 284, 284, 0, 0, 1, 1, 1);

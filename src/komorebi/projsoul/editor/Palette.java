@@ -182,21 +182,6 @@ public class Palette implements Playable{
     }
   }
 
-
-  /**
-   * Reloads the Palette
-   */
-  @Deprecated
-  public void reload(){
-    xOffset = Display.getWidth()/(MainE.scale*16) - 4;    
-    yOffset = Display.getHeight()/(MainE.scale*16) - 14;  
-    selX = (int)(xOffset*Editor.xSpan);
-    selY = (int)(yOffset*Editor.ySpan);
-
-    System.out.println("SelX: "+selX + ", SelY: "+selY);
-  }
-
-
   /**
    * Creates a new selection
    */

@@ -14,17 +14,6 @@ public enum NPCType {
   NESS;
 
   /**
-   * @return all of the strings in this enum
-   */
-  public static ArrayList<String> allStrings(){
-    ArrayList<String> a = new ArrayList<String>();
-    a.add("POKEMON");
-    a.add("NESS");
-
-    return a;
-  }
-
-  /**
    * Takes in a string and returns its respective NPCType
    * 
    * @param s The input string
@@ -41,5 +30,26 @@ public enum NPCType {
       default:
         return null;
     }
+  }
+  
+  @Override
+  public String toString(){
+    switch(this){
+      case POKEMON: return "POKEMON";
+      case NESS:    return "NESS";
+      default:      return "bleh";
+    }
+  }
+
+  /**
+   * @return all of the strings in this enum
+   */
+  public static ArrayList<String> allStrings(){
+    ArrayList<String> a = new ArrayList<String>();
+    for(NPCType type : values()){
+      a.add(type.toString());
+    }
+    
+    return a;
   }
 }

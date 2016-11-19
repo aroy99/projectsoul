@@ -4,17 +4,28 @@
 
 package komorebi.projsoul.map;
 
+import static komorebi.projsoul.engine.KeyHandler.button;
+
+import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.audio.Song;
+import komorebi.projsoul.editor.modes.ConnectMode;
+import komorebi.projsoul.editor.modes.EventMode;
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.editor.modes.MoveMode;
-import komorebi.projsoul.editor.modes.NPCMode;
 import komorebi.projsoul.editor.modes.TileMode;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.entities.Chaser;
+import komorebi.projsoul.entities.Dummy;
+import komorebi.projsoul.entities.Enemy;
+import komorebi.projsoul.entities.EnemyType;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.SignPost;
+import komorebi.projsoul.map.ConnectMap.Side;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.WalkingScript;
@@ -22,8 +33,11 @@ import komorebi.projsoul.script.WarpScript;
 
 import org.lwjgl.opengl.Display;
 
-import static komorebi.projsoul.engine.KeyHandler.button;
-
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -36,23 +50,27 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
- * Represents a map of tiles
+ * Represents a map of tiles for use by the Editor
  * 
  * @author Aaron Roy
  */
 public class EditorMap implements Playable, Serializable{
 
-  /**
-   * 
-   */
+  /** I will probably never bother to understand what this does... */
   private static final long serialVersionUID = 3907867851725270089L;
-  //Mouse buttons
-
+  
   //Arrow keys
   private transient boolean up, down, left, right;        //Directions for movement
 
@@ -72,13 +90,20 @@ public class EditorMap implements Playable, Serializable{
 
 
   private static TileList[][] tiles;                //The Map itself
-  private boolean[][] collision;
+  private static boolean[][] collision;
 
+  private static String title;                 //The in-game name of this map
+  private static Song song;                    //The song this map uses
+  private static boolean outside;
 
   public static final int SIZE = 16;         //Width and height of a tile
 
-  private ArrayList<NPC> npcs;
-  private ArrayList<AreaScript> scripts;
+  private static ArrayList<NPC> npcs;              //Events
+  private static ArrayList<AreaScript> scripts;    //^
+  private static ArrayList<Enemy> enemies;         //^
+  private static ArrayList<SignPost> signs;        //^
+  
+  private static ArrayList<ConnectMap> maps;   //Maps that connect to this one
 
   private static float x, y;       //Current location
   private static float dx, dy;
@@ -92,7 +117,8 @@ public class EditorMap implements Playable, Serializable{
   
   private TileMode tileMode;
   private MoveMode moveMode;
-  private NPCMode npcMode;
+  private EventMode eventMode;
+  private ConnectMode connectMode;
 
   /**
    * The various modes this map can be in
@@ -100,7 +126,7 @@ public class EditorMap implements Playable, Serializable{
    * @author Aaron Roy
    */
   public enum Modes{
-    TILE, MOVE, NPC;
+    TILE, MOVE, EVENT, CONNECT;
   }
 
   private static Modes mode = Modes.TILE;
@@ -116,6 +142,10 @@ public class EditorMap implements Playable, Serializable{
     collision = new boolean[row][col];
     npcs = new ArrayList<NPC>();
     scripts = new ArrayList<AreaScript>();
+    enemies = new ArrayList<Enemy>();
+    signs = new ArrayList<SignPost>();
+    maps = new ArrayList<ConnectMap>();
+
 
     Display.setTitle("Clyde\'s Editor - "+ "Untitled Map");
 
@@ -125,16 +155,12 @@ public class EditorMap implements Playable, Serializable{
       }
     }
 
-    Mode.setMap(tiles);
-    
     tileMode = new TileMode();
     moveMode = new MoveMode(collision);
-    npcMode = new NPCMode(npcs, scripts);
+    eventMode = new EventMode(npcs, scripts, enemies, signs);
+    connectMode = new ConnectMode(maps);
     Mode.setMap(tiles);
     
-    tileMode = new TileMode();
-    moveMode = new MoveMode(collision);
-    npcMode = new NPCMode(npcs, scripts);
   }
 
 
@@ -159,7 +185,25 @@ public class EditorMap implements Playable, Serializable{
       collision = new boolean[rows][cols];
       npcs = new ArrayList<NPC>();
       scripts = new ArrayList<AreaScript>();
-
+      enemies = new ArrayList<Enemy>();
+      signs = new ArrayList<SignPost>();
+      
+      maps = new ArrayList<ConnectMap>();
+      
+      reader.mark(50);
+      
+      String test = reader.readLine();
+      
+      if(!test.substring(0, 1).matches("\\d")){
+        title = test;
+        song = Song.getSong(reader.readLine());
+        if(song == null){
+          song = Song.NONE;
+        }
+        outside = Integer.parseInt(reader.readLine()) == 1?true : false;
+      }else{
+        reader.reset();
+      }
 
       for (int i = 0; i < tiles.length; i++) {
         String[] str = reader.readLine().split(" ");
@@ -241,7 +285,46 @@ public class EditorMap implements Playable, Serializable{
           int arg1 = Integer.parseInt(split[2]);
 
           scripts.add(new WarpScript(split[0], x+arg0*16, y+arg1*16, false));
+        } else if (s.startsWith("enemy")){
+          s = s.replace("enemy ", "");
+          String[] split = s.split(" ");
+
+          int arg0 = Integer.parseInt(split[0]);
+          int arg1 = Integer.parseInt(split[1]);
+          
+          switch(split[3]){
+            case "none":
+              enemies.add(new Dummy(x+arg0*16, y+arg1*16, EnemyType.toEnum(split[2]), 1));
+              break;
+            case "chaser":
+              enemies.add(new Chaser(x+arg0*16, y+arg1*16, EnemyType.toEnum(split[2]),
+                  Integer.parseInt(split[4])));
+              break;
+            default:
+              System.out.println("This shouldn't happen!");
+              break;
+          }
+        } else if (s.startsWith("sign")){
+          s = s.replace("sign ", "");
+          String[] split = s.split(" ", 3);
+
+          int arg0 = Integer.parseInt(split[0]);
+          int arg1 = Integer.parseInt(split[1]);
+          
+          signs.add(new SignPost(x+arg0*16, y+arg1*16, split[2]));
+
+        } else if (s.startsWith("connect")){
+          s = s.replace("connect ", "");
+          String[] split = s.split(" ");
+          
+          ConnectMap newMap = (new ConnectMap("res/maps/"+split[0]+".map", split[0], 
+              Side.toEnum(split[1])));
+          
+          newMap.setLoc(x+Integer.parseInt(split[2])*SIZE, y+Integer.parseInt(split[3])*SIZE);
+          
+          maps.add(newMap);
         }
+        
       } while ((s=reader.readLine()) != null);
 
 
@@ -250,28 +333,17 @@ public class EditorMap implements Playable, Serializable{
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
       JOptionPane.showMessageDialog(null, 
-          "The file was not found / was corrupt, therefore, the " + 
-          "default settings were used");
-      tiles = new TileList[10][10];
-
-
-      for (int i = tiles.length-1; i >= 0; i--) {
-        for (int j = 0; j < tiles[0].length; j++) {
-          tiles[i][j] = TileList.BLANK;
-        }
-      }
+          "The file was not found, was corrupt, or used an outdated map format, " +
+          "therefore, some things might not be right");
 
       KeyHandler.reloadKeyboard();
     }         
     
-    
-    
-    Mode.setMap(tiles);
-    
     tileMode = new TileMode();
     moveMode = new MoveMode(collision);
-    npcMode = new NPCMode(npcs, scripts);
-
+    eventMode = new EventMode(npcs, scripts, enemies, signs);
+    connectMode = new ConnectMode(maps);
+    Mode.setMap(tiles);
   }
 
   @Override
@@ -339,39 +411,106 @@ public class EditorMap implements Playable, Serializable{
       dx = -SPEED;
     }
 
-        
-    if(isReset){
-      x = 0;
-      y = 0;
+     
+    if(button(Control.TILE)){
+      mode = Modes.TILE;
     }
-
     if(button(Control.MOVE_SET)){
       mode = Modes.MOVE;
+    }
+    if(button(Control.EVENT)){
+      mode = Modes.EVENT;
+    }
+    if(button(Control.CONNECT)){
+      mode = Modes.CONNECT;
+    }
+    
+    if(button(Control.HEADER)){
+      editMapHeader();
     }
 
     switch(mode){
       case MOVE:
         moveMode.update();
         break;
-      case NPC:
+      case EVENT:
+        eventMode.update();
         break;
       case TILE:
         tileMode.update();
+        break;
+      case CONNECT:
+        connectMode.update();
         break;
       default:
         break;
     }
     if(isReset){
-      x = 0;
-      y = 0;
+      dx = -x;
+      dy = -y;
     }
     
-    x+=dx;
-    y+=dy;
-
+    move(dx, dy);
+    
     dx = 0;
     dy = 0;
 
+  }
+
+
+  @Override
+  public void render() {
+    for (int i = 0; i < tiles.length; i++) {
+      for (int j = 0; j < tiles[0].length; j++) {
+        if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
+          Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, tiles[i][j].getX(), 
+              tiles[i][j].getY(), 1);
+        }
+      }
+    }
+          
+    switch(mode){
+      case MOVE:
+        moveMode.render();
+        break;
+      case EVENT:
+        eventMode.render();
+        break;
+      case TILE:
+        tileMode.render();
+        break;
+      case CONNECT:
+        connectMode.render();
+        break;
+      default:
+        break;
+    }
+  
+  }
+  
+  /**
+   * Renders the grid of the map
+   */
+  public static void renderGrid(){
+    if(grid){
+      for (int i = 0; i < tiles.length; i++) {
+        for (int j = 0; j < tiles[0].length; j++) {
+          if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
+            Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, 0, 16, SIZE, 16+SIZE, 2);
+          }
+        }
+      }
+    }
+  }
+  
+  /**
+   * Creates a new map header dialog
+   */
+  public static void editMapHeader(){
+    EditMapHeader header = new EditMapHeader();
+    header.pack();
+    header.setVisible(true);
+    setUnsaved();
   }
 
 
@@ -387,10 +526,14 @@ public class EditorMap implements Playable, Serializable{
       }else{
         writer = new PrintWriter(path+".map", "UTF-8");
       }
-
+      
       writer.println(tiles.length);
       writer.println(tiles[0].length);
 
+      writer.println(title);
+      writer.println(song);
+      writer.println(outside?1 : 0);
+      
       //The map itself
       for (TileList[] tile : tiles) {
         for (TileList t : tile) {
@@ -424,6 +567,23 @@ public class EditorMap implements Playable, Serializable{
               " " + script.getOrigTY() + 
               (script.hasNPC()?" " + script.getNPC().getName() : ""));
         }
+      }
+      
+      for(Enemy enemy:enemies){
+        writer.println("enemy " + enemy.getOrigTX() + 
+            " " + enemy.getOrigTY() + " " + enemy.getType() + " " + 
+            enemy.getBehavior() + 
+            (enemy instanceof Chaser?" " +  ((Chaser)enemy).getOriginalRadius() : ""));
+      }
+      
+      for(SignPost sign:signs){
+        writer.println("sign " + sign.getOrigTX() + 
+            " " + sign.getOrigTY() + " " + sign.getText());
+      }
+      
+      for(ConnectMap map: maps){
+        writer.println("connect " + map.getName() + " " + map.getSide() + " " +
+            map.getTileX() + " " + map.getTileY());
       }
       
       saved = true;
@@ -535,7 +695,7 @@ public class EditorMap implements Playable, Serializable{
       /**
        * Don't feel too bad Aaron, I have no clue either
        */
-      private static final long serialVersionUID = 3881189161552826430L;
+      private static final long serialVersionUID = 3881189165152826430L;
 
       @Override
       public void approveSelection(){
@@ -612,7 +772,7 @@ public class EditorMap implements Playable, Serializable{
   {
     for (AreaScript scr: scripts)
     {
-      //TODO Debug
+      //DEBUG Print out Script name
       System.out.println(scr.getName());
       if (scr.getName().equals(s)){
         return scr;
@@ -642,21 +802,52 @@ public class EditorMap implements Playable, Serializable{
     return x;
   }
 
+  public static float getY() {
+    return y;
+  }
+  
+  public static void setLocation(float x, float y){
+    move(x-EditorMap.x, y-EditorMap.y);
+  }
+  
   public String getPath() {
     return path;
   }
+
 
   public String getName() {
     return name;
   }
 
-  public static float getY() {
-    return y;
+
+  public String getTitle(){
+    return title;
+  }
+  
+  public void setTitle(String newTitle){
+    title = newTitle;
+  }
+  
+  public Song getSong(){
+    return song;
+  }
+  
+  public void setSong(Song newSong){
+    song = newSong;
+  }
+  
+  public boolean isOutside(){
+    return outside;
+  }
+  
+  public void setOutside(boolean isOutside){
+    outside = isOutside;
   }
 
   public static boolean wasSaved(){
     return saved;
   }
+  
   /**
    * Creates the asterisk next to the name indicating the map has changed
    */
@@ -677,83 +868,259 @@ public class EditorMap implements Playable, Serializable{
   }
   
   /**
+   * @param x The x to check in pixels
+   * @param y The y to check in pixels
+   * 
    * @return Whether the tile is on the map
    */
   public static boolean checkTileInBounds(float x, float y) {
-    return x+SIZE > 0 && x < WIDTH-SIZE*8 && y+SIZE > 0 && y < HEIGHT;
+    switch (mode) {
+      case TILE:
+        return x+SIZE > 0 && x < WIDTH-SIZE*8 && y+SIZE > 0 && y < HEIGHT;
+      default:
+        return x+SIZE > 0 && x < WIDTH+SIZE && y+SIZE > 0 && y < HEIGHT;
+    }
   }
 
   public static TileList[][] getMap(){
     return tiles;
   }
-
-
-  @Override
-  public void render() {
-    for (int i = 0; i < tiles.length; i++) {
-      for (int j = 0; j < tiles[0].length; j++) {
-        if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
-          Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, tiles[i][j].getX(), 
-              tiles[i][j].getY(), 1);
-          if(grid){
-            Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, 0, 16, SIZE, 16+SIZE, 2);
-          }
-
-        }
-      }
-    }
-    switch(mode){
-      case MOVE:
-        moveMode.render();
-        break;
-      case NPC:
-        break;
-      case TILE:
-        tileMode.render();
-        break;
-      default:
-        break;
-    }
-
-    
-    if(mode == Modes.NPC){
-      for (NPC npc: npcs) {
-        if(checkTileInBounds(npc.getX(), npc.getY())){
-          npc.render();
-        }
-      }
-
-      for (AreaScript script: scripts) {
-        if(checkTileInBounds(script.getX(), script.getY())){
-          script.render();
-        }
-      }
-    }    
+  
+  public static int getPxHeight(){
+    return tiles.length*SIZE;
+  }
+  
+  public static int getPxWidth(){
+    return tiles[0].length*SIZE;
   }
 
-  /**
+  
+  public static Modes getMode(){
+    return mode;
+  }
+    /**
    * Moves the entire map and all entities contained by it by the specified amount
    * 
    * @param dx pixels to move left/right
    * @param dy pixels to move up/down
    */
-  public void move(float dx, float dy) {
+  public static void move(float dx, float dy) {
 
     x+=dx;
     y+=dy;
 
     for(NPC npc:npcs){
-      npc.setPixLocation((int)(npc.getX()+dx)+npc.getXTravelled(), 
-          (int)(npc.getY()+dy)+npc.getYTravelled());
+      npc.setPixLocation((int)(npc.getX()+dx), (int)(npc.getY()+dy));
       npc.update();
     }
 
     for(AreaScript script:scripts){
-      script.setAbsoluteLocation(script.getX()+dx,script.getY()+dy);
+      script.setPixLocation((int)(script.getX()+dx),(int)(script.getY()+dy));
+    }
+    
+    for (Enemy enemy:enemies) {
+      enemy.setPixLocation((int)(enemy.getX()+dx),(int)(enemy.getY()+dy));
+    }
+    
+    for (SignPost sign:signs) {
+      sign.setPixLocation((int)(sign.getX()+dx),(int)(sign.getY()+dy));
+    }
+    
+    for(ConnectMap map:maps){
+      map.setLoc(map.getX()+dx, map.getY()+dy);
     }
 
   }
   
+  /**
+   * Allows the user to edit the width, height, title, and song of maps
+   *
+   * @author Aaron Roy
+   */
+  public static class EditMapHeader extends JDialog implements ActionListener,
+                                                        PropertyChangeListener{
+    
+    /** Not planning to know what this does... */
+    private static final long serialVersionUID = 5657211675232029800L;
+
+    JOptionPane options;
+    String btnCreate = "Create";
+    String btnCancel = "Cancel";
+
+    Object[] buttons = {btnCreate, btnCancel};
+        
+    JTextField newTitle = new JTextField(10);
+    
+    Box titleBox = Box.createHorizontalBox();
+    {
+      titleBox.add(new JLabel("Displayed Name:  "));
+      titleBox.add(newTitle);
+    }
+    
+    JTextField newWidth = new JTextField(3);
+    JTextField newHeight = new JTextField(3);
+    
+    Box dimensions = Box.createHorizontalBox();
+    {
+      dimensions.add(new JLabel("Width:  "));
+      dimensions.add(newWidth);
+      dimensions.add(Box.createHorizontalStrut(30));
+      dimensions.add(new JLabel("Height:  "));
+      dimensions.add(newHeight);
+    }
+
+    JComboBox<Song> songs = new JComboBox<Song>(Song.values());
+    JButton play = new JButton("Play");
+    JButton stop = new JButton("Stop");
+    
+    Box songBox = Box.createHorizontalBox();
+    {
+      songBox.add(new JLabel("Song: "));
+      songBox.add(songs);
+      songBox.add(Box.createGlue());
+      songBox.add(play);
+      songBox.add(stop);
+    }
+    JCheckBox isOutside = new JCheckBox("Is this map outside?");
+    
+    Object[] fullContent = {
+        titleBox,   Box.createVerticalStrut(5),
+        dimensions, Box.createVerticalStrut(5),
+        songBox,    Box.createVerticalStrut(5),
+        isOutside
+    };
+    
+    /**
+     * Creates a new map header dialog
+     */
+    public EditMapHeader(){
+      super((Frame)null, false);
+      setLocationRelativeTo(null);
+      setAlwaysOnTop(true);
+      setResizable(false);
+      
+      setTitle("Edit Map Header");
+      
+      newWidth.setText(Integer.toString(tiles[0].length));
+      newHeight.setText(Integer.toString(tiles.length));
+      newTitle.setText(title);
+      songs.setSelectedItem(song);
+      isOutside.setSelected(outside);
+
+      options = new JOptionPane(fullContent, JOptionPane.PLAIN_MESSAGE,
+          JOptionPane.YES_NO_OPTION, null, buttons, buttons[0]);
+      
+      setContentPane(options);
+      
+      options.addPropertyChangeListener(this);
+      
+      play.addActionListener(this);
+      stop.addActionListener(this);
+
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent e) {
+      String prop = e.getPropertyName();
+
+      
+      if(e.getSource() == options && (JOptionPane.VALUE_PROPERTY.equals(prop) ||
+          JOptionPane.INPUT_VALUE_PROPERTY.equals(prop))){
+        Object value = options.getValue();
+
+        if(value == JOptionPane.UNINITIALIZED_VALUE){
+          //ignore reset
+          return;
+        }
+
+        //Reset the JOptionPane's value.
+        //If you don't do this, then if the user
+        //presses the same button next time, no
+        //property change event will be fired.
+        options.setValue(JOptionPane.UNINITIALIZED_VALUE);
+
+        //DEBUG Affirm Create button works
+        System.out.println("Create works");
+
+        if(btnCreate.equals(value)){
+          if(!newTitle.equals("") && checkNum(newWidth) && checkNum(newHeight) &&
+              songs.getSelectedItem() != null){
+            title = newTitle.getText();
+            song = (Song)songs.getSelectedItem();
+            outside = isOutside.isSelected();
+            
+            int width = Integer.parseInt(newWidth.getText());
+            int height = Integer.parseInt(newHeight.getText());
+            
+            TileList[][] newMap = new TileList[height][width];
+            boolean[][] newCol = new boolean[height][width];
+            for(int i = 0; i < height; i++){
+              for(int j = 0; j < width; j++){
+                if(i < tiles.length && j < tiles[0].length){
+                  newMap[i][j] = tiles[i][j];
+                  newCol[i][j] = collision[i][j];
+                }
+                else{
+                  newMap[i][j] = TileList.BLANK;
+                  newCol[i][j] = true;
+                }
+              }
+            }
+            
+            tiles = newMap;
+            collision = newCol;
+                        
+            clearAndHide();
+          }
+          else{
+            complainIncomplete();
+          }
+        }else{
+          clearAndHide();
+        }
+      }
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      if(e.getSource() == options){
+        options.setValue(btnCreate);
+      }
+      if(e.getSource() == play && songs.getSelectedItem() != null){
+        AudioHandler.play((Song)songs.getSelectedItem());
+      }
+      if(e.getSource() == stop){
+        AudioHandler.stop();
+      }
+    }
+    
+    /** This method clears the dialog and hides it. */
+    public void clearAndHide() {
+      newTitle.setText(null);
+      newWidth.setText(null);
+      newHeight.setText(null);
+      songs.setSelectedItem(null);
+      isOutside.setSelected(false);
+      
+      setVisible(false);
+      dispose();
+    }
+    
+    public boolean checkNum(JTextField text){
+      return text.getText().matches("[1-9]\\d{0,2}?");
+    }
+    
+    /**
+     * Complains about problems in input
+     */
+    public void complainIncomplete(){
+      JOptionPane.showMessageDialog(this, "Sorry, make sure every field is " +
+          "filled in and formatted correctly (numbers should be between 1-128)", 
+          "Please Try Again", JOptionPane.ERROR_MESSAGE);
+    }
+
+
+  }
 
 }
 

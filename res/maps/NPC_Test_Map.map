@@ -1,5 +1,8 @@
 20
 20
+Test
+None
+1
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
@@ -42,3 +45,4 @@
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 npc dummy 11 9 POKEMON walk_up_and_down test_msg
 npc bob 15 8 NESS walk_up_and_down yoyoyo
+connect Test up -3 20

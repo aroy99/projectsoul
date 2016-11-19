@@ -23,6 +23,8 @@ public abstract class Enemy extends Entity {
 
   private Animation hitAni;
   private Animation deathAni;
+  
+  public static final int KNOCKBACK = 6;
 
   public float dx, dy;
   
@@ -35,20 +37,25 @@ public abstract class Enemy extends Entity {
   public abstract int baseDefense();
   public abstract int baseHealth();
 
+
+  private Face hitDirection;
+  
+  private EnemyType type;
+
   /**
    * Creates a standard enemy
    * @param x The x location (in the map) of the enemy
    * @param y The y location (in the map) of the enemy
-   * @param sx The horizontal size, in pixels, of the enemy
-   * @param sy The vertical size, in pixels, of the enemy
+   * @param type The sprite of this enemy
    */
-  public Enemy(float x, float y, int sx, int sy) {
-   this(x,y,sx,sy,1);
+  public Enemy(float x, float y, EnemyType type) {
+   this(x,y,type, 1);
   }
   
-  public Enemy(float x, float y, int sx, int sy, int level)
-  {
-    super(x, y, sx, sy);
+  public Enemy(float x, float y, EnemyType type, int level) {
+    super(x, y, type.getSX(), type.getSY());
+    
+    this.type = type;
     
     this.level = level;
 
@@ -88,10 +95,18 @@ public abstract class Enemy extends Entity {
     if (invincible)
     {
       hitCounter--;
-      if (dx>0) dx-=0.25;
-      if (dx<0) dx+=0.25;
-      if (dy>0) dy-=0.25;
-      if (dy<0) dy+=0.25;
+      if (dx > 0){
+        dx--;
+      }
+      if (dx < 0){
+        dx++;
+      }
+      if (dy > 0){
+        dy--;
+      }
+      if (dy < 0){
+        dy++;
+      }
     }
 
     if (hitCounter<=0)
@@ -178,6 +193,9 @@ public abstract class Enemy extends Entity {
   }
       
 
+  /**
+   * Updates whether the enemy is being hit
+   */
   public void inflictPain(int attack, double ang, Characters c)
   {
     float chgx = (float) Math.cos(ang * (Math.PI/180)) * 5;
@@ -190,10 +208,7 @@ public abstract class Enemy extends Entity {
 
 
 
-  /*
-   * (non-Javadoc)
-   * @see komorebi.projsoul.engine.Renderable#render()
-   */
+  @Override
   public void render() {
     if (invincible)
     {
@@ -216,13 +231,21 @@ public abstract class Enemy extends Entity {
   {
     return health;
   }
+  
+  public EnemyType getType(){
+    return type;
+  }
+  
+  public String getBehavior(){
+    return "none";
+  }
 
   public boolean dead()
   {
     return dead;
   }
 
-  /*
+  /**
    * Stops the enemy from moving where it shouldn't 
    */
   public void overrideImproperMovements()
@@ -255,7 +278,9 @@ public abstract class Enemy extends Entity {
       
       if (!Map.getPlayer().invincible())
       {
-        Map.getPlayer().inflictPain(attack, 12*dx, 12*dy);
+        Map.getPlayer().inflictPain(30, KNOCKBACK*Math.signum(dx)*(float)Math.sqrt(Math.abs(dx)), 
+            KNOCKBACK*Math.signum(dy)*(float)Math.sqrt(Math.abs(dy)));
+
       }
 
       dx = 0;
@@ -275,7 +300,7 @@ public abstract class Enemy extends Entity {
   }
 
   public boolean invincible()
-  {
+  {    
     return invincible;
   }
 }

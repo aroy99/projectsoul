@@ -12,12 +12,12 @@ import komorebi.projsoul.engine.Draw;
  * @author Aaron Roy
  * @version 
  */
-public class TextHandler {
+public class TextHandler{
    
   public static final int SCALE = 16;
 
   public ArrayList<Word> words;
-  private static EarthboundFont defFont = new EarthboundFont(8);
+  private static EarthboundFont defFont = new EarthboundFont(1);
 
   /**
    * Creates a text handler object which will render words
@@ -82,7 +82,8 @@ public class TextHandler {
           word.getFont().getTexX(letters[i])+word.getFont().getFontPoint(), 
           word.getFont().getTexY(letters[i]) + word.getFont().getFontPoint()+texUnder, 
           word.getFont().getTexture());
-      horiz+=(word.getFont().getLength(letters[i])+1);
+      horiz+=(word.getFont().getLength(letters[i])+
+          size/(word.getFont().getFontPoint()/word.getFont().getScale()));
     }
   }
 

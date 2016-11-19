@@ -3,6 +3,8 @@
  */
 package komorebi.projsoul.editor;
 
+import static komorebi.projsoul.engine.MainE.HEIGHT;
+
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
@@ -10,9 +12,6 @@ import komorebi.projsoul.engine.MainE;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.EditorMap.Modes;
-
-import static komorebi.projsoul.engine.MainE.HEIGHT;
-import static komorebi.projsoul.engine.MainE.WIDTH;
 
 import org.lwjgl.input.Mouse;
 
@@ -48,40 +47,44 @@ public class Buttons implements Playable{
         case 1:
           EditorMap.setMode(Modes.MOVE); break;
         case 2:
-          EditorMap.setMode(Modes.NPC);; break;
-        case 3: 
-          //TODO Edit Map Header
+          EditorMap.setMode(Modes.EVENT); break;
+        case 3:
+          EditorMap.setMode(Modes.CONNECT); break;
+        case 4: 
+          EditorMap.editMapHeader();
           break;
-        case 4:
-          EditorMap.changeGrid();  break;
         case 5:
-          Editor.newMap();    break;
+          EditorMap.changeGrid();  break;
         case 6:
+          Editor.newMap();    break;
+        case 7:
           if(map.getPath() == null){
             map.newSave();
           }else{
             map.save();
           }
           break;
-        case 7:
+        case 8:
           map.newSave(); break;
-        case 8:    
-          Editor.revertMap();      break;
-        case 9:
-          Editor.loadMap(); break;
+        case 9:    
+          Editor.revertMap(); break;
         case 10:
-          Editor.testGame(); break;
+          Editor.loadMap(); break;
         case 11:
-          //TODO Undo
-          break;
+          Editor.testGame(); break;
         case 12:
+          //TODO Undo
+          System.out.println("Undo");
+          break;
+        case 13:
           //TODO Redo
+          System.out.println("Redo");
           break;
 
         default:
           //Do nothing, invalid (and impossible, I hope)
-          //TODO Debug
-          System.out.println("This shouldn't be happening m8");
+          //DEBUG Button problemz
+          System.err.println("Button Error");
       }
     }
 
@@ -90,7 +93,8 @@ public class Buttons implements Playable{
   @Override
   public void render() {
     Draw.rect(0, HEIGHT-BUTTON_SIZE, BUTTON_SIZE*8, BUTTON_SIZE, 0, 32, 128, 48, 2);
-    Draw.rect(BUTTON_SIZE*8, HEIGHT-BUTTON_SIZE, BUTTON_SIZE*3, BUTTON_SIZE, 0, 48, 48, 64, 2);
+    Draw.rect(BUTTON_SIZE*8, HEIGHT-BUTTON_SIZE, BUTTON_SIZE*4, BUTTON_SIZE, 
+        0, 48, 64, 64, 2);
 
     if(checkButtonBounds()){
       int x = Mouse.getX()/(BUTTON_SIZE*MainE.getScale())*BUTTON_SIZE;
@@ -106,7 +110,7 @@ public class Buttons implements Playable{
    * @return Mouse is on a button
    */
   private boolean checkButtonBounds() {
-    return (Mouse.getX()/MainE.getScale() < WIDTH-BUTTON_SIZE*14 &&
+    return (Mouse.getX()/MainE.getScale() < BUTTON_SIZE*12 &&
         Mouse.getY()/MainE.getScale() > HEIGHT-BUTTON_SIZE);
   }
 

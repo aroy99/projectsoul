@@ -125,7 +125,7 @@ public class Execution implements Runnable {
 
     } catch (ClassCastException e)
     {
-      //TODO Debug
+      //DEBUG Thread names
       System.out.println(Thread.currentThread().getName());
     }
     return false;
@@ -313,7 +313,6 @@ public class Execution implements Runnable {
         Map.getPlayer().pause(taskNum.getNumber(), lock);
         break;
       case SIMUL_RUN_BRANCH:
-        //TODO Debug
         taskBr = (TaskWithBranch) task;
         Execution ex = new Execution(npc, taskBr.getBranch());
 

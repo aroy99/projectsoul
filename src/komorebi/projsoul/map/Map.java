@@ -7,14 +7,8 @@ package komorebi.projsoul.map;
 import static komorebi.projsoul.engine.Main.HEIGHT;
 import static komorebi.projsoul.engine.Main.WIDTH;
 
-import java.awt.Rectangle;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-
+import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.audio.Song;
 import komorebi.projsoul.engine.Camera;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
@@ -24,7 +18,9 @@ import komorebi.projsoul.entities.Bruno;
 import komorebi.projsoul.entities.Caspian;
 import komorebi.projsoul.entities.Characters;
 import komorebi.projsoul.entities.Chaser;
+import komorebi.projsoul.entities.Dummy;
 import komorebi.projsoul.entities.Enemy;
+import komorebi.projsoul.entities.EnemyType;
 import komorebi.projsoul.entities.Flannery;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
@@ -37,6 +33,14 @@ import komorebi.projsoul.script.Script;
 import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.WalkingScript;
 import komorebi.projsoul.script.WarpScript;
+
+import java.awt.Rectangle;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 
 /**
@@ -64,14 +68,19 @@ public class Map implements Playable{
   private static Flannery flannery;
   private static Sierra sierra;
   private static Bruno bruno;
+  private ArrayList<Enemy> enemies;
+  
+  private String title;                 //The in-game name of this map
+  private Song song;                    //The song this map uses
+  private boolean outside;
 
-  //TODO Debug
-  private ArrayList<Enemy> enemies = new ArrayList<Enemy>();
 
-  //Debug
-  private boolean isHitBox;
-  private boolean isGrid;
+  //DEBUG Map Debug variables
+  public static boolean isHitBox;
+  public static boolean isGrid;
 
+
+  private int debugCount;
 
 
   /**
@@ -117,6 +126,28 @@ public class Map implements Playable{
       scripts = new ArrayList<AreaScript>();
       signs = new ArrayList<SignPost>();
       xpObj = new ArrayList<XPObject>();
+      enemies = new ArrayList<Enemy>();
+      
+      reader.mark(50);
+      
+      String test = reader.readLine();
+      
+      if(!test.substring(0, 1).matches("\\d")){
+        title = test;
+        song = Song.getSong(reader.readLine());
+        if(song == null){
+          song = Song.NONE;
+        }
+        outside = Integer.parseInt(reader.readLine()) == 1?true : false;
+      }else{
+        reader.reset();
+      }
+
+      //DEBUG Text
+      System.out.println("Title: " + title);
+      System.out.println("Song: " + song);
+      System.out.println(outside);
+      AudioHandler.play(song);
       
       for (int i = 0; i < tiles.length; i++) {
         String[] str = reader.readLine().split(" ");
@@ -127,15 +158,6 @@ public class Map implements Playable{
           }
           //reads the tile makeup of the map
           tiles[i][j] = TileList.getTile(Integer.parseInt(str[index]));
-
-
-          //TODO This number will eventually have to be changed, as will the string
-          if (tiles[i][j]==TileList.getTile(15))
-          {
-            signs.add(new SignPost(j, i, "First line\\nSecond line\\pNew paragraph"));
-          }
-
-          collision[i][j] = true;
         }
       }
 
@@ -195,6 +217,34 @@ public class Map implements Playable{
           int arg1 = Integer.parseInt(split[1]);
 
           scripts.add(new WarpScript(split[0], arg1, arg0, false));          
+        } else if (s.startsWith("enemy")){
+          s = s.replace("enemy ", "");
+          String[] split = s.split(" ");
+
+          int arg0 = Integer.parseInt(split[0]);
+          int arg1 = Integer.parseInt(split[1]);
+          
+          switch(split[3]){
+            case "none":
+              enemies.add(new Dummy(arg0*16, arg1*16, EnemyType.toEnum(split[2]), 1));
+              break;
+            case "chaser":
+              enemies.add(new Chaser(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
+                  Integer.parseInt(split[4])));
+              break;
+            default:
+              System.out.println("This shouldn't happen!");
+              break;
+          }
+        } else if (s.startsWith("sign")){
+          s = s.replace("sign ", "");
+          String[] split = s.split(" ", 3);
+
+          int arg0 = Integer.parseInt(split[0]);
+          int arg1 = Integer.parseInt(split[1]);
+          
+          signs.add(new SignPost(arg0*16, arg1*16, split[2]));
+
         }
       } while ((s=reader.readLine()) != null);
 
@@ -224,8 +274,6 @@ public class Map implements Playable{
       e.printStackTrace();
     }
     
-    enemies.add(new Chaser(100, 100, 16, 21, 100, 1));
-
   }
 
 
@@ -237,7 +285,7 @@ public class Map implements Playable{
 
     play.getInput();
 
-    // TODO Debug
+    // DEBUG Special map functions
     if(KeyHandler.keyClick(Key.H)){
       isHitBox = !isHitBox;
     }
@@ -269,7 +317,7 @@ public class Map implements Playable{
         if (npc.isApproached(play.getArea(), play.getDirection()) && 
             KeyHandler.keyClick(Key.C))
         {
-          //TODO Debug
+          //DEBUG NPC turning
           npc.turn(play.getDirection().opposite());
           npc.approach();
         }
@@ -284,8 +332,8 @@ public class Map implements Playable{
 
     for (AreaScript script: scripts)
     {      
-      if (script.isLocationIntersected(play.getTileX(), play.getTileY()) 
-          && !script.hasRun()) {
+      if (script.isLocationIntersected(play.getTileX(), play.getTileY()) &&
+          !script.hasRun()) {
         script.run();
       }
     }
@@ -293,8 +341,8 @@ public class Map implements Playable{
 
     for (SignPost sign: signs)
     { 
-      if (sign.isApproached(play.getArea(), play.getDirection())
-          && KeyHandler.keyClick(Key.C))
+      if (sign.isApproached(play.getArea(), play.getDirection()) &&
+          KeyHandler.keyClick(Key.C))
       {
         sign.show();
       }
@@ -350,7 +398,7 @@ public class Map implements Playable{
           Draw.rectCam((int)j*SIZE, (int)i*SIZE, SIZE, SIZE, 
               tiles[i][j].getX(), tiles[i][j].getY(), 1);
 
-          //TODO Debug
+          //DEBUG Grid
           if(isGrid){
             Draw.rectCam((int)j*SIZE, (int)i*SIZE, SIZE, SIZE, 
                 0, 16, SIZE, 16+SIZE, 2);
@@ -371,7 +419,7 @@ public class Map implements Playable{
 
 
 
-    //TODO Debug
+    //DEBUG Show Hitboxes
     if (isHitBox) {
       for (int i = 0; i < collision.length; i++) {
         for (int j = 0; j < collision[0].length; j++) {
@@ -400,7 +448,7 @@ public class Map implements Playable{
       xp.render();
     }
     
-    //TODO Debug
+    //DEBUG Draw Player hitbox
     if(isHitBox){
       Draw.rectCam((int)play.getX(), (int)play.getY(), 16, 16, 18, 16, 18, 16, 2);
     }
@@ -485,7 +533,7 @@ public class Map implements Playable{
     ret[1] = ret[1] && collision[y3][x2] && collision[y4][x2];  //East
     ret[3] = ret[3] && collision[y3][x1] && collision[y4][x1];  //West
 
-    //TODO Debug
+    //DEBUG Show collision values
     if(KeyHandler.keyClick(Key.Q)){
       System.out.println(x1 + ", " + x2 + ", " + y1 + ", " + y2);
       System.out.println("dx: " + dx + ", dy: " + dy + "\n" + 
@@ -591,12 +639,16 @@ public class Map implements Playable{
    * @return {X, Y}
    */
   public boolean[] checkBoundaries(float x, float y, float dx, float dy){
+    if(outside){
+      return new boolean[]{true, true, true};
+    }
+    
     boolean[] ret = new boolean[2];
 
     //Entire Map < Screen -> Map is centered to screen, Camera Doesn't scroll
-    //Map in one dimension > Camera -> Center to clyde in that dimension, Scroll in that dimension until the edge
+    //Map in one dimension > Camera -> Center to clyde in that dimension, 
+    //  Scroll in that dimension until the edge
     //If clyde is not centered and Map > Screen -> don't move in that dimension until he is
-
 
     ret[0] = tiles[0].length*16 > WIDTH && x+dx >= 0 && x+dx+WIDTH < tiles[0].length*16;
 
@@ -798,6 +850,23 @@ public void switchPlayer()
     return (caspian.getHealth()<=0 && flannery.getHealth()<=0 && sierra.getHealth()<=0
         && bruno.getHealth()<=0);
   }
+  
+  public Song getSong(){
+    return song;
+  }
+  
+  public void setSong(Song newSong){
+    song = newSong;
+  }
+  
+  public boolean isOutside(){
+    return outside;
+  }
+  
+  public String getTitle(){
+    return title;
+  }
+
 
 }
 

@@ -1,0 +1,16 @@
+walk up
+pause 60
+walk left
+pause 60
+walk right
+pause 60
+walk down
+pause 60
+walk down
+pause 60
+walk left
+pause 60
+walk up
+pause 60
+walk right
+pause 60

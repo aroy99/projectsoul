@@ -31,7 +31,7 @@ import komorebi.projsoul.states.Game;
 public abstract class Player extends Entity implements Playable{
 
   public abstract void levelUp();
-  
+
   private boolean up;
   private boolean down;
   private boolean left;
@@ -39,7 +39,7 @@ public abstract class Player extends Entity implements Playable{
   private boolean run;
   private boolean pause;
   private boolean guiding;
-  
+
   private boolean dying;
   private boolean dead; 
 
@@ -72,7 +72,7 @@ public abstract class Player extends Entity implements Playable{
   protected boolean invincible;
   private boolean restoreMvmtX;
   private boolean restoreMvmtY;
-  
+
   private static final float SPEED = 1;
 
   public Face dir = Face.DOWN;    
@@ -84,11 +84,11 @@ public abstract class Player extends Entity implements Playable{
 
   public MagicBar magic;
   public HUD health;
-    
+
   protected boolean noContact;
-  
+
   public Attack<? extends AttackInstance> attack1, attack2, attack3;
-  
+
   /**
    * @param x x pos, from left
    * @param y y pos from bottom
@@ -306,7 +306,7 @@ public abstract class Player extends Entity implements Playable{
     }
 
     overrideImproperMovements();
-    
+
     Camera.move(dx, dy);
     x += dx;
     y += dy;
@@ -354,7 +354,7 @@ public abstract class Player extends Entity implements Playable{
     guiding = false;
 
     magic.update();
-    
+
     ProjectileAttack.update();
     RingOfFire.updateAll();
 
@@ -363,7 +363,7 @@ public abstract class Player extends Entity implements Playable{
     {
       levelUp();
     }
-    
+
     //TODO Stat Dump
     if (KeyHandler.controlDown() && KeyHandler.keyClick(Key.S))
     {
@@ -371,15 +371,15 @@ public abstract class Player extends Entity implements Playable{
       {
         System.out.println(c + ": ");
         System.out.println("Att: " + Player.getAttack(c)
-            + "\tDef: " + Player.getDefense(c));
+        + "\tDef: " + Player.getDefense(c));
         System.out.println("Mag: " + Player.getMaxMagic(c)
-            + "\tHth: " + Player.getMaxHealth(c));
+        + "\tHth: " + Player.getMaxHealth(c));
         System.out.println("XP: " + Player.getXP(c) + " / " + 
             Player.getXPToNextLevel(c) + "\tLevel " + Player.getLevel(c)
             + "\n");
       }
     }
-    
+
     if (KeyHandler.keyClick(Key.A))
     {
       isAttacking = false;
@@ -427,7 +427,7 @@ public abstract class Player extends Entity implements Playable{
           break;
       }
     }
-    
+
     ProjectileAttack.play();
     RingOfFire.play();
   }
@@ -496,19 +496,19 @@ public abstract class Player extends Entity implements Playable{
     switch (dir)
     {
       case DOWN:
-        framesToGo = (int) this.ry - 16*getTileY();
+        framesToGo = (int) this.y - 16*getTileY();
         down = true;
         break;
       case LEFT:
-        framesToGo = (int) this.rx - 16*getTileX();
+        framesToGo = (int) this.x - 16*getTileX();
         left = true;
         break;
       case RIGHT:
-        framesToGo = (int) (16*getTileX() + 16 - this.rx);
+        framesToGo = (int) (16*getTileX() + 16 - this.x);
         right = true;
         break;
       case UP:
-        framesToGo = (int) (16*getTileY() + 16 - this.ry);
+        framesToGo = (int) (16*getTileY() + 16 - this.y);
         up = true;
         break;
       default:
@@ -607,7 +607,7 @@ public abstract class Player extends Entity implements Playable{
       {
         align(Face.LEFT, lock);
         walk(Face.LEFT, getTileX()-tx);
-      } else if (rx<tx*16)
+      } else if (x<tx*16)
       {
         align(Face.RIGHT, lock);
         walk(Face.RIGHT, tx-getTileX(), lock);
@@ -618,7 +618,7 @@ public abstract class Player extends Entity implements Playable{
       {
         align(Face.DOWN, lock);
         walk(Face.DOWN, getTileY()-tx, lock);
-      } else if (ry<tx*16)
+      } else if (y<tx*16)
       {
         align(Face.UP, lock);
         walk(Face.UP, tx-getTileY(), lock);
@@ -741,23 +741,21 @@ public abstract class Player extends Entity implements Playable{
       dy = 0;
       y = Game.getMap().getHeight() * 16 - sy;
     }
-    
+
     for (FireRingInstance ring: RingOfFire.allInstances())
     {
       if (ring.intersectsCirc(new Rectangle((int)(x+dx),(int)(y+dy),sx,sy)))
       {
         float[] center = ring.getCenter();
         double ang = Map.angleOf(x, y, center[0], center[1]);
-        
+
         if (ring.inRing(new Rectangle((int)(x+dx),(int)(y+dy),sx,sy)))
         {
-           ang -= 180;
+          ang -= 180;
         }
         float chgx = (float) Math.cos(ang * (Math.PI/180)) * 5;
         float chgy = (float) Math.sin(ang * (Math.PI/180)) * 5;
-        
-        System.out.println(ring.getDamage());
-        
+
         if (this instanceof Flannery)
           inflictPain(0, chgx, chgy);
         else
@@ -800,7 +798,7 @@ public abstract class Player extends Entity implements Playable{
 
     System.out.println("Damage = " + attack + " - " + 
         getDefense(character) + "/2");
-    
+
     if (attack - getDefense(character)/2 > 0)
     {
       health.health -= (int) (attack - (getDefense(character)/2));
@@ -836,15 +834,15 @@ public abstract class Player extends Entity implements Playable{
     this.x = x;
     this.y = y;
   }
-  
+
   public void renderHUD()
   {
     magic.render();
     health.render();
   }
-    
+
   public abstract void renderAttack();
-  
+
   public static int getAttack(Characters c)
   {
     switch (c)
@@ -858,10 +856,10 @@ public abstract class Player extends Entity implements Playable{
       case BRUNO:
         return Bruno.attack;
     }
-    
+
     return 0;
   }
-  
+
   public static int getDefense(Characters c)
   {
     switch (c)
@@ -875,10 +873,10 @@ public abstract class Player extends Entity implements Playable{
       case BRUNO:
         return Bruno.defense;
     }
-    
+
     return 0;
   }
-  
+
   public static int getMaxMagic(Characters c)
   {
     switch (c)
@@ -892,10 +890,10 @@ public abstract class Player extends Entity implements Playable{
       case BRUNO:
         return Bruno.maxMagic;
     }
-    
+
     return 0;  
   }
-  
+
   public static int getMaxHealth(Characters c)
   {
     switch (c)
@@ -909,10 +907,10 @@ public abstract class Player extends Entity implements Playable{
       case BRUNO:
         return Bruno.maxHealth;
     }
-    
+
     return 0;  
   }
-  
+
   public static int getXP(Characters c)
   {
     switch (c)
@@ -926,10 +924,10 @@ public abstract class Player extends Entity implements Playable{
       case BRUNO:
         return Bruno.xp;
     }
-    
+
     return 0;  
   }
-  
+
   public static int getXPToNextLevel(Characters c)
   {
     switch (c)
@@ -943,10 +941,10 @@ public abstract class Player extends Entity implements Playable{
       case BRUNO:
         return Bruno.nextLevelUp;
     }
-    
+
     return 0;  
   }
-  
+
   public static int getLevel(Characters c)
   {
     switch (c)
@@ -960,16 +958,16 @@ public abstract class Player extends Entity implements Playable{
       case BRUNO:
         return Bruno.level;
     }
-    
+
     return 0;  
   }
-  
+
   public abstract void giveXP(int xp);
-  
+
   public void switchAttack(boolean fwd)
   {
     Attack<? extends AttackInstance> temp = attack1;
-    
+
     if (fwd)
     {
       attack1 = attack2;
@@ -982,7 +980,7 @@ public abstract class Player extends Entity implements Playable{
       attack2 = temp;
     }
   }
-  
+
   public void playWalk()
   {
     switch (dir) {
@@ -1002,7 +1000,7 @@ public abstract class Player extends Entity implements Playable{
         break;
     }
   }
-  
+
   public int getHealth()
   {
     return health.getHealth();

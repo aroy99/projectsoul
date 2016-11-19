@@ -1,9 +1,9 @@
 /**
- * Camera.java
- * Aug 21, 2016, 9:01:33 PM
+ * Camera.java    Aug 21, 2016, 9:01:33 PM
  */
 package komorebi.projsoul.engine;
 
+import komorebi.projsoul.map.Map;
 import komorebi.projsoul.states.Game;
 
 /**
@@ -23,6 +23,10 @@ public class Camera{
    */
   public static void move(float dx, float dy){
     boolean[] check = Game.getMap().checkBoundaries(x, y, dx, dy);
+    
+    if(check.length == 3){
+      center(Map.getPlayer().getX(), Map.getPlayer().getY());
+    }
     
     if(check[0]){
       x += dx;

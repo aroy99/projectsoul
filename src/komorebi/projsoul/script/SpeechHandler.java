@@ -1,5 +1,5 @@
 /**
- * SpeechHandler.java		Jul 26, 2016, 10:54:08 AM
+ * SpeechHandler.java    Jul 26, 2016, 10:54:08 AM
  */
 package komorebi.projsoul.script;
 
@@ -7,8 +7,7 @@ import komorebi.projsoul.engine.Draw;
 
 /**
  * 
- * @author Aaron Roy
- * @version 
+ * @author Andrew Faulkenberry
  */
 public class SpeechHandler extends TextHandler {
 

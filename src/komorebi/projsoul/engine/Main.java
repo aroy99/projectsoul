@@ -54,7 +54,7 @@ public class Main {
   
   public static final int WIDTH = 256;
   public static final int HEIGHT = 224;
-
+  
 
   public static void main(String[] args){
     new Main().run();
