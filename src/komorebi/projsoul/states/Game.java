@@ -69,30 +69,6 @@ public class Game extends State{
   
   public HUD hud;
   public Death death;
-  
-  public class Int {
-    private int val;
-    
-    public Int(int value)
-    {
-      val = value;
-    }
-    
-    public void increment()
-    {
-      val++;
-    }
-    
-    public void decrement()
-    {
-      val--;
-    }
-    
-    public int intValue()
-    {
-      return val;
-    }
-  }
 
   /**
    * Creates the player and loads the map
@@ -108,7 +84,7 @@ public class Game extends State{
     confidence = 0;
     money = 15;
     
-    hud = new HUD(confidence);
+    hud = new HUD(confidence); //TODO WHY KEVIN
     death = new Death();
     
 

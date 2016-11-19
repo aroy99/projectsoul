@@ -48,9 +48,11 @@ public class MainT {
 
   public static int scale = 2;
   public static boolean grid;
+  
+  public static int HEIGHT = 256, WIDTH = 272;
 
   private static boolean running = true;
-  private static TileSetEditor edit = new TileSetEditor();
+  private static TileSetEditor edit;
 
   /**
    * Starts the program, reading an int from settings and using it for the scale.
@@ -89,7 +91,8 @@ public class MainT {
    *  @see GameHandler
    */
   private static void initGame() {
-
+    Draw.loadTextures();
+    edit = new TileSetEditor();
   }
 
 

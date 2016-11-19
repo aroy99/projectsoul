@@ -4,9 +4,6 @@
 
 package komorebi.projsoul.engine;
 
-import java.io.File;
-import java.io.FileInputStream;
-
 import static org.lwjgl.opengl.GL11.GL_NEAREST;
 import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
@@ -22,6 +19,11 @@ import static org.lwjgl.opengl.GL11.glTexParameteri;
 import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.opengl.GL11.glVertex2f;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
@@ -34,9 +36,16 @@ public class Draw {
 
   /** To ensure rotations can only happen in multiples of 90 degrees.*/
   private static final int RIGHT_ANGLE = 90;
+  
+  public static final int BLANK_TILE = 0;
+  
+  private static final int SPREADSHEET_SIZE = 256;
+  private static final int SPREADSHEET_ROW = 16;
 
   /** Holds all of the textures for this class.*/
   private static Texture[] tex = new Texture[14];
+  
+  private static ArrayList<Texture> sheets = new ArrayList<Texture>();
 
   /** Determines whether textures are loaded.*/
   private static boolean texLoaded;
@@ -60,6 +69,7 @@ public class Draw {
    */
   public static void loadTextures() {
     try {
+      
       tex[0] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/Terra.png")));
       tex[1] = TextureLoader.getTexture("PNG", new FileInputStream(
@@ -183,6 +193,46 @@ public class Draw {
 
   }
   
+  public static void rect(float x, float y, float sx, float sy, int texx, 
+      int texy, int texsx, int texsy, int angle, Texture texture) {
+    glPushMatrix();
+    {
+      if (!texLoaded) {
+        loadTextures();
+        texLoaded = true;
+      }
+      //This keeps messing up my shit
+      //TODO Change Death png that has to be 256 by 256
+      int imgX = texture.getImageWidth();
+      int imgY = texture.getImageHeight();
+
+      glTranslatef((int)x, (int)y, 0);
+      glRotatef(angle * RIGHT_ANGLE, 0.0f, 0.0f, 1.0f);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      texture.bind();
+
+      glBegin(GL_QUADS);
+      {
+        glTexCoord2f((float) texx / imgX, (float) texsy / imgY);
+        glVertex2f(0, 0);
+
+        glTexCoord2f((float) texx / imgX, (float) texy / imgY);
+        glVertex2f(0, (int) sy);
+
+        glTexCoord2f((float) texsx / imgX, (float) texy / imgY);
+        glVertex2f((int) sx, (int) sy);
+
+        glTexCoord2f((float) texsx / imgX, (float) texsy / imgY);
+        glVertex2f((int) sx, 0);
+      }
+      glEnd();
+    }
+
+    glPopMatrix();
+
+  }
+  
   /**
    * Draws a camera fixed sprite on the screen from the specified image, with rotation.
    * 
@@ -200,7 +250,14 @@ public class Draw {
   public static void rectCam(float x, float y, float sx, float sy, int texx, 
       int texy, int texsx, int texsy, int angle, int texID) {
     rect(x-Camera.getX(), y-Camera.getY(), 
-        sx, sy, texx, texy, texsx, texsy, angle, texID);
+        sx, sy, texx, texy, texsx, texsy, angle, tex[texID]);
+  }
+  
+  public static void rectCam(float x, float y, float sx, float sy, int texx,
+      int texy, int texsx, int texsy, Texture texture)
+  {
+    rect(x-Camera.getX(), y-Camera.getY(), sx, sy, texx, texy, texsx, texsy,
+        0, texture);
   }
   
   /**
@@ -236,6 +293,41 @@ public class Draw {
   public static void rectCam(float x, float y, float sx, float sy, int texx, 
       int texy, int texsx, int texsy, int texID) {
     rectCam(x, y, sx, sy, texx, texy, texsx, texsy, 0, texID);
+  }
+  
+  public static void addTexture(int png) throws IOException
+  {
+    try
+    {
+      Texture t = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/spreadsheets/"+png+".png")));
+      sheets.add(t);
+    } catch (IOException e)
+    {
+      throw new IOException();
+    }
+  }
+  
+  public static void tile(int x, int y, int texX, int texY, int texID)
+  {
+      Draw.rectCam(x, y, 16, 16, texX, texY, texX+16, texY+16, sheets.get(texID));
+   
+  }
+  
+  public static int getTexX(int id)
+  {    
+    return (id % (SPREADSHEET_SIZE) % SPREADSHEET_ROW) * SPREADSHEET_ROW;
+  }
+  
+  public static int getTexY(int id)
+  {
+    return ((id % SPREADSHEET_SIZE) / SPREADSHEET_ROW) * SPREADSHEET_ROW;
+  }
+  
+  public static int getTexture(int id)
+  {
+    if (id==-1) return -1;
+    return id / SPREADSHEET_SIZE;
   }
 
 }

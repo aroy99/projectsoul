@@ -37,7 +37,6 @@ import komorebi.projsoul.script.Script;
 import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.WalkingScript;
 import komorebi.projsoul.script.WarpScript;
-import komorebi.projsoul.states.Game.Int;
 
 
 /**

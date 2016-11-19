@@ -9,6 +9,7 @@ package komorebi.projsoul.map;
  * 
  * @author Aaron Roy
  */
+
 public enum TileList {
   BLANK     (  0,   0,   0),    yBLANK    ( 64,  64,   0),
   GRASS     (  1,  16,   0),    yGRASS    ( 65,  80,   0),

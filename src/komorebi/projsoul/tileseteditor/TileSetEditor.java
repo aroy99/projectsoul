@@ -3,15 +3,6 @@
  */
 package komorebi.projsoul.tileseteditor;
 
-import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.Key;
-import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.map.TileList;
-
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,6 +16,14 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
+
+import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
+import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.Playable;
+
 /**
  * 
  * @author Aaron Roy
@@ -34,33 +33,37 @@ public class TileSetEditor implements Playable {
 
   private int max, min;
 
-  private TileList[][] left;
-  private TileList[][] right;
 
-  ArrayList<TileList[][]> history;
-  TileList[][] redo;
+  //replace Tile[][] with int[][] of tile IDs
+  private int[][] left;
+  private int[][] right;
+
+  ArrayList<int[][]> history;
+  int[][] redo;
   private int historyIndex;
   private boolean changeMade;
-  
+
   private boolean justSaved;
   private int justSavedCount;
 
   private static final int HEIGHT = 256;
   private static final int OFFX = 8;
 
-  private int selX, selY;
-  private int swapX, swapY;
+  private int selX, selY, selSx, selSy;
+  private int clipX, clipY, clipSx, clipSy;
+  private int swapX, swapY, swapSx, swapSy;
   private int delX, delY, delSx, delSy;
 
-  private TileList selTiles[][];
-  private TileList swapTiles[][];
+  private int selTiles[][];
+  private int clipTiles[][];
 
   private boolean mouseIsDown, mouseWasDown, mouseClick, mouseRelease;
   private boolean rightIsDown, rightWasDown, rightClick;
   private boolean scrollIsDown, scrollWasDown, scrollClick, scrollRelease;
 
-  private boolean swapMode, swapLift;
+  private boolean selMode, swapMode;
   private boolean eraser;
+  private boolean switchSel;
 
   int prevMx, prevMy;
   int anchorX, anchorY;
@@ -70,7 +73,7 @@ public class TileSetEditor implements Playable {
   private boolean save;
   private boolean newSave;
   private String savePath, saveName;
-  
+
   private boolean grid;
 
   public TileSetEditor()
@@ -82,16 +85,33 @@ public class TileSetEditor implements Playable {
     min = 0;
     max = 16;
 
-    left = new TileList[32][8];
+    int texNum = 0;
+    boolean hasFiles = true;
+
+    while (hasFiles)
+    {
+      try 
+      {
+        Draw.addTexture(texNum);
+        texNum++;
+      } catch (IOException e)
+      {
+        hasFiles = false;
+      }
+    }
+
+    left = new int[32*texNum][8];
 
     for (int i=0, k=0; i<left.length; i++)
     {
       for (int j=0; j<left[0].length; j++, k++)
       {
-        left[i][j] = TileList.getTile(k);
+        left[i][j] = k;
       }
     }
-    
+
+
+
     newFile();
   }
 
@@ -118,14 +138,16 @@ public class TileSetEditor implements Playable {
 
     scrollClick = scrollIsDown && !scrollWasDown;
     scrollRelease = !scrollIsDown && scrollWasDown;
-
-    if (!swapMode){
+    
+    if (!selMode){
       if (left() && mouseClick) //Creates a new selection on the palette
       {
-        selTiles = new TileList[1][1];
+        selTiles = new int[1][1];
 
         selX = getMouseTx();
         selY = getMouseTy();
+        selSx = 1;
+        selSy = 1;
 
         anchorX = getMouseTx();
         anchorY = getMouseTy();
@@ -158,6 +180,7 @@ public class TileSetEditor implements Playable {
           horiz = selTiles.length;
         }
 
+
         for (int i=0; i<vert; i++)
         {
           for (int j=0; j<horiz; j++)
@@ -180,15 +203,18 @@ public class TileSetEditor implements Playable {
 
         selX = lowX;
         selY = hiY;
-        selTiles = new TileList[hiX-lowX+1][hiY-lowY+1];
+        selSx = hiX-lowX+1;
+        selSy = hiY-lowY+1;
+        selTiles = new int[selSx][selSy];
 
-        for (int i=0; i<selTiles.length; i++)
+        for (int i=0; i<selSx; i++)
         {
-          for (int j=0; j<selTiles[0].length; j++)
+          for (int j=0; j<selSy; j++)
           {
-            selTiles[i][j] = left[left.length-1-(selY-j+(16-min))][selX+i];
+            selTiles[i][j] = left[15-selY+min+j][selX+i];
           }
         }
+
 
       } 
 
@@ -198,85 +224,127 @@ public class TileSetEditor implements Playable {
         changeMade = false;
       }
 
-      if (rightClick && right())
+      if ((rightClick) && right())
       {
-        swapMode = true;
-        swapTiles = new TileList[1][1];
+        clearRightSelection();
+        selMode = true;
 
         swapX = getMouseTx();
         swapY = getMouseTy();
 
         anchorSwapX = getMouseTx();
         anchorSwapY = getMouseTy();
-
-        swapTiles[0][0] = right[15-getMouseTy()][getMouseTx()-9];
-
-      }
-
-      if (scrollClick)
-      {
-        delX = getMouseTx();
-        delY = getMouseTy();
-
-        anchorDelX = getMouseTx();
-        anchorDelY = getMouseTy();
-
-        delSx = 1;
-        delSy = 1;
-
-        eraser = true;
-      }
-
-      if (eraser && right() && (prevMx!=getMouseTx() || prevMy!=getMouseTy()))
-      {
-        int lowX = Math.min(getMouseTx(), anchorDelX);
-        int hiX = Math.max(getMouseTx(), anchorDelX);
-
-        int lowY = Math.min(getMouseTy(), anchorDelY);
-        int hiY = Math.max(getMouseTy(), anchorDelY);
-
-
-        delX = lowX;
-        delY = hiY;
-        delSx = hiX-lowX+1;
-        delSy = hiY-lowY+1;
-
-      }
-
-      if (scrollIsDown && (KeyHandler.keyDown(Key.SPACE)))
-      {
-        eraser = false;
-      }
-
-      if (scrollRelease && eraser)
-      {
-        for (int i=0; i<delSx; i++)
-        {
-          for (int j=0; j<delSy; j++)
-          {
-            right[15-delY+j][delX-9+i] = TileList.BLANK;
-          }
-        }
-        eraser = false;
-
-        updateHistory();
       }
 
     } else
     {
-
-      if (!rightIsDown && !swapLift) 
+      if (left() && mouseClick)
       {
-        swapLift = true;
+        selMode = false;
+        clearLeftSelection();
       }
 
-      if (swapLift && KeyHandler.keyClick(Key.SPACE))
+      if (KeyHandler.keyClick(Key.LEFT) && swapX > 9)
       {
-        swapLift = false;
-        swapMode = false;
+        copy();
+
+        for (int j=0; j<clipTiles[0].length; j++)
+        {
+          for (int i=0; i<clipTiles.length; i++)
+          {
+            right[15-swapY+j][swapX-10+i] = right[15-swapY+j][swapX-9+i];
+          }
+
+          right[15-swapY+j][swapX-10+clipTiles.length] = Draw.BLANK_TILE;
+        }
+
+        swapX--;
+      } else if (KeyHandler.keyClick(Key.RIGHT) && swapX+swapSx < 17)
+      {
+        copy();
+
+        for (int j=0; j<clipTiles[0].length; j++)
+        {
+          for (int i=clipTiles.length-1; i>=0; i--)
+          {
+            right[15-swapY+j][swapX-8+i] = right[15-swapY+j][swapX-9+i];
+          }
+
+          right[15-swapY+j][swapX-9] = Draw.BLANK_TILE;
+        }
+
+        swapX++;
+      } else if (KeyHandler.keyClick(Key.UP) && swapY < 15)
+      {
+        copy();
+
+        for (int i=0; i<clipTiles.length; i++)
+        {
+          for (int j=0; j<clipTiles[0].length; j++)
+          {
+            right[14-swapY+j][swapX-9+i] = right[15-swapY+j][swapX-9+i];
+          }
+
+          right[14-swapY+clipTiles[0].length][swapX-9+i] = Draw.BLANK_TILE;
+        }
+
+        swapY++;
+      } else if (KeyHandler.keyClick(Key.DOWN) && swapY-swapSy >= 0)
+      {
+        copy();
+
+        for (int i=0; i<clipTiles.length; i++)
+        {
+          for (int j=clipTiles[0].length-1; j>=0; j--)
+          {
+            right[16-swapY+j][swapX-9+i] = right[15-swapY+j][swapX-9+i];
+          }
+
+          right[15-swapY][swapX-9+i] = Draw.BLANK_TILE;
+        }
+
+        swapY--;
       }
 
-      if (!swapLift)
+      if (KeyHandler.controlDown()) 
+      {
+        if (KeyHandler.keyClick(Key.Q))
+        {
+          copy();
+          swapMode = true;
+        } else if (KeyHandler.keyClick(Key.C))
+        {
+          copy();
+        } else if (KeyHandler.keyClick(Key.V))
+        {
+          paste();
+        }
+      }
+
+      if (switchSel)
+      {
+        switchSel = false;
+        swapX = getMouseTx();
+        swapY = getMouseTy();
+        swapSx = 1;
+        swapSy = 1;
+
+        anchorSwapX = getMouseTx();
+        anchorSwapY = getMouseTy();
+      }
+
+      if (!swapMode && (KeyHandler.keyClick(Key.SPACE) || mouseClick))
+      {
+        clearRightSelection();
+      } 
+
+      if (rightClick)
+      {
+        switchSel = true;
+        clearRightSelection();
+      }
+
+      if (!swapMode)
       {
         if (rightIsDown && right() && (prevMx!=getMouseTx() || prevMy!=getMouseTy()))
         {
@@ -289,32 +357,29 @@ public class TileSetEditor implements Playable {
 
           swapX = lowX;
           swapY = hiY;
-          swapTiles = new TileList[hiX-lowX+1][hiY-lowY+1];
+          swapSx = hiX-lowX+1;
+          swapSy = hiY-lowY+1;
 
-          for (int i=0; i<swapTiles.length; i++)
-          {
-            for (int j=0; j<swapTiles[0].length; j++)
-            {
-              swapTiles[i][j] = right[15-swapY+j][swapX-9+i];
-            }
-          }
         }
       } else 
-      {
-
-        if (rightClick && right())
+      {        
+        if (mouseClick && right())
         {
+
           if (validSwap())
           {
-            selTiles = new TileList[1][1];
-            selTiles[0][0] = TileList.BLANK;
+
+            
+            selTiles = new int[1][1];
+            selTiles[0][0] = Draw.BLANK_TILE;
             selX=0;
             selY=15;
+             
 
-            TileList temp;
-            for (int i=0; i<swapTiles.length; i++)
+            int temp;
+            for (int i=0; i < clipTiles.length; i++)
             {
-              for (int j=0; j<swapTiles[0].length; j++)
+              for (int j=0; j < clipTiles[0].length; j++)
               {
                 temp = right[15-getMouseTy()+j][getMouseTx()-9+i];
                 right[15-getMouseTy()+j][getMouseTx()-9+i] = right[15-swapY+j][swapX-9+i];
@@ -323,8 +388,8 @@ public class TileSetEditor implements Playable {
               }
             }
 
+            selMode = false;
             swapMode = false;
-            swapLift = false;
 
             updateHistory();
 
@@ -332,28 +397,70 @@ public class TileSetEditor implements Playable {
           }
         } else if (mouseClick && left())
         {
-          swapMode = false;
-          swapLift = false;
+          clearLeftSelection();
         } else if (mouseClick && right() && validSwap())
         {
-          selTiles = new TileList[1][1];
-          selTiles[0][0] = TileList.BLANK;
+          selTiles = new int[1][1];
+          selTiles[0][0] = Draw.BLANK_TILE;
           selX=0;
           selY=15;
-
-          for (int i=0; i<swapTiles.length; i++)
-          {
-            for (int j=0; j<swapTiles[0].length; j++)
-            {
-              right[15-getMouseTy()+j][getMouseTx()-9+i] = right[15-swapY+j][swapX-9+i];
-            }
-          }
 
         }
 
       }
     }
 
+    if (scrollClick)
+    {      
+      delX = getMouseTx();
+      delY = getMouseTy();
+
+      anchorDelX = getMouseTx();
+      anchorDelY = getMouseTy();
+
+      delSx = 1;
+      delSy = 1;
+      
+      selX = selY = selSx = selSy = swapX = swapY = swapSx = swapSy = 0;
+
+      eraser = true;
+    }
+
+    if (eraser && right() && (prevMx!=getMouseTx() || prevMy!=getMouseTy()))
+    {
+      int lowX = Math.min(getMouseTx(), anchorDelX);
+      int hiX = Math.max(getMouseTx(), anchorDelX);
+
+      int lowY = Math.min(getMouseTy(), anchorDelY);
+      int hiY = Math.max(getMouseTy(), anchorDelY);
+
+
+      delX = lowX;
+      delY = hiY;
+      delSx = hiX-lowX+1;
+      delSy = hiY-lowY+1;
+
+    }
+
+    if (scrollIsDown && (KeyHandler.keyDown(Key.SPACE)))
+    {
+      eraser = false;
+    }
+
+    if (scrollRelease && eraser)
+    {
+      for (int i=0; i<delSx; i++)
+      {
+        for (int j=0; j<delSy; j++)
+        {
+          right[15-delY+j][delX-9+i] = Draw.BLANK_TILE;
+        }
+      }
+      eraser = false;
+
+      updateHistory();
+    }
+    
     //Saves the file
     if (saveButton() && mouseClick)
     {
@@ -364,7 +471,7 @@ public class TileSetEditor implements Playable {
       {
         save(savePath, saveName); //Previously existing file
       }
-      
+
       justSaved = true;
     }
 
@@ -372,25 +479,25 @@ public class TileSetEditor implements Playable {
     {
       if (closeFile()) load();
     }
-    
+
     if (newSaveButton() && mouseClick)
     {
       newSave = false;
       justSaved = newSave();
     }
-    
+
     if (newButton() && mouseClick)
     {
       if (closeFile()) newFile();
     }
-    
+
     if (gridButton() && mouseClick)
     {
       grid = !grid;
       MainT.switchGrid();
     }
 
-    if ((KeyHandler.keyDown(Key.DOWN) ||(left() && dWheel<0))&& max<left.length && 
+    if (((KeyHandler.keyDown(Key.DOWN) && !selMode) ||(left() && dWheel<0))&& max<left.length && 
         !mouseIsDown)
     {
       max++;
@@ -398,14 +505,14 @@ public class TileSetEditor implements Playable {
       selY++; //Scroll palette down
     }
 
-    if ((KeyHandler.keyDown(Key.UP) || (left() && dWheel>0))&& min>0 && 
+    if (((KeyHandler.keyDown(Key.UP) && !selMode) || (left() && dWheel>0))&& min>0 && 
         !mouseIsDown)
     {
       max--;
       min--;
       selY--; //Scroll palette up
     }
-    
+
     if ((KeyHandler.controlDown() && KeyHandler.keyClick(Key.Z)) || 
         (mouseClick && undoButton()) && historyIndex>0)
     {
@@ -418,11 +525,11 @@ public class TileSetEditor implements Playable {
 
     prevMx = getMouseTx();
     prevMy = getMouseTy();
-    
+
     if (justSaved)
     {
       justSavedCount++;
-      
+
       if (justSavedCount>=100)
       {
         justSavedCount=0;
@@ -440,50 +547,50 @@ public class TileSetEditor implements Playable {
     {
       for (int j=0; j<left[0].length; j++)
       {
-        Draw.rect(j*16, HEIGHT-16-(i*16)+(min*16), 16, 16, left[i][j].getX(), 
-            left[i][j].getY(), left[i][j].getX()+16, left[i][j].getY()+16, 9);
+        Draw.tile(j*16, HEIGHT-16-(i*16)+(min*16), Draw.getTexX(left[i][j]), 
+            Draw.getTexY(left[i][j]), 
+            Draw.getTexture(left[i][j]));
       }
     }
+
 
 
     for (int i=0; i<right.length; i++)
     {
       for (int j=0; j<right[0].length; j++)
       {
-        if (right[i][j]!=null)
-        {
-          Draw.rect(OFFX*16+j*16+16, HEIGHT-16-(i*16), 16, 16, right[i][j].getX(), 
-              right[i][j].getY(), right[i][j].getX()+16, right[i][j].getY()+16,
-              9);
-        }
+        Draw.tile(OFFX*16+j*16+16, HEIGHT-16-(i*16), Draw.getTexX(right[i][j]), 
+            Draw.getTexY(right[i][j]),
+            Draw.getTexture(right[i][j]));
+
       }
     }
 
 
-    if (!swapMode)
+    if (!selMode)
     {
-      for (int i=0; i<selTiles.length; i++)
+      for (int i=0; i<selSx; i++)
       {
-        for (int j=0; j<selTiles[0].length; j++)
+        for (int j=0; j<selSy; j++)
         {
           Draw.rect(selX*16+i*16, selY*16-j*16, 16, 16, 220, 3, 221, 4, 6);
         }
       }
     } else
     {
-      for (int i=0; i<swapTiles.length; i++)
+      for (int i=0; i<swapSx; i++)
       {
-        for (int j=0; j<swapTiles[0].length; j++)
+        for (int j=0; j<swapSy; j++)
         {
           Draw.rect(swapX*16+i*16, swapY*16-j*16, 16, 16, 220, 3, 221, 4, 6);
         }
       }
 
-      if (swapLift && right())
+      if (swapMode && right())
       {
-        for (int i=0; i<swapTiles.length; i++)
+        for (int i=0; i<clipTiles.length; i++)
         {
-          for (int j=0; j<swapTiles[0].length; j++)
+          for (int j=0; j<clipTiles[0].length; j++)
           {
             if (!validSwap())
             {
@@ -516,16 +623,16 @@ public class TileSetEditor implements Playable {
     Draw.rect(128, 16, 16, 16, 237, 54, 253, 70, 6);  //Draws the save as button
     Draw.rect(128, 32, 16, 16, 221, 72, 237, 88, 6);   //Draws open button
     Draw.rect(128, 48, 16, 16, 237, 72, 253, 88, 6);  //Draws new button
-    
 
-    
+
+
     if (redo!=null) Draw.rect(128, 224, 16, 16, 
         221, 36, 237, 52, 6);
     else Draw.rect(128, 224, 16, 16, 237, 36, 253, 52, 6);
-    
+
     if (historyIndex>0) Draw.rect(128, 240, 16, 16, 221, 18, 237, 34, 6);
     else Draw.rect(128, 240, 16, 16, 237, 18, 253, 34, 6);
-    
+
     if (!save) 
     {
       Draw.rect(136, 8, 7, 7, 201, 61, 208, 68, 6);
@@ -533,7 +640,7 @@ public class TileSetEditor implements Playable {
     {
       Draw.rect(134, 8, 9, 7, 201, 69, 210, 76, 6);
     }
-    
+
     if (grid)
     {
       Draw.rect(128, 208, 16, 16, 237, 90, 253, 106, 6);
@@ -545,27 +652,27 @@ public class TileSetEditor implements Playable {
 
   public boolean validSwap()
   {
-    if (getMouseTx()+swapTiles.length-9>8) return false;
-    if (15-getMouseTy()+swapTiles[0].length>16) return false;
+    if (getMouseTx()+clipTiles.length-9>8) return false;
+    if (15-getMouseTy()+clipTiles[0].length>16) return false;
     //The rectangle is partially off the screen
-    if (getMouseTx()>=swapX && getMouseTx()<swapX+swapTiles.length &&
-        getMouseTy()<=swapY && getMouseTy()>swapY-swapTiles[0].length) 
+    if (getMouseTx()>=swapX && getMouseTx()<swapX+clipTiles.length &&
+        getMouseTy()<=swapY && getMouseTy()>swapY-clipTiles[0].length) 
       return false;
     //Top left corner intersects
-    if ((getMouseTx()+swapTiles.length-1)>=swapX && 
-        (getMouseTx()+swapTiles.length-1)<swapX+swapTiles.length &&
-        getMouseTy()<=swapY && getMouseTy()>swapY-swapTiles[0].length)
+    if ((getMouseTx()+clipTiles.length-1)>=swapX && 
+        (getMouseTx()+clipTiles.length-1)<swapX+clipTiles.length &&
+        getMouseTy()<=swapY && getMouseTy()>swapY-clipTiles[0].length)
       return false;
     //Top right corner intersects
-    if (getMouseTx()>=swapX && getMouseTx()<swapX+swapTiles.length &&
-        (getMouseTy()-swapTiles[0].length+1)<=swapY &&
-        (getMouseTy()-swapTiles[0].length+1)>swapY-swapTiles[0].length) 
+    if (getMouseTx()>=swapX && getMouseTx()<swapX+clipTiles.length &&
+        (getMouseTy()-clipTiles[0].length+1)<=swapY &&
+        (getMouseTy()-clipTiles[0].length+1)>swapY-clipTiles[0].length) 
       return false;
     //Bottom left corner intersects
-    if ((getMouseTx()+swapTiles.length-1)>=swapX && 
-        (getMouseTx()+swapTiles.length-1)<swapX+swapTiles.length &&
-        (getMouseTy()-swapTiles[0].length+1)<=swapY &&
-        (getMouseTy()-swapTiles[0].length+1)>swapY-swapTiles[0].length) 
+    if ((getMouseTx()+clipTiles.length-1)>=swapX && 
+        (getMouseTx()+clipTiles.length-1)<swapX+clipTiles.length &&
+        (getMouseTy()-clipTiles[0].length+1)<=swapY &&
+        (getMouseTy()-clipTiles[0].length+1)>swapY-clipTiles[0].length) 
       return false;
     //Bottom right corner intersects
     return true;
@@ -599,27 +706,27 @@ public class TileSetEditor implements Playable {
   {
     return getMouseTx()==8 && getMouseTy()==1;
   }
-  
+
   public boolean openButton()
   {
     return getMouseTx()==8 && getMouseTy()==2;
   }
-  
+
   public boolean newButton()
   {
     return getMouseTx()==8 && getMouseTy()==3;
   }
-  
+
   public boolean redoButton()
   {
     return getMouseTx()==8 && getMouseTy()==14;
   }
-  
+
   public boolean undoButton()
   {
     return getMouseTx()==8 && getMouseTy()==15;
   }
-  
+
   public boolean gridButton()
   {
     return getMouseTx()==8 && getMouseTy()==13;
@@ -700,14 +807,13 @@ public class TileSetEditor implements Playable {
       writer.println(right.length);
       writer.println(right[0].length);
 
-      for (TileList[] tile : right) {
-        for (TileList t : tile) {
-          writer.print(t.getID() + " ");
+      for (int[] tile : right) {
+        for (int i : tile) {
+          writer.print(i + " ");
         }
         writer.println();
       }
-    //TODO Debug
-      System.out.println("Save complete");
+      //TODO Debug
       save = true;
       writer.close();
       if (name.length()>5)
@@ -721,7 +827,7 @@ public class TileSetEditor implements Playable {
       {
         Display.setTitle("Project Soul Tile Editor - " + name + ".tset");
       }
-      
+
 
 
       return true;
@@ -759,7 +865,7 @@ public class TileSetEditor implements Playable {
         int rows = Integer.parseInt(reader.readLine());
         int cols = Integer.parseInt(reader.readLine());
 
-        right = new TileList[rows][cols];
+        right = new int[rows][cols];
 
         for (int i = 0; i < rows; i++) {
           String[] str = reader.readLine().split(" ");
@@ -768,7 +874,7 @@ public class TileSetEditor implements Playable {
             if(str[index].equals("")){
               index++;  //pass this token, it's blank
             }
-            right[i][j] = TileList.getTile(Integer.parseInt(str[index]));
+            right[i][j] = Integer.parseInt(str[index]);
           }
         }
 
@@ -791,7 +897,7 @@ public class TileSetEditor implements Playable {
   {
     if (historyIndex>0)
     {
-      redo = new TileList[16][8];
+      redo = new int[16][8];
       for (int i=0; i<right.length; i++)
       {
         for (int j=0; j<right[0].length; j++)
@@ -799,7 +905,7 @@ public class TileSetEditor implements Playable {
           redo[i][j]=history.get(history.size()-1)[i][j];
         }
       }
-      
+
       history.remove(history.size()-1);
       historyIndex--;
       for (int i=0; i<right.length; i++)
@@ -821,15 +927,15 @@ public class TileSetEditor implements Playable {
         right[i][j]=redo[i][j];
       }
     }
-    
+
     updateHistory();
   }
 
   public void updateHistory()
   {
-    
+
     redo=null;
-    TileList[][] tiles = new TileList[right.length][right[0].length];
+    int[][] tiles = new int[right.length][right[0].length];
 
     for (int i=0; i<tiles.length; i++)
     {
@@ -838,25 +944,25 @@ public class TileSetEditor implements Playable {
         tiles[i][j] = right[i][j];
       }
     }
-//Andrew is a nerd
+    //Andrew is a nerd
     history.add(tiles);
     historyIndex++;
-    
+
     if (history.size()>20)
     {
       history.remove(0);
       historyIndex--;
     }
-   
+
   }
-  
+
   public boolean closeFile()
   {
     boolean continyu = true; //clever
     if(!save){
-      
+
       int returnee = JOptionPane.showConfirmDialog(null, "Would you like to save?");
-      
+
       switch(returnee){
         case JFileChooser.APPROVE_OPTION:
           if (!newSave) continyu = newSave();
@@ -875,29 +981,76 @@ public class TileSetEditor implements Playable {
     }
     return continyu;    
   }
-  
+
   public void newFile()
   {
-    right = new TileList[16][8];
+    right = new int[16][8];
 
     for (int i=0; i<right.length; i++)
     {
       for (int j=0; j<right[0].length; j++)
       {
-        right[i][j] = TileList.BLANK;
+        right[i][j] = Draw.BLANK_TILE;
       }
     }
 
     selX = 0;
     selY = 0;
 
-    selTiles = new TileList[1][1];
-    selTiles[0][0]=TileList.BLANK;
+    selTiles = new int[1][1];
+    selTiles[0][0]=Draw.BLANK_TILE;
 
-    history = new ArrayList<TileList[][]>();
+    history = new ArrayList<int[][]>();
     updateHistory();
 
     historyIndex = 0;
+  }
+
+  private void copy()
+  {
+    clipX = swapX;
+    clipY = swapY;
+    clipSx = swapSx;
+    clipSy = swapSy;
+
+    clipTiles = new int[clipSx][clipSy];
+
+    for (int i=0; i<clipTiles.length; i++)
+    {
+      for (int j=0; j<clipTiles[0].length; j++)
+      {
+        clipTiles[i][j] = right[15-clipY+j][clipX-9+i];
+      }
+    }
+  }
+
+  private void paste()
+  {       
+    for (int i=0; i<Math.min(clipTiles.length, 8-(swapX-9)); i++)
+    {
+      for (int j=0; j<Math.min(clipTiles[0].length, swapY+1); j++)
+      {
+        right[15-swapY+j][swapX-9+i] = clipTiles[i][j];
+      }
+    }
+  }
+
+  private void clearLeftSelection()
+  {
+    selX = selY = selSx = selSy = 0;
+
+  }
+
+  private void clearRightSelection()
+  {
+    swapMode = false;
+
+    if (!switchSel)
+    {
+      selMode = false;
+    }
+
+    swapX = swapY = swapSx = swapSy = 0;
   }
 
 

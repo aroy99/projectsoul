@@ -4,7 +4,6 @@ import komorebi.projsoul.entities.Face;
 
 public class MeleeAttack<T extends Melee> extends Attack<T> {
     
-    
   T melee;
   
   /**

@@ -19,6 +19,5 @@ public abstract class Attack<T extends AttackInstance> {
   
   public abstract void newAttack(float x, float y, float dx, float dy, 
       Face dir, int attack);
- 
   
 }
