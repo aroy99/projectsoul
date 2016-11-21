@@ -1,8 +1,8 @@
-package komorebi.projsoul.entities;
+package komorebi.projsoul.entities.player;
 
 import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.HUD;
-import komorebi.projsoul.engine.MagicBar;
+import komorebi.projsoul.gameplay.HUD;
+import komorebi.projsoul.gameplay.MagicBar;
 
 public class Sierra extends Player {
 
@@ -100,6 +100,7 @@ public class Sierra extends Player {
 
   }
 
+  @Override
   public void giveXP(int xp) {
     Sierra.xp += xp;
 

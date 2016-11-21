@@ -32,7 +32,7 @@ public class MoveMode extends Mode{
       collision[my][mx] = false;
       EditorMap.setUnsaved();
     }
-
+    
     if(lButtonIsDown && checkMapBounds() && !mouseSame){
       collision[my][mx] = true;
       EditorMap.setUnsaved();

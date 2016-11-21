@@ -1,7 +1,7 @@
 /**
  * Player.java       May 15, 2016, 11:58:06 PM
  */
-package komorebi.projsoul.entities;
+package komorebi.projsoul.entities.player;
 
 import java.awt.Rectangle;
 
@@ -13,12 +13,17 @@ import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.ProjectileAttack;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.Camera;
-import komorebi.projsoul.engine.HUD;
-import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MagicBar;
 import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.entities.Entity;
+import komorebi.projsoul.entities.Face;
+import komorebi.projsoul.entities.NPC;
+import komorebi.projsoul.entities.Entity.Entities;
+import komorebi.projsoul.entities.enemy.Enemy;
+import komorebi.projsoul.gameplay.Camera;
+import komorebi.projsoul.gameplay.HUD;
+import komorebi.projsoul.gameplay.Key;
+import komorebi.projsoul.gameplay.MagicBar;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
@@ -29,8 +34,6 @@ import komorebi.projsoul.states.Game;
  * @author Andrew Faulkenberry
  */
 public abstract class Player extends Entity implements Playable{
-
-  public abstract void levelUp();
 
   private boolean up;
   private boolean down;
@@ -110,6 +113,8 @@ public abstract class Player extends Entity implements Playable{
     deathAni.add(0, 124);
 
   }
+
+  public abstract void levelUp();
 
   /**
    * @see komorebi.projsoul.engine.Playable#update()
@@ -233,22 +238,30 @@ public abstract class Player extends Entity implements Playable{
             dx = 0;
             restoreMvmtX = true;
           }
-          if (dx>0) dx-=0.5;
-          if (dx<0) dx+=0.5;
+          if (dx > 0){
+            dx-=0.5;
+          }
+          if (dx < 0){
+            dx+=0.5;
+          }
         }
 
         if (!restoreMvmtY)
         {
-          if (Math.abs(dy)<=0.5 && Math.abs(dy)>=0)
+          if (Math.abs(dy) <= 0.5 && Math.abs(dy) >= 0)
           {
             dy = 0;
             restoreMvmtY = true;
           }
-          if (dy>0) dy-=0.5;
-          if (dy<0) dy+=0.5;
+          if (dy > 0){
+            dy-=0.5;
+          }
+          if (dy < 0){
+            dy+=0.5;
+          }
         }
 
-        if (hurtCount<=0)
+        if (hurtCount <= 0)
         {
           invincible = false;
 

@@ -1,4 +1,4 @@
-package komorebi.projsoul.entities;
+package komorebi.projsoul.entities.player;
 
 public enum Characters {
   CASPIAN("Caspian", 0), FLANNERY("Flannery", 1),

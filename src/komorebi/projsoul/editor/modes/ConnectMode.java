@@ -12,9 +12,9 @@ import static komorebi.projsoul.engine.MainE.WIDTH;
 
 import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MainE;
+import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.ConnectMap;
 import komorebi.projsoul.map.ConnectMap.Side;
 import komorebi.projsoul.script.EarthboundFont;

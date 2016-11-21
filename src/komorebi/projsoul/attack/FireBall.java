@@ -4,8 +4,8 @@ package komorebi.projsoul.attack;
 import java.awt.Rectangle;
 
 import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.entities.Characters;
 import komorebi.projsoul.entities.Face;
+import komorebi.projsoul.entities.player.Characters;
 
 public class FireBall extends Projectile {
     

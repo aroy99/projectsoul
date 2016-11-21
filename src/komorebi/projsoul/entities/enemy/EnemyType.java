@@ -1,7 +1,7 @@
 /**
  * EnemyType.java	   Oct 4, 2016, 9:34:07 AM
  */
-package komorebi.projsoul.entities;
+package komorebi.projsoul.entities.enemy;
 
 import java.util.ArrayList;
 

@@ -6,18 +6,18 @@ package komorebi.projsoul.states;
 
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
-import komorebi.projsoul.engine.HUD;
-import komorebi.projsoul.engine.Item;
-import komorebi.projsoul.engine.Item.Items;
-import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MagicBar;
 import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
-import komorebi.projsoul.entities.Player;
 import komorebi.projsoul.entities.SignPost;
+import komorebi.projsoul.entities.player.Player;
+import komorebi.projsoul.gameplay.HUD;
+import komorebi.projsoul.gameplay.Item;
+import komorebi.projsoul.gameplay.Key;
+import komorebi.projsoul.gameplay.MagicBar;
+import komorebi.projsoul.gameplay.Item.Items;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.EarthboundFont;
@@ -201,7 +201,6 @@ public class Game extends State{
 	  hud.update();
 	  death.update();
 	  
-    KeyHandler.getInput();
     
     if (isPaused)
     {

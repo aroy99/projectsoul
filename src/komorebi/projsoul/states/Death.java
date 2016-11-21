@@ -2,7 +2,7 @@ package komorebi.projsoul.states;
 
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.HUD;
+import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.map.Map;
 import java.util.Timer;
 import java.util.TimerTask;

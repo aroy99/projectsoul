@@ -1,12 +1,15 @@
-package komorebi.projsoul.entities;
+package komorebi.projsoul.entities.player;
+
+import static komorebi.projsoul.engine.KeyHandler.button;
 
 import komorebi.projsoul.attack.Charge;
 import komorebi.projsoul.attack.MeleeAttack;
 import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.HUD;
-import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MagicBar;
+import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.gameplay.HUD;
+import komorebi.projsoul.gameplay.Key;
+import komorebi.projsoul.gameplay.MagicBar;
 
 public class Bruno extends Player {
 
@@ -126,7 +129,7 @@ public class Bruno extends Player {
       }
     }
     
-    if (KeyHandler.keyClick(Key.X) && !isAttacking)
+    if (button(Control.ATTACK) && !isAttacking)
     {
       isAttacking = true;
       
@@ -182,6 +185,7 @@ public class Bruno extends Player {
     health.addToMaxHealth(nHth);
   }
 
+  @Override
   public void giveXP(int xp) {
     Bruno.xp += xp;
 

@@ -5,8 +5,8 @@ package komorebi.projsoul.states;
 
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
-import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
 

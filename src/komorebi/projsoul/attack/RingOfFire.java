@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.entities.Face;
+import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.Map;
 
 public class RingOfFire extends Attack<FireRingInstance> {

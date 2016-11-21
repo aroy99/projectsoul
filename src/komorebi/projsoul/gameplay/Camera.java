@@ -1,8 +1,9 @@
 /**
  * Camera.java    Aug 21, 2016, 9:01:33 PM
  */
-package komorebi.projsoul.engine;
+package komorebi.projsoul.gameplay;
 
+import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.states.Game;
 

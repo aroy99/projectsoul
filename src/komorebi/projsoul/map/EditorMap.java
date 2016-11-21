@@ -14,17 +14,17 @@ import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.editor.modes.MoveMode;
 import komorebi.projsoul.editor.modes.TileMode;
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.KeyHandler.Control;
 import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.entities.Chaser;
-import komorebi.projsoul.entities.Dummy;
-import komorebi.projsoul.entities.Enemy;
-import komorebi.projsoul.entities.EnemyType;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.SignPost;
+import komorebi.projsoul.entities.enemy.Chaser;
+import komorebi.projsoul.entities.enemy.Dummy;
+import komorebi.projsoul.entities.enemy.Enemy;
+import komorebi.projsoul.entities.enemy.EnemyType;
+import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.ConnectMap.Side;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.TalkingScript;
@@ -368,14 +368,10 @@ public class EditorMap implements Playable, Serializable{
 
     //    System.out.println(isSave + ", " + isNewSave);
 
-    isGrid = button(Control.GRID);
     
     Mode.getModeInput();
     tileMode.getInput();
     isGrid = button(Control.GRID);
-    
-    Mode.getModeInput();
-    tileMode.getInput();
   }
 
   @Override

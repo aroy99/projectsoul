@@ -1,14 +1,17 @@
-package komorebi.projsoul.entities;
+package komorebi.projsoul.entities.player;
+
+import static komorebi.projsoul.engine.KeyHandler.button;
 
 import komorebi.projsoul.attack.FireBall;
 import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.ProjectileAttack;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.HUD;
-import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MagicBar;
+import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.gameplay.HUD;
+import komorebi.projsoul.gameplay.Key;
+import komorebi.projsoul.gameplay.MagicBar;
 
 public class Flannery extends Player {
 
@@ -136,7 +139,7 @@ public class Flannery extends Player {
       currentAnimation = null;
     }
 
-    if (KeyHandler.keyClick(Key.X) && !isAttacking && magic.hasEnoughMagic(
+    if (button(Control.ATTACK) && !isAttacking && magic.hasEnoughMagic(
         10))
     {              
       if (attack1 == projectile)
@@ -249,7 +252,7 @@ public class Flannery extends Player {
     health.addToMaxHealth(nHth);
 
   }
-
+  @Override
   public void giveXP(int xp) {
     Flannery.xp += xp;
     

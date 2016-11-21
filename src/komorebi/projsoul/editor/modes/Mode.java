@@ -6,11 +6,11 @@ package komorebi.projsoul.editor.modes;
 import static komorebi.projsoul.engine.KeyHandler.controlDown;
 
 import komorebi.projsoul.editor.Palette;
-import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MainE;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.engine.Renderable;
+import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.TileList;
 import komorebi.projsoul.script.EarthboundFont;
@@ -60,7 +60,7 @@ public abstract class Mode implements Renderable{
   public static void getModeInput(){    
     mouseSame = getMouseX() == mx && getMouseY() == my &&
         (lButtonIsDown || rButtonIsDown);
-    
+        
     pmx = mx;
     mx = getMouseX();
     
@@ -69,8 +69,8 @@ public abstract class Mode implements Renderable{
     
     status.clear();
     status.write("Mouse location: " + mx + ", " + my, 50, 1, new EarthboundFont(1));
-    System.out.println("Mouse location: " + mx + ", " + my);
-    System.out.println("P-Mouse location: " + pmx + ", " + pmy + ", " + mouseSame);
+//    System.out.println("Mouse location: " + mx + ", " + my);
+//    System.out.println("P-Mouse location: " + pmx + ", " + pmy + ", " + mouseSame);
 
     
     lButtonWasDown = lButtonIsDown;

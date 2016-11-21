@@ -1,7 +1,9 @@
 /**
  * Item.java    Aug 3, 2016, 11:49:22 AM
  */
-package komorebi.projsoul.engine;
+package komorebi.projsoul.gameplay;
+
+import komorebi.projsoul.engine.Draw;
 
 /**
  * 

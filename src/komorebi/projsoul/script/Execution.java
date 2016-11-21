@@ -5,13 +5,13 @@ package komorebi.projsoul.script;
 
 import komorebi.projsoul.audio.AudioHandler;
 import komorebi.projsoul.audio.Song;
-import komorebi.projsoul.engine.Item.Items;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.engine.ThreadHandler.NewThread;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.gameplay.Item.Items;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.TileList;
 import komorebi.projsoul.script.Task.TaskWithBoolean;

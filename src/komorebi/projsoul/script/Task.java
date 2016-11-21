@@ -3,9 +3,9 @@
  */
 package komorebi.projsoul.script;
 
-import java.util.ArrayList;
+import komorebi.projsoul.entities.player.Characters;
 
-import komorebi.projsoul.entities.Characters;
+import java.util.ArrayList;
 
 /**
  * 

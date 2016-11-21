@@ -11,9 +11,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import komorebi.projsoul.engine.ThreadHandler;
-import komorebi.projsoul.entities.Characters;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.script.Task.TaskWithBoolean;
 import komorebi.projsoul.script.Task.TaskWithBranch;
 import komorebi.projsoul.script.Task.TaskWithBranches;

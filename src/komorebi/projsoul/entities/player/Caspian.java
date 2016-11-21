@@ -1,17 +1,19 @@
-package komorebi.projsoul.entities;
+package komorebi.projsoul.entities.player;
 
-import java.awt.Rectangle;
+import static komorebi.projsoul.engine.KeyHandler.button;
 
 import komorebi.projsoul.attack.MeleeAttack;
 import komorebi.projsoul.attack.ProjectileAttack;
 import komorebi.projsoul.attack.WaterKunai;
 import komorebi.projsoul.attack.WaterSword;
 import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.HUD;
-import komorebi.projsoul.engine.Key;
-import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MagicBar;
+import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.entities.enemy.Enemy;
+import komorebi.projsoul.gameplay.HUD;
+import komorebi.projsoul.gameplay.MagicBar;
 import komorebi.projsoul.states.Game;
+
+import java.awt.Rectangle;
 
 public class Caspian extends Player {
 
@@ -154,7 +156,10 @@ public class Caspian extends Player {
       }
     }
 
-    if (KeyHandler.keyClick(Key.X) && !isAttacking && magic.hasEnoughMagic(
+    System.out.println(button(Control.ATTACK) +" and "+ !isAttacking +" and "+ magic.hasEnoughMagic(
+        10));
+    
+    if (button(Control.ATTACK) && !isAttacking && magic.hasEnoughMagic(
         10))
     {        
 

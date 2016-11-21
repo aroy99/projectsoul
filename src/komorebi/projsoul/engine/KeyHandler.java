@@ -3,6 +3,8 @@
  */
 package komorebi.projsoul.engine;
 
+import komorebi.projsoul.gameplay.Key;
+
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -24,7 +26,7 @@ public class KeyHandler {
    * @author Aaron Roy
    */
   public enum Control{
-    UP, DOWN, LEFT, RIGHT, TALK, MENU, 
+    UP, DOWN, LEFT, RIGHT, TALK, RUN, ATTACK, SWITCH, MAG_LEFT, MAG_RIGHT, MENU,
     
     MAP_UP, MAP_DOWN, MAP_LEFT, MAP_RIGHT, SAVE, NEW_SAVE, LOAD, NEW, GRID, 
     REVERT_MAP, RESET_LOC, PLAY, 
@@ -94,12 +96,17 @@ public class KeyHandler {
    */
   public static boolean button(Control c){
     switch(c){
-      case UP:    return keyDown(Key.UP);
-      case DOWN:  return keyDown(Key.DOWN);
-      case LEFT:  return keyDown(Key.LEFT);
-      case RIGHT: return keyDown(Key.RIGHT);
-      case TALK:  return keyClick(Key.Z);
-      case MENU:  return keyClick(Key.ENTER);
+      case UP:        return keyDown(Key.UP);
+      case DOWN:      return keyDown(Key.DOWN);
+      case LEFT:      return keyDown(Key.LEFT);
+      case RIGHT:     return keyDown(Key.RIGHT);
+      case TALK:      return keyClick(Key.C);
+      case ATTACK:    return keyClick(Key.X);
+      case MAG_LEFT:  return keyClick(Key.A);
+      case MAG_RIGHT: return keyClick(Key.S);
+      case RUN:       return keyDown(Key.Z);
+      case SWITCH:    return keyClick(Key.SPACE);
+      case MENU:      return keyClick(Key.ENTER);
 
       case MAP_DOWN:   return keyDown(Key.DOWN)  || keyDown(Key.S) && !keyDown(Key.CTRL);
       case MAP_LEFT:   return keyDown(Key.LEFT)  || keyDown(Key.A);
@@ -118,9 +125,8 @@ public class KeyHandler {
       case EVENT:      return controlDown()      && keyClick(Key.ROW3);
       case CONNECT:    return controlDown()      && keyClick(Key.ROW4);
       case HEADER:     return controlDown()      && keyClick(Key.ROW5);
-
-      default:         return false;
       
+      default: return false;
     }
   }
 

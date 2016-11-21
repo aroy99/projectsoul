@@ -3,6 +3,7 @@ package komorebi.projsoul.entities;
 import java.awt.Rectangle;
 
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.states.Game;
 

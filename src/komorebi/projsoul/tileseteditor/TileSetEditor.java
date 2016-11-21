@@ -20,9 +20,9 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.gameplay.Key;
 
 /**
  * 

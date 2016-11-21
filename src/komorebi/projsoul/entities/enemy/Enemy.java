@@ -1,4 +1,4 @@
-package komorebi.projsoul.entities;
+package komorebi.projsoul.entities.enemy;
 
 import java.awt.Rectangle;
 
@@ -6,6 +6,10 @@ import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.entities.Entity;
+import komorebi.projsoul.entities.Face;
+import komorebi.projsoul.entities.XPObject;
+import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.states.Game;
 

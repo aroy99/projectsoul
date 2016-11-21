@@ -1,7 +1,7 @@
 /**
  * Dummy.java	   Nov 18, 2016, 9:46:48 PM
  */
-package komorebi.projsoul.entities;
+package komorebi.projsoul.entities.enemy;
 
 /**
  * An enemy that does nothing
@@ -20,7 +20,7 @@ public class Dummy extends Enemy {
   }
 
   /**
-   * @see komorebi.projsoul.entities.Enemy#xpPerLevel()
+   * @see komorebi.projsoul.entities.enemy.Enemy#xpPerLevel()
    */
   @Override
   public int xpPerLevel() {
@@ -28,7 +28,7 @@ public class Dummy extends Enemy {
   }
 
   /**
-   * @see komorebi.projsoul.entities.Enemy#baseAttack()
+   * @see komorebi.projsoul.entities.enemy.Enemy#baseAttack()
    */
   @Override
   public int baseAttack() {
@@ -36,7 +36,7 @@ public class Dummy extends Enemy {
   }
 
   /**
-   * @see komorebi.projsoul.entities.Enemy#baseDefense()
+   * @see komorebi.projsoul.entities.enemy.Enemy#baseDefense()
    */
   @Override
   public int baseDefense() {
@@ -44,7 +44,7 @@ public class Dummy extends Enemy {
   }
 
   /**
-   * @see komorebi.projsoul.entities.Enemy#baseHealth()
+   * @see komorebi.projsoul.entities.enemy.Enemy#baseHealth()
    */
   @Override
   public int baseHealth() {

@@ -1,4 +1,4 @@
-package komorebi.projsoul.entities;
+package komorebi.projsoul.entities.enemy;
 
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.map.EditorMap;

@@ -1,5 +1,7 @@
-package komorebi.projsoul.engine;
+package komorebi.projsoul.gameplay;
 
+import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Renderable;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
 
