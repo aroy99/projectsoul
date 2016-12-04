@@ -32,7 +32,7 @@ public abstract class Mode implements Renderable{
   protected static boolean rButtonIsDown, rButtonWasDown;//Right Button Clicked
   protected static boolean mButtonIsDown, mButtonWasDown;//Middle Button Pressed
   
-  protected static TileList[][] tiles;
+  protected static int[][] tiles;
 
   
   protected static boolean mouseSame;                    //Mouse is in same pos as last frame
@@ -137,6 +137,8 @@ public abstract class Mode implements Renderable{
   protected static int getMouseY() {
     return ((Mouse.getY()/MainE.getScale())-(int)EditorMap.getY())/(16);
   }
+  
+
 
   /**
    * Checks if the Mouse is in bounds of the map
@@ -151,7 +153,7 @@ public abstract class Mode implements Renderable{
         getMouseX() < tiles[0].length);
   }
   
-  public static void setMap(TileList[][] map){
+  public static void setMap(int[][] map){
     tiles = map;
   }
   

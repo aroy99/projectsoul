@@ -305,23 +305,15 @@ public class Draw {
     rectCam(x, y, sx, sy, texx, texy, texsx, texsy, 0, texID);
   }
   
-  public static void addTexture(int png) throws IOException
-  {
-    try
-    {
-      Texture t = TextureLoader.getTexture("PNG", new FileInputStream(
-          new File("res/spreadsheets/"+png+".png")));
-      sheets.add(t);
-    } catch (IOException e)
-    {
-      throw new IOException();
-    }
-  }
-  
-  public static void tile(int x, int y, int texX, int texY, int texID)
+  public static void tile(float x, float y, int texX, int texY, int texID)
   {
       Draw.rectCam(x, y, 16, 16, texX, texY, texX+16, texY+16, sheets.get(texID));
    
+  }
+  
+  public static void tileCam(float x, float y, int texX, int texY, int texID)
+  {
+    Draw.tile(x-Camera.getX(), y-Camera.getY(), texX, texY, texID);
   }
   
   public static int getTexX(int id)
@@ -339,6 +331,8 @@ public class Draw {
     if (id==-1) return -1;
     return id / SPREADSHEET_SIZE;
   }
+  
+ 
   
   /**
    * Creates an approximated circle at the specified point
@@ -382,6 +376,42 @@ public class Draw {
   public static void circCam(float x, float y, float radius, 
       float r, float g, float b, float a){
     circ(x-Camera.getX(), y-Camera.getY(), radius, r, g, b, a);
+  }
+  
+  public static void readSpreadsheets()
+  {
+    int texNum = 0;
+    boolean hasFiles = true;
+
+    while (hasFiles)
+    {
+      try 
+      {
+        addTexture(texNum);
+        texNum++;
+      } catch (IOException e)
+      {
+        hasFiles = false;
+      }
+    }
+  }
+  
+  public static void addTexture(int png) throws IOException
+  {
+    try
+    {
+      Texture t = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/spreadsheets/"+png+".png")));
+      sheets.add(t);
+    } catch (IOException e)
+    {
+      throw new IOException();
+    }
+  }
+  
+  public static int getNumberOfSpreadsheets()
+  {
+    return sheets.size();
   }
 
 }

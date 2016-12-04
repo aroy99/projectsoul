@@ -22,6 +22,7 @@ import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glOrtho;
 
 import komorebi.projsoul.editor.Editor;
+import komorebi.projsoul.editor.World;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
 import komorebi.projsoul.states.Game;
@@ -97,6 +98,8 @@ public class MainE {
 
     initDisplay();
     initGl();
+    
+    Draw.readSpreadsheets();
 
     initGame();
     gameLoop();
@@ -126,6 +129,7 @@ public class MainE {
    *  @see GameHandler
    */
   private static void initGame() {
+    World.loadWorlds();
     edit = new Editor();
     //AudioHandler.init();
 
@@ -133,7 +137,6 @@ public class MainE {
     lastFPS = getTime(); // call before loop to initialise fps timer
 
     handler = new TextHandler();
-
   }
 
 

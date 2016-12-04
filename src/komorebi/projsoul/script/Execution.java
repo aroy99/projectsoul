@@ -293,7 +293,7 @@ public class Execution implements Runnable {
         break;
       case RETILE:
         taskNumLoc = (TaskWithNumberAndLocation) task;
-        Game.getMap().setTile(TileList.getTile(taskNumLoc.getNumber()), 
+        Game.getMap().setTile(taskNumLoc.getNumber(), 
             taskNumLoc.getX(), taskNumLoc.getY());
         break;
       case CLYDE_WALK_LEFT:

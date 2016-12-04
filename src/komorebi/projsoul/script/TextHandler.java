@@ -12,7 +12,7 @@ import komorebi.projsoul.engine.Draw;
  * @author Aaron Roy
  * @version 
  */
-public class TextHandler{
+public class TextHandler {
    
   public static final int SCALE = 16;
 
@@ -42,6 +42,40 @@ public class TextHandler{
   public void write(String s, int x, int y)
   {
     words.add(new Word(s, x, y, defFont));
+  }
+  
+  public void writeMindLength(String s, int x, int y, Font font, int maxLength)
+  {
+    if (pixLengthOf(s, font) < maxLength)
+    {
+      write(s, x, y, font);
+    } else {
+      int subIndex = s.length()-1;
+      
+      while (pixLengthOf(s.substring(0, subIndex) + "...", font) > maxLength)
+      {
+        subIndex--;
+      }
+      
+      write(s.substring(0, subIndex) + "...", x, y, font);
+    }
+  }
+  
+  public void writeMindLength(String s, int x, int y, int maxLength)
+  {
+    writeMindLength(s, x, y, defFont, maxLength);
+  }
+  
+  private int pixLengthOf(String str, Font font)
+  {
+    int num = 0;
+    
+    for (int i = 0; i < str.length(); i++)
+    {
+      num += font.getLength(str.charAt(i)) + 1;
+    }
+    
+    return num;
   }
 
   /**
@@ -82,8 +116,7 @@ public class TextHandler{
           word.getFont().getTexX(letters[i])+word.getFont().getFontPoint(), 
           word.getFont().getTexY(letters[i]) + word.getFont().getFontPoint()+texUnder, 
           word.getFont().getTexture());
-      horiz+=(word.getFont().getLength(letters[i])+
-          size/(word.getFont().getFontPoint()/word.getFont().getScale()));
+      horiz+=(word.getFont().getLength(letters[i])+1);
     }
   }
 
@@ -108,4 +141,6 @@ public class TextHandler{
       }
     }
   }
+ 
+  
 }

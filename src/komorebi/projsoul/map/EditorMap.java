@@ -6,33 +6,6 @@ package komorebi.projsoul.map;
 
 import static komorebi.projsoul.engine.KeyHandler.button;
 
-import komorebi.projsoul.audio.AudioHandler;
-import komorebi.projsoul.audio.Song;
-import komorebi.projsoul.editor.modes.ConnectMode;
-import komorebi.projsoul.editor.modes.EventMode;
-import komorebi.projsoul.editor.modes.Mode;
-import komorebi.projsoul.editor.modes.MoveMode;
-import komorebi.projsoul.editor.modes.TileMode;
-import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.KeyHandler.Control;
-import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.entities.NPC;
-import komorebi.projsoul.entities.NPCType;
-import komorebi.projsoul.entities.SignPost;
-import komorebi.projsoul.entities.enemy.Chaser;
-import komorebi.projsoul.entities.enemy.Dummy;
-import komorebi.projsoul.entities.enemy.Enemy;
-import komorebi.projsoul.entities.enemy.EnemyType;
-import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.map.ConnectMap.Side;
-import komorebi.projsoul.script.AreaScript;
-import komorebi.projsoul.script.TalkingScript;
-import komorebi.projsoul.script.WalkingScript;
-import komorebi.projsoul.script.WarpScript;
-
-import org.lwjgl.opengl.Display;
-
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -60,6 +33,34 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.lwjgl.opengl.Display;
+
+import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.audio.Song;
+import komorebi.projsoul.editor.World;
+import komorebi.projsoul.editor.modes.ConnectMode;
+import komorebi.projsoul.editor.modes.EventMode;
+import komorebi.projsoul.editor.modes.Mode;
+import komorebi.projsoul.editor.modes.MoveMode;
+import komorebi.projsoul.editor.modes.TileMode;
+import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.entities.NPC;
+import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.SignPost;
+import komorebi.projsoul.entities.enemy.Chaser;
+import komorebi.projsoul.entities.enemy.Dummy;
+import komorebi.projsoul.entities.enemy.Enemy;
+import komorebi.projsoul.entities.enemy.EnemyType;
+import komorebi.projsoul.gameplay.Key;
+import komorebi.projsoul.map.ConnectMap.Side;
+import komorebi.projsoul.script.AreaScript;
+import komorebi.projsoul.script.TalkingScript;
+import komorebi.projsoul.script.WalkingScript;
+import komorebi.projsoul.script.WarpScript;
 
 /**
  * Represents a map of tiles for use by the Editor
@@ -89,7 +90,7 @@ public class EditorMap implements Playable, Serializable{
   private static boolean saved = true;
 
 
-  private static TileList[][] tiles;                //The Map itself
+  private static int[][] tiles;                //The Map itself
   private static boolean[][] collision;
 
   private static String title;                 //The in-game name of this map
@@ -104,6 +105,7 @@ public class EditorMap implements Playable, Serializable{
   private static ArrayList<SignPost> signs;        //^
   
   private static ArrayList<ConnectMap> maps;   //Maps that connect to this one
+  private ConnectMap myMap;
 
   private static float x, y;       //Current location
   private static float dx, dy;
@@ -138,7 +140,7 @@ public class EditorMap implements Playable, Serializable{
    */
   public EditorMap(int col, int row){
     saved = true;
-    tiles = new TileList[row][col];
+    tiles = new int[row][col];
     collision = new boolean[row][col];
     npcs = new ArrayList<NPC>();
     scripts = new ArrayList<AreaScript>();
@@ -151,14 +153,16 @@ public class EditorMap implements Playable, Serializable{
 
     for (int i = tiles.length-1; i >= 0; i--) {
       for (int j = 0; j < tiles[0].length; j++) {
-        tiles[i][j] = TileList.BLANK;
+        tiles[i][j] = Draw.BLANK_TILE;
       }
     }
 
     tileMode = new TileMode();
     moveMode = new MoveMode(collision);
     eventMode = new EventMode(npcs, scripts, enemies, signs);
-    connectMode = new ConnectMode(maps);
+    
+    
+    //connectMode = new ConnectMode(World.getWorld());
     Mode.setMap(tiles);
     
   }
@@ -181,7 +185,7 @@ public class EditorMap implements Playable, Serializable{
       int rows = Integer.parseInt(reader.readLine());
       int cols = Integer.parseInt(reader.readLine());
 
-      tiles = new TileList[rows][cols];
+      tiles = new int[rows][cols];
       collision = new boolean[rows][cols];
       npcs = new ArrayList<NPC>();
       scripts = new ArrayList<AreaScript>();
@@ -212,7 +216,7 @@ public class EditorMap implements Playable, Serializable{
           if(str[index].equals("")){
             index++;  //pass this token, it's blank
           }
-          tiles[i][j] = TileList.getTile(Integer.parseInt(str[index]));
+          tiles[i][j] = Integer.parseInt(str[index]);
         }
       }
 
@@ -317,12 +321,13 @@ public class EditorMap implements Playable, Serializable{
           s = s.replace("connect ", "");
           String[] split = s.split(" ");
           
+          /*
           ConnectMap newMap = (new ConnectMap("res/maps/"+split[0]+".map", split[0], 
               Side.toEnum(split[1])));
           
           newMap.setLoc(x+Integer.parseInt(split[2])*SIZE, y+Integer.parseInt(split[3])*SIZE);
           
-          maps.add(newMap);
+          maps.add(newMap);*/
         }
         
       } while ((s=reader.readLine()) != null);
@@ -342,7 +347,9 @@ public class EditorMap implements Playable, Serializable{
     tileMode = new TileMode();
     moveMode = new MoveMode(collision);
     eventMode = new EventMode(npcs, scripts, enemies, signs);
-    connectMode = new ConnectMode(maps);
+    //myMap = new ConnectMap(key);
+    
+    connectMode = new ConnectMode(World.findWorld(key));
     Mode.setMap(tiles);
   }
 
@@ -456,15 +463,18 @@ public class EditorMap implements Playable, Serializable{
 
   @Override
   public void render() {
-    for (int i = 0; i < tiles.length; i++) {
-      for (int j = 0; j < tiles[0].length; j++) {
-        if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
-          Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, tiles[i][j].getX(), 
-              tiles[i][j].getY(), 1);
+    if (mode!=Modes.CONNECT)
+    {
+      for (int i = 0; i < tiles.length; i++) {
+        for (int j = 0; j < tiles[0].length; j++) {
+          if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
+            Draw.tile(x+j*SIZE, y+i*SIZE, Draw.getTexX(tiles[i][j]), 
+                Draw.getTexY(tiles[i][j]), Draw.getTexture(tiles[i][j]));
+          }
         }
       }
     }
-          
+    
     switch(mode){
       case MOVE:
         moveMode.render();
@@ -531,9 +541,9 @@ public class EditorMap implements Playable, Serializable{
       writer.println(outside?1 : 0);
       
       //The map itself
-      for (TileList[] tile : tiles) {
-        for (TileList t : tile) {
-          writer.print(t.getID() + " ");
+      for (int[] tile : tiles) {
+        for (int t : tile) {
+          writer.print(t + " ");
         }
         writer.println();
       }
@@ -802,7 +812,7 @@ public class EditorMap implements Playable, Serializable{
     return y;
   }
   
-  public static void setLocation(float x, float y){
+  public void setLocation(float x, float y){
     move(x-EditorMap.x, y-EditorMap.y);
   }
   
@@ -878,7 +888,7 @@ public class EditorMap implements Playable, Serializable{
     }
   }
 
-  public static TileList[][] getMap(){
+  public static int[][] getMap(){
     return tiles;
   }
   
@@ -900,31 +910,38 @@ public class EditorMap implements Playable, Serializable{
    * @param dx pixels to move left/right
    * @param dy pixels to move up/down
    */
-  public static void move(float dx, float dy) {
+  public void move(float dx, float dy) {
 
-    x+=dx;
-    y+=dy;
+    if (mode!=Modes.CONNECT)
+    {
+      x+=dx;
+      y+=dy;
 
-    for(NPC npc:npcs){
-      npc.setPixLocation((int)(npc.getX()+dx), (int)(npc.getY()+dy));
-      npc.update();
-    }
+      for(NPC npc:npcs){
+        npc.setPixLocation((int)(npc.getX()+dx), (int)(npc.getY()+dy));
+        npc.update();
+      }
 
-    for(AreaScript script:scripts){
-      script.setPixLocation((int)(script.getX()+dx),(int)(script.getY()+dy));
+      for(AreaScript script:scripts){
+        script.setPixLocation((int)(script.getX()+dx),(int)(script.getY()+dy));
+      }
+      
+      for (Enemy enemy:enemies) {
+        enemy.setPixLocation((int)(enemy.getX()+dx),(int)(enemy.getY()+dy));
+      }
+      
+      for (SignPost sign:signs) {
+        sign.setPixLocation((int)(sign.getX()+dx),(int)(sign.getY()+dy));
+      }
+      
+      for(ConnectMap map:maps){
+        map.setLoc(map.getX()+dx, map.getY()+dy);
+      }
+    } else
+    {
+      connectMode.move(dx, dy);
     }
     
-    for (Enemy enemy:enemies) {
-      enemy.setPixLocation((int)(enemy.getX()+dx),(int)(enemy.getY()+dy));
-    }
-    
-    for (SignPost sign:signs) {
-      sign.setPixLocation((int)(sign.getX()+dx),(int)(sign.getY()+dy));
-    }
-    
-    for(ConnectMap map:maps){
-      map.setLoc(map.getX()+dx, map.getY()+dy);
-    }
 
   }
   
@@ -1048,7 +1065,7 @@ public class EditorMap implements Playable, Serializable{
             int width = Integer.parseInt(newWidth.getText());
             int height = Integer.parseInt(newHeight.getText());
             
-            TileList[][] newMap = new TileList[height][width];
+            int[][] newMap = new int[height][width];
             boolean[][] newCol = new boolean[height][width];
             for(int i = 0; i < height; i++){
               for(int j = 0; j < width; j++){
@@ -1057,7 +1074,7 @@ public class EditorMap implements Playable, Serializable{
                   newCol[i][j] = collision[i][j];
                 }
                 else{
-                  newMap[i][j] = TileList.BLANK;
+                  newMap[i][j] = Draw.BLANK_TILE;
                   newCol[i][j] = true;
                 }
               }
@@ -1117,6 +1134,30 @@ public class EditorMap implements Playable, Serializable{
 
 
   }
+  
+  public int getUniqueTiles()
+  {
+    ArrayList<Integer> has = new ArrayList<Integer>();
+    
+    for (int[] row: tiles)
+    {
+      for (int i: row)
+      {
+        if (!has.contains(i))
+        {
+          has.add(i);
+        }
+      }
+    }
+    
+    return has.size();
+  }
+  
+  public ArrayList<ConnectMap> getConnectMaps()
+  {
+    return maps;
+  }
+
 
 }
 

@@ -1,0 +1,2 @@
+islands
+#refs {islands} Maze.map

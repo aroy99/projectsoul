@@ -4,23 +4,10 @@
 package komorebi.projsoul.editor.modes;
 
 import static komorebi.projsoul.editor.Buttons.BUTTON_SIZE;
-import static komorebi.projsoul.engine.KeyHandler.controlDown;
 import static komorebi.projsoul.engine.KeyHandler.keyClick;
 import static komorebi.projsoul.engine.KeyHandler.keyDown;
 import static komorebi.projsoul.engine.MainE.HEIGHT;
 import static komorebi.projsoul.engine.MainE.WIDTH;
-
-import komorebi.projsoul.editor.Editor;
-import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MainE;
-import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.map.ConnectMap;
-import komorebi.projsoul.map.ConnectMap.Side;
-import komorebi.projsoul.script.EarthboundFont;
-import komorebi.projsoul.map.EditorMap;
-
-import org.lwjgl.input.Mouse;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -30,7 +17,6 @@ import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.ArrayList;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -42,37 +28,54 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.lwjgl.input.Mouse;
+
+import komorebi.projsoul.editor.Editor;
+import komorebi.projsoul.editor.World;
+import komorebi.projsoul.editor.World.FindWorldDialog;
+import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.MainE;
+import komorebi.projsoul.gameplay.Key;
+import komorebi.projsoul.map.ConnectMap;
+import komorebi.projsoul.map.ConnectMap.Side;
+import komorebi.projsoul.map.EditorMap;
+import komorebi.projsoul.script.Lock;
+
 /**
  * Deals with Map connections, only to be used in the editor
  *
  * @author Aaron Roy
  */
 public class ConnectMode extends Mode {
-
-  private ArrayList<ConnectMap> maps;
+  
+  private World world;
   private int selected = -1;
+  
+  private static float offX, offY;
 
   /**
    * Creates a new
    * 
    * @param map The list of maps
    */
-  public ConnectMode(ArrayList<ConnectMap> map) {
-    maps = map;
+  public ConnectMode(World world) {
+    this.world = world;
   }
 
   @Override
   public void update() {
-    int index;
-            
-    if((index = getSelectedMap()) != -1 && 
-        keyClick(Key.LBUTTON) || keyClick(Key.RBUTTON)){
+    int index = getSelectedMap(); //represents the map the mouse is hovering over
+    
+    checkNullWorld();
+        
+    if(keyClick(Key.LBUTTON) || keyClick(Key.RBUTTON)){
       selected = index;
     }
-    
+        
     if(selected != -1){
-      ConnectMap currMap = maps.get(selected);
-      
+      ConnectMap currMap = world.getMaps().get(selected);
+           
       int offX = mx - pmx + currMap.getTileX();
       int offY = my - pmy + currMap.getTileY();
       
@@ -86,16 +89,16 @@ public class ConnectMode extends Mode {
     }
     
     if((index = getSelectedMap()) != -1 && keyClick(Key.RBUTTON)){
-      ConnectMap currMap = maps.get(selected);
+      ConnectMap currMap = world.getMaps().get(selected);
 
       Editor.loadMap(currMap.getName(), currMap.getX(), currMap.getY());
     }
     
     if(lButtonDoubleClicked && index != -1 && index == selected){
-      EditSide dialog = new EditSide();
-      dialog.pack();
-      dialog.setVisible(true);
-      KeyHandler.reloadKeyboard();
+      //EditSide dialog = new EditSide();
+      //dialog.pack();
+      //dialog.setVisible(true);
+      //KeyHandler.reloadKeyboard();
     }
     
     if(KeyHandler.keyClick(Key.LBUTTON) && checkButtonBounds()){
@@ -109,10 +112,13 @@ public class ConnectMode extends Mode {
           break;
         case WIDTH/BUTTON_SIZE-2:
           if(selected != -1){
-            maps.remove(selected);
+            world.getMaps().remove(selected);
             selected = -1;
             EditorMap.setUnsaved();
           }
+          break;
+        case WIDTH/BUTTON_SIZE-1:
+          FindWorldDialog find = new FindWorldDialog();
           break;
         default:
           //DEBUG Button fail text
@@ -122,22 +128,27 @@ public class ConnectMode extends Mode {
   }
 
   @Override
-  public void render() {
-    for(ConnectMap map : maps){
+  public void render() {    
+    
+    checkNullWorld();
+        
+    for(ConnectMap map : world.getMaps()){
       map.render();
     }
 
     if(selected != -1){
-      ConnectMap map = maps.get(selected);
+      ConnectMap map = world.getMaps().get(selected);
+      
       //Draw transparent green pixel
-      Draw.rect(map.getX(), map.getY(), map.getPxWidth(), map.getPxHeight(), 
+      Draw.rect(map.getX()+offX, map.getY()+offY, map.getPxWidth(), map.getPxHeight(), 
           17, 16, 17, 16, 2);
     }
 
     EditorMap.renderGrid();
 
     Draw.rect(WIDTH-BUTTON_SIZE*3, HEIGHT-BUTTON_SIZE, 64, 32, 32, 16, 64, 32, 2);
-
+    Draw.rect(WIDTH-BUTTON_SIZE, HEIGHT-BUTTON_SIZE, 32, 32, 112, 0, 128, 16, 2);
+    
     if(checkButtonBounds()){
       int x = Mouse.getX()/(BUTTON_SIZE*MainE.getScale())*BUTTON_SIZE;
       int y = HEIGHT - BUTTON_SIZE;
@@ -148,14 +159,15 @@ public class ConnectMode extends Mode {
     }
   }
 
-  private int getSelectedMap(){
-    for(int i = 0; i < maps.size(); i++){
-      ConnectMap map = maps.get(i);
-
-      if(getMouseX() > (map.getX()-EditorMap.getX())/SIZE &&
-          getMouseX() < (map.getX()+map.getPxWidth()-EditorMap.getX())/SIZE &&
-          getMouseY() > (map.getY()-EditorMap.getY())/SIZE &&
-          getMouseY() < (map.getY()+map.getPxHeight()-EditorMap.getY())/SIZE){
+  private int getSelectedMap(){    
+    for(int i = 0; i < world.getMaps().size(); i++){
+      ConnectMap map = world.getMaps().get(i);
+      
+      if(getFloatMouseX() > (map.getX()+ConnectMode.getX())&&
+          getFloatMouseX() < (map.getX()+map.getPxWidth()+ConnectMode.getX())
+          &&
+          getFloatMouseY() > (map.getY()+ConnectMode.getY()) &&
+          getFloatMouseY() < (map.getY()+map.getPxHeight()+ ConnectMode.getY())){
         return i;
       }
     }
@@ -169,8 +181,14 @@ public class ConnectMode extends Mode {
    */
   private boolean checkButtonBounds() {
     return (Mouse.getX()/MainE.getScale() > WIDTH-BUTTON_SIZE*3 &&
-        Mouse.getX()/MainE.getScale() < WIDTH-BUTTON_SIZE &&
+        Mouse.getX()/MainE.getScale() < WIDTH &&
         Mouse.getY()/MainE.getScale() > HEIGHT-BUTTON_SIZE);
+  }
+  
+  public void move(float dx, float dy)
+  {
+    offX += dx;
+    offY += dy;
   }
 
   /**
@@ -266,8 +284,8 @@ public class ConnectMode extends Mode {
 
           float x, y;
 
-          ConnectMap newMap = new ConnectMap(key, name, 
-              (Side)side.getSelectedItem());
+          ConnectMap newMap = new ConnectMap(null, key, name, 
+              (Side)side.getSelectedItem(), 0, 0);
 
           switch(newMap.getSide()){
             case DOWN:
@@ -292,9 +310,9 @@ public class ConnectMode extends Mode {
               break;
           }
 
-          newMap.setLoc(x, y);
+          //newMap.setLoc(x, y);
 
-          maps.add(newMap);
+          world.getMaps().add(newMap);
 
           clearAndHide();
         }else{
@@ -395,7 +413,7 @@ public class ConnectMode extends Mode {
       sideBox.add(side);
     }
     
-    ConnectMap map = maps.get(selected);
+    ConnectMap map = world.getMaps().get(selected);
 
     public EditSide(){
       super((Frame)null, true);
@@ -467,8 +485,8 @@ public class ConnectMode extends Mode {
             break;
         }
 
-        map.setSide((Side)side.getSelectedItem());
-        map.setLoc(x, y);
+        //map.setSide((Side)side.getSelectedItem());
+        //map.setLoc(x, y);
 
         clearAndHide();
       }
@@ -481,6 +499,35 @@ public class ConnectMode extends Mode {
     }
 
   }
-
+  
+  private void checkNullWorld()
+  {
+    if (world == null)
+    { 
+      FindWorldDialog find = new FindWorldDialog(new Lock());
+      world = find.getSelectedWorld();
+      find.terminate();
+    }
+  }
+  
+  public static float getX()
+  {
+    return offX;
+  }
+  
+  public static float getY()
+  {
+    return offY;
+  }
+  
+  private static float getFloatMouseX()
+  {
+    return (float) Mouse.getX()/MainE.getScale();
+  }
+  
+  private static float getFloatMouseY()
+  {
+    return (float) Mouse.getY()/MainE.getScale();
+  }
 
 }
