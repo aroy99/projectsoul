@@ -154,6 +154,24 @@ public class World {
     }
   }
   
+  public static class TerminableActionListener implements ActionListener
+  {
+    
+    JDialog parent;
+    
+    public TerminableActionListener(JDialog parent)
+    {
+      this.parent = parent;
+    }
+    
+    
+    @Override
+    public void actionPerformed(ActionEvent arg0) {
+      parent.setVisible(false);
+    }
+    
+  }
+  
   public static class FindWorldDialog extends JDialog 
   {
     
@@ -383,6 +401,153 @@ public class World {
   public ArrayList<ConnectMap> getMaps()
   {
     return maps;
+  }
+  
+  public static boolean hasWorld(String map)
+  {
+    for (World world: worlds)
+    {
+      for (ConnectMap c: world.getMaps())
+      {
+        if (c.getFilePath().equals(map))
+          return true;
+      }
+    }
+    
+    return false;
+  }
+
+  public boolean mapAtValidLocation(Rectangle r) {
+    //TODO Re-add the code you already added but lost bc reasons
+    
+    boolean touches = false;
+    
+    for (ConnectMap c: maps)
+    {
+      Rectangle area = c.getArea();
+      
+      if (area.intersects(r))
+      {
+        return false;
+      }
+      
+      if (area.x + area.width == r.x && (((r.y >= area.y && r.y <
+          area.y + area.height) || (r.y + r.height > area.y && r.y + r.height 
+          < area.y + area.height)) || 
+          ((area.y >= r.y && area.y <
+          r.y + r.height) || (area.y + area.height > r.y && area.y + area.height 
+          < r.y + r.height))))
+      {
+        touches = true;
+      }
+      
+      if (r.x + r.width == area.x && (((r.y >= area.y && r.y <
+          area.y + area.height) || (r.y + r.height > area.y && r.y + r.height 
+          < area.y + area.height)) || 
+          ((area.y >= r.y && area.y <
+          r.y + r.height) || (area.y + area.height > r.y && area.y + area.height 
+          < r.y + r.height))))
+      {
+        touches = true;
+      }
+      
+      if (area.y + area.height == r.y && (((r.x >= area.x && r.x
+          < area.x + area.width) || (r.x + r.width > area.x && r.x + r.width 
+          < area.x + area.width)) || 
+          ((area.x >= r.x && area.x <
+          r.x + r.width) || (area.x + area.width > r.x && area.x + area.width 
+          < r.x + r.width))))
+      {
+        touches = true;
+      }
+      
+      if (r.y + r.height == area.y && (((r.x >= area.x && r.x
+          < area.x + area.width) || (r.x + r.width > area.x && r.x + r.width 
+          < area.x + area.width)) || 
+          ((area.x >= r.x && area.x <
+          r.x + r.width) || (area.x + area.width > r.x && area.x + area.width 
+          < r.x + r.width))))
+      {
+        touches = true;
+      }
+    }
+    
+    return touches;
+  }
+  
+  public boolean mapAtValidLocationIgnoreSelf(Rectangle r, ConnectMap someMap) {
+    
+    boolean touches = false;
+    
+    for (ConnectMap c: maps)
+    {
+      Rectangle area = c.getArea();
+      
+      if (area.intersects(r) && someMap != c)
+      {
+        return false;
+      }
+      
+      if (area.x + area.width == r.x && (((r.y >= area.y && r.y <
+          area.y + area.height) || (r.y + r.height > area.y && r.y + r.height 
+          < area.y + area.height)) || 
+          ((area.y >= r.y && area.y <
+          r.y + r.height) || (area.y + area.height > r.y && area.y + area.height 
+          < r.y + r.height))))
+      {
+        touches = true;
+      }
+      
+      if (r.x + r.width == area.x && (((r.y >= area.y && r.y <
+          area.y + area.height) || (r.y + r.height > area.y && r.y + r.height 
+          < area.y + area.height)) || 
+          ((area.y >= r.y && area.y <
+          r.y + r.height) || (area.y + area.height > r.y && area.y + area.height 
+          < r.y + r.height))))
+      {
+        touches = true;
+      }
+      
+      if (area.y + area.height == r.y && (((r.x >= area.x && r.x
+          < area.x + area.width) || (r.x + r.width > area.x && r.x + r.width 
+          < area.x + area.width)) || 
+          ((area.x >= r.x && area.x <
+          r.x + r.width) || (area.x + area.width > r.x && area.x + area.width 
+          < r.x + r.width))))
+      {
+        touches = true;
+      }
+      
+      if (r.y + r.height == area.y && (((r.x >= area.x && r.x
+          < area.x + area.width) || (r.x + r.width > area.x && r.x + r.width 
+          < area.x + area.width)) || 
+          ((area.x >= r.x && area.x <
+          r.x + r.width) || (area.x + area.width > r.x && area.x + area.width 
+          < r.x + r.width))))
+      {
+        touches = true;
+      }
+    }
+    
+    return touches;
+  }
+
+  public static World findWorldContainingMap(String key) 
+      throws NoSuchElementException {
+    
+    for (World world: worlds)
+    {
+      try 
+      {
+        ConnectMap c = world.getMap(key);
+        return world;
+      } catch (NoSuchElementException e)
+      {
+        continue;
+      }
+    }
+    
+    throw new NoSuchElementException();
   }
  
   

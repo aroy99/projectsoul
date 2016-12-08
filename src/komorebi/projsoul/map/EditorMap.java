@@ -22,6 +22,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -56,7 +57,6 @@ import komorebi.projsoul.entities.enemy.Dummy;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.enemy.EnemyType;
 import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.map.ConnectMap.Side;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.WalkingScript;
@@ -317,18 +317,18 @@ public class EditorMap implements Playable, Serializable{
           
           signs.add(new SignPost(x+arg0*16, y+arg1*16, split[2]));
 
-        } else if (s.startsWith("connect")){
+        } /*else if (s.startsWith("connect")){
           s = s.replace("connect ", "");
           String[] split = s.split(" ");
           
-          /*
+
           ConnectMap newMap = (new ConnectMap("res/maps/"+split[0]+".map", split[0], 
               Side.toEnum(split[1])));
           
           newMap.setLoc(x+Integer.parseInt(split[2])*SIZE, y+Integer.parseInt(split[3])*SIZE);
           
-          maps.add(newMap);*/
-        }
+          maps.add(newMap);
+        }*/
         
       } while ((s=reader.readLine()) != null);
 
@@ -348,8 +348,13 @@ public class EditorMap implements Playable, Serializable{
     moveMode = new MoveMode(collision);
     eventMode = new EventMode(npcs, scripts, enemies, signs);
     //myMap = new ConnectMap(key);
-    
-    connectMode = new ConnectMode(World.findWorld(key));
+    try
+    {
+      connectMode = new ConnectMode(World.findWorldContainingMap(key));
+    } catch (NoSuchElementException e)
+    {
+      connectMode.setHasNoCurrentWorld(true);
+    }
     Mode.setMap(tiles);
   }
 

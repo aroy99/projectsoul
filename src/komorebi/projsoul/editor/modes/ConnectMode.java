@@ -9,30 +9,37 @@ import static komorebi.projsoul.engine.KeyHandler.keyDown;
 import static komorebi.projsoul.engine.MainE.HEIGHT;
 import static komorebi.projsoul.engine.MainE.WIDTH;
 
+import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FilenameFilter;
 
 import javax.swing.Box;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.lwjgl.input.Mouse;
 
 import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.editor.World;
 import komorebi.projsoul.editor.World.FindWorldDialog;
+import komorebi.projsoul.editor.World.TerminableActionListener;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MainE;
@@ -48,10 +55,14 @@ import komorebi.projsoul.script.Lock;
  * @author Aaron Roy
  */
 public class ConnectMode extends Mode {
-  
+
   private World world;
-  private int selected = -1;
+  private static ConnectMap addMap;
+  private Rectangle addMapRect = new Rectangle();
   
+  private static int selected = -1;
+  private boolean hasNoCurrentWorld;
+
   private static float offX, offY;
 
   /**
@@ -67,46 +78,67 @@ public class ConnectMode extends Mode {
   public void update() {
     int index = getSelectedMap(); //represents the map the mouse is hovering over
     
-    checkNullWorld();
-        
-    if(keyClick(Key.LBUTTON) || keyClick(Key.RBUTTON)){
-      selected = index;
+    if (addMap!=null)
+    {
+      addMapRect.setLocation(getAdjustedMouseX()-addMap.getWidth()/2, 
+          getAdjustedMouseY()-addMap.getHeight()/2);
+      addMapRect.setSize(addMap.getWidth(), addMap.getHeight());
     }
-        
+    
+    if (hasNoCurrentWorld)
+    {
+      FindWorldDialog find = new FindWorldDialog(new Lock());
+      world = find.getSelectedWorld();
+      find.terminate();
+    }
+
+    if((keyClick(Key.LBUTTON) || keyClick(Key.RBUTTON))) {
+      if (addMap == null)
+      {
+        selected = index;
+      } else if (world.mapAtValidLocation(addMapRect))
+      {
+        addMap.setTileLocation(addMapRect.x, addMapRect.y);
+        world.addMap(addMap);
+        addMap = null;
+        addMapRect = null;
+      }
+    }
+
     if(selected != -1){
       ConnectMap currMap = world.getMaps().get(selected);
-           
+
       int offX = mx - pmx + currMap.getTileX();
       int offY = my - pmy + currMap.getTileY();
-      
+
       Mode.status.write("Location: " + currMap.getTileX() + ", " + 
           currMap.getTileY() + ",     Current Map: " + currMap.getName(), 175,1);
-      
-      if(keyDown(Key.LBUTTON) && (mx != pmx || my != pmy)){
+
+      if(keyDown(Key.LBUTTON) && (mx != pmx || my != pmy) &&  
+          world.mapAtValidLocationIgnoreSelf(new Rectangle(offX, offY, currMap.getWidth(),
+              currMap.getHeight()), currMap)){
         currMap.setTileLocation(offX, offY);
         EditorMap.setUnsaved();
       }
     }
-    
+
     if((index = getSelectedMap()) != -1 && keyClick(Key.RBUTTON)){
       ConnectMap currMap = world.getMaps().get(selected);
 
       Editor.loadMap(currMap.getName(), currMap.getX(), currMap.getY());
     }
-    
+
     if(lButtonDoubleClicked && index != -1 && index == selected){
       //EditSide dialog = new EditSide();
       //dialog.pack();
       //dialog.setVisible(true);
       //KeyHandler.reloadKeyboard();
     }
-    
+
     if(KeyHandler.keyClick(Key.LBUTTON) && checkButtonBounds()){
       switch(Mouse.getX()/(32*MainE.scale)){
         case WIDTH/BUTTON_SIZE-3:
           NewConnectDialog dialog = new NewConnectDialog();
-          dialog.pack();
-          dialog.setVisible(true);
           EditorMap.setUnsaved();
           KeyHandler.reloadKeyboard();
           break;
@@ -129,16 +161,37 @@ public class ConnectMode extends Mode {
 
   @Override
   public void render() {    
+
+    if (addMap!=null)
+    {
+      if (world.mapAtValidLocation(addMapRect))
+      {
+        Draw.rect((getAdjustedMouseX()-addMap.getWidth()/2)*16+ConnectMode.getX(), 
+            (getAdjustedMouseY()-addMap.getHeight()/2)*16+ConnectMode.getY(), addMap.getPxWidth(), 
+            addMap.getPxHeight(), 17, 16, 17, 16, 2);
+      
+      } else
+      {
+        Draw.rect((getAdjustedMouseX()-addMap.getWidth()/2)*16+ConnectMode.getX(), 
+            (getAdjustedMouseY()-addMap.getHeight()/2)*16+ConnectMode.getY(), addMap.getPxWidth(), 
+            addMap.getPxHeight(), 32, 0, 33, 1, 2);
+      }
+    }
     
-    checkNullWorld();
-        
+    if (hasNoCurrentWorld)
+    {
+      FindWorldDialog find = new FindWorldDialog(new Lock());
+      world = find.getSelectedWorld();
+      find.terminate();
+    }
+
     for(ConnectMap map : world.getMaps()){
       map.render();
     }
 
     if(selected != -1){
       ConnectMap map = world.getMaps().get(selected);
-      
+
       //Draw transparent green pixel
       Draw.rect(map.getX()+offX, map.getY()+offY, map.getPxWidth(), map.getPxHeight(), 
           17, 16, 17, 16, 2);
@@ -148,7 +201,7 @@ public class ConnectMode extends Mode {
 
     Draw.rect(WIDTH-BUTTON_SIZE*3, HEIGHT-BUTTON_SIZE, 64, 32, 32, 16, 64, 32, 2);
     Draw.rect(WIDTH-BUTTON_SIZE, HEIGHT-BUTTON_SIZE, 32, 32, 112, 0, 128, 16, 2);
-    
+
     if(checkButtonBounds()){
       int x = Mouse.getX()/(BUTTON_SIZE*MainE.getScale())*BUTTON_SIZE;
       int y = HEIGHT - BUTTON_SIZE;
@@ -162,7 +215,7 @@ public class ConnectMode extends Mode {
   private int getSelectedMap(){    
     for(int i = 0; i < world.getMaps().size(); i++){
       ConnectMap map = world.getMaps().get(i);
-      
+
       if(getFloatMouseX() > (map.getX()+ConnectMode.getX())&&
           getFloatMouseX() < (map.getX()+map.getPxWidth()+ConnectMode.getX())
           &&
@@ -184,7 +237,7 @@ public class ConnectMode extends Mode {
         Mouse.getX()/MainE.getScale() < WIDTH &&
         Mouse.getY()/MainE.getScale() > HEIGHT-BUTTON_SIZE);
   }
-  
+
   public void move(float dx, float dy)
   {
     offX += dx;
@@ -196,198 +249,97 @@ public class ConnectMode extends Mode {
    *
    * @author Aaron Roy
    */
-  private class NewConnectDialog extends JDialog implements ActionListener,
-                                                      PropertyChangeListener{
+  private static class NewConnectDialog extends JDialog {
+
+    private static final Dimension FRAME = new Dimension(500, 400);
+    private static final Rectangle SEL_BUTTON = new Rectangle(400, 300, 75, 25);
+    private static final Rectangle TEXTBOX = new Rectangle(25, 300, 370, 25);
+    private static final Rectangle SCROLLER = new Rectangle(25, 25, 450, 250);
 
     /** Still don't know what this does... */
     private static final long serialVersionUID = 6541401764689709898L;
 
+    private JPanel pane;
+    private JButton add;
+    private JTextField text;
 
-    private JOptionPane options;
-    private String btnCreate = "Create";
-    private String btnCancel = "Cancel";
+    private JList<String> fileList;
+    private DefaultListModel<String> fileModel;
+    private JScrollPane filePane;
 
-    private Object[] buttons = {btnCreate, btnCancel};
-
-    private JTextField map = new JTextField();
-    private JButton open = new JButton("Open...");
-
-    private Box mapBox = Box.createHorizontalBox();
+    public NewConnectDialog()
     {
-      mapBox.add(new JLabel("Map: "));
-      mapBox.add(map);
-      mapBox.add(open);
-    }
-    private JComboBox<Side> side = new JComboBox<Side>(Side.values());
-    private Box sideBox = Box.createHorizontalBox();
-    {
-      sideBox.add(new JLabel("Side: "));
-      sideBox.add(side);
-    }
+      pane = new JPanel(null);
+      pane.setSize(FRAME);
+      this.setSize(FRAME);
 
-    Object[] fullContent = {mapBox, sideBox};
-
-    public NewConnectDialog(){
-      super((Frame)null, true);
-      setLocationRelativeTo(null);
-      setAlwaysOnTop(true);
-      setResizable(false);
-
-      setTitle("New Map Connection");
-
-      options = new JOptionPane(fullContent, JOptionPane.PLAIN_MESSAGE, 
-          JOptionPane.YES_NO_OPTION, null, buttons, buttons[0]);
-
-      addComponentListener(new ComponentAdapter() {
-        public void componentShown(ComponentEvent ce){
-          map.requestFocusInWindow();
+      add = new JButton("Add");
+      add.setBounds(SEL_BUTTON);
+      add.addActionListener(new TerminableActionListener(this) {
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          addMap = new ConnectMap("res/maps/" + text.getText());
+          selected = -1;
+          super.actionPerformed(e);
         }
       });
 
-      setContentPane(options);
-      options.addPropertyChangeListener(this);
+      text = new JTextField();
+      text.setBounds(TEXTBOX);
 
-      open.addActionListener(this);
-    }
+      fileModel = new DefaultListModel<String>();
+      fileList = new JList<String>(fileModel);
+      filePane = new JScrollPane(fileList);
 
-    @Override
-    public void propertyChange(PropertyChangeEvent e) {
-      String prop = e.getPropertyName();
+      fileList.setLayoutOrientation(JList.VERTICAL_WRAP);
+      fileList.setVisibleRowCount(-1);
+      fileList.setFixedCellWidth(200);
+      fileList.addListSelectionListener(new ListSelectionListener() {
 
-      if(e.getSource() == options && (JOptionPane.VALUE_PROPERTY.equals(prop) ||
-          JOptionPane.INPUT_VALUE_PROPERTY.equals(prop))){
-        Object value = options.getValue();
-
-        if(value == JOptionPane.UNINITIALIZED_VALUE){
-          //ignore reset
-          return;
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+          text.setText(fileList.getSelectedValue());
         }
+        
+      });
 
-        //Reset the JOptionPane's value.
-        //If you don't do this, then if the user
-        //presses the same button next time, no
-        //property change event will be fired.
-        options.setValue(JOptionPane.UNINITIALIZED_VALUE);
 
-        //DEBUG Affirm Create button works
-        System.out.println("Create works");
+      filePane.setBounds(SCROLLER);
+      filePane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+      filePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        String name = map.getText();
+      pane.add(filePane);
+      pane.add(text);
+      pane.add(add);
 
-        if(name.substring(name.length()-4, name.length()).equals(".map")){
-          name = name.substring(0, name.length()-4);
+      File folder = new File("res/maps/");
+      FilenameFilter filter = new FilenameFilter() {
+
+        @Override
+        public boolean accept(File arg0, String arg1) {
+          return arg1.endsWith(".map") && !World.hasWorld("res/maps/"+arg1);
         }
+        
+      };
+          
+      
+      File[] files = folder.listFiles(filter);
 
-        String key = "res/maps/"+name+".map";
-
-        if(checkMap(key)){
-
-          float x, y;
-
-          ConnectMap newMap = new ConnectMap(null, key, name, 
-              (Side)side.getSelectedItem(), 0, 0);
-
-          switch(newMap.getSide()){
-            case DOWN:
-              x = EditorMap.getX();
-              y = EditorMap.getY() - newMap.getPxHeight();
-              break;
-            case LEFT:
-              x = EditorMap.getX() - newMap.getPxWidth();
-              y = EditorMap.getY();
-              break;
-            case RIGHT:
-              x = EditorMap.getX() + EditorMap.getPxWidth();
-              y = EditorMap.getY();
-              break;
-            case UP:
-              x = EditorMap.getX();
-              y = EditorMap.getY() + EditorMap.getPxHeight();
-              break;
-            default:
-              x = 0;
-              y = 0;
-              break;
-          }
-
-          //newMap.setLoc(x, y);
-
-          world.getMaps().add(newMap);
-
-          clearAndHide();
-        }else{
-          complainNotFound();
+      if (files != null)
+      {
+        for (File file: files)
+        {
+          fileModel.addElement(file.getPath().replace("res\\maps\\", ""));
         }
       }
+
+      this.setResizable(false);
+      this.setTitle("Add new map");
+      this.add(pane);
+      this.setVisible(true);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      if(e.getSource() == open){
-        JFileChooser chooser = new JFileChooser("res/maps/");
-        FileNameExtensionFilter filter = new FileNameExtensionFilter(
-            "Map Files (.map)", "map");
-        chooser.setFileFilter(filter);
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setDialogTitle("Enter the name of the map to load");
-        int returnee = chooser.showOpenDialog(null);
-
-        if(returnee == JFileChooser.APPROVE_OPTION){
-          map.setText(chooser.getSelectedFile().getName());
-        }
-
-      }
-    }
-
-
-    /** This method clears the dialog and hides it. */
-    private void clearAndHide() {
-      setVisible(false);
-      dispose();
-    }
-
-    /**
-     * Checks the textbox for issues
-     * 
-     * @param text The textbox to check
-     * @return Whether the textbox is valid or not
-     */
-    private boolean checkText(JTextField text){
-      if(text.getText().contains(" ")){
-        complainSpace();
-        return false;
-      }
-      if(text.getText().equals("")){
-        complainIncomplete();
-        return false;
-      }
-      return true;
-    }
-
-    private boolean checkNum(JTextField text){
-      return text.getText().matches("\\d{1,3}");
-    }
-
-    private void complainSpace(){
-      JOptionPane.showMessageDialog(this, "Sorry, make sure there are no spaces " + 
-          "in the names or script names", 
-          "Please Try Again", JOptionPane.ERROR_MESSAGE);
-    }
-
-    private void complainIncomplete(){
-      JOptionPane.showMessageDialog(this, "Sorry, make sure every field is filled in", 
-          "Please Try Again", JOptionPane.ERROR_MESSAGE);
-    }
-
-    private void complainNotFound(){
-      JOptionPane.showMessageDialog(this, "Sorry, the map couldn't be found", 
-          "Please Try Again", JOptionPane.ERROR_MESSAGE);
-    }
-
-
-    private boolean checkMap(String text){      
-      return new File(text).exists();
-    }
   }
 
   /**
@@ -399,7 +351,7 @@ public class ConnectMode extends Mode {
 
     /** It's a mystery what this does.... */
     private static final long serialVersionUID = 1695317195087331220L;
-    
+
     private JOptionPane options;
     private String btnCreate = "Create";
     private String btnCancel = "Cancel";
@@ -412,7 +364,7 @@ public class ConnectMode extends Mode {
       sideBox.add(new JLabel("Side: "));
       sideBox.add(side);
     }
-    
+
     ConnectMap map = world.getMaps().get(selected);
 
     public EditSide(){
@@ -422,7 +374,7 @@ public class ConnectMode extends Mode {
       setResizable(false);
 
       setTitle("Edit Side");
-      
+
       side.setSelectedItem(map.getSide());
 
       options = new JOptionPane(sideBox, JOptionPane.PLAIN_MESSAGE, 
@@ -499,35 +451,40 @@ public class ConnectMode extends Mode {
     }
 
   }
-  
-  private void checkNullWorld()
-  {
-    if (world == null)
-    { 
-      FindWorldDialog find = new FindWorldDialog(new Lock());
-      world = find.getSelectedWorld();
-      find.terminate();
-    }
-  }
-  
+
   public static float getX()
   {
     return offX;
   }
-  
+
   public static float getY()
   {
     return offY;
   }
-  
+
   private static float getFloatMouseX()
   {
     return (float) Mouse.getX()/MainE.getScale();
   }
-  
+
   private static float getFloatMouseY()
   {
     return (float) Mouse.getY()/MainE.getScale();
+  }
+  
+  private static int getAdjustedMouseX()
+  {
+    return (int) ((getFloatMouseX() - ConnectMode.getX())/16);
+  }
+  
+  private static int getAdjustedMouseY()
+  {
+    return (int) ((getFloatMouseY() - ConnectMode.getY())/16);
+  }
+
+  public void setHasNoCurrentWorld(boolean b)
+  {
+    hasNoCurrentWorld = b;
   }
 
 }

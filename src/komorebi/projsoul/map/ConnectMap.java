@@ -6,6 +6,7 @@ package komorebi.projsoul.map;
 import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -74,94 +75,7 @@ public class ConnectMap implements Renderable{
   
   public static final int SIZE = 16;         //Width and height of a tile
 
-  /**
-   * Creates a map based on the map file given
-   * 
-   * @param key The location of the map
-   * @param name The name of the map (used when saving)
-   * @param s The side the map is on in respect to the parent EditorMap
-   */
-  public ConnectMap(World world, String key, String name, Side s, int x, int y){
-        
-    if (!world.contains(this))
-    {
-      world.addMap(this);    
-    }
-    
-    this.filePath = key;
-    this.setTileLocation(x, y);
-
-    try {
-      BufferedReader reader = new BufferedReader(new FileReader(
-          new File(key)));
-
-      int rows = Integer.parseInt(reader.readLine());
-      int cols = Integer.parseInt(reader.readLine());
-
-      tiles = new int[rows][cols];
-      
-      String test = reader.readLine();
-      
-      if(!test.substring(0, 1).matches("\\d")){
-        reader.readLine();
-        reader.readLine();
-      }else{
-        reader.reset();
-      }
-      
-      for (int i = 0; i < tiles.length; i++) {
-        String[] str = reader.readLine().split(" ");
-        int index = 0;
-        for (int j = 0; j < cols; j++, index++) {
-          if(str[index].equals("")){
-            index++;  //pass this token, it's blank
-          }
-          tiles[i][j] = Integer.parseInt(str[index]);
-        }
-      }
-      
-      while ((test=reader.readLine())!=null)
-      {
-        if (test.startsWith("connect")){
-          test = test.replace("connect ", "");
-          String[] split = test.split(" ");
-          
-          try
-          {
-            this.maps.add(world.getMap("res/maps/"+split[0]+".map"));
-          } catch (NoSuchElementException e)
-          {
-            ConnectMap newMap = (new ConnectMap(world, "res/maps/"+split[0]+".map", split[0], 
-                Side.toEnum(split[1]), x+Integer.parseInt(split[2]), 
-                y+Integer.parseInt(split[3])));            
-            maps.add(newMap);
-            //world.addMap(newMap);
-          }
-        }
-      }
-      
-      this.name = name;
-      side = s;
-      
-      reader.close();
-
-    }catch (IOException | NumberFormatException e) {
-      e.printStackTrace();
-      JOptionPane.showMessageDialog(null, 
-          "The file was not found / was corrupt, therefore, the " + 
-          "default settings were used. Please remove this map as it is invalid");
-      tiles = new int[10][10];
-
-
-      for (int i = tiles.length-1; i >= 0; i--) {
-        for (int j = 0; j < tiles[0].length; j++) {
-          tiles[i][j] = Draw.BLANK_TILE;
-        }
-      }
-
-      KeyHandler.reloadKeyboard();
-    }
-  }
+  
   
   /**
    * Creates a map based on the map file given, in reference to a world
@@ -170,14 +84,17 @@ public class ConnectMap implements Renderable{
    */
   public ConnectMap(World world, String filePath, int x, int y)
   {
+    
+    area = new Rectangle();
+
     if (!world.contains(this))
     {
-      world.addMap(this);    
+      world.addMap(this);
     }
     
-    this.setTileLocation(x, y);
-        
+    setTileLocation(x, y);
     this.filePath = filePath;    
+    
     try {
       BufferedReader reader = new BufferedReader(new FileReader(
           new File(filePath)));
@@ -186,6 +103,7 @@ public class ConnectMap implements Renderable{
       int cols = Integer.parseInt(reader.readLine());
 
       tiles = new int[rows][cols];
+      setSize(tiles[0].length, tiles.length);
       
       this.name = reader.readLine();
       String test = reader.readLine();
@@ -205,9 +123,7 @@ public class ConnectMap implements Renderable{
           }
           tiles[i][j] = Integer.parseInt(str[index]);
         }
-      }
-      
-      
+      }  
       
       while ((test=reader.readLine())!=null)
       {
@@ -220,11 +136,10 @@ public class ConnectMap implements Renderable{
             this.maps.add(world.getMap("res/maps/"+split[0]+".map"));
           } catch (NoSuchElementException e)
           {
-            ConnectMap newMap = (new ConnectMap(world, "res/maps/"+split[0]+".map", split[0], 
-                Side.toEnum(split[1]), x+Integer.parseInt(split[2]), 
+            ConnectMap newMap = (new ConnectMap(world, "res/maps/"+split[0]+".map", 
+                 x+Integer.parseInt(split[2]), 
                 y+Integer.parseInt(split[3])));            
             maps.add(newMap);
-            //world.addMap(newMap);
           }
         }
       }
@@ -248,6 +163,7 @@ public class ConnectMap implements Renderable{
 
       KeyHandler.reloadKeyboard();
     }
+    
   }
   
   @Override
@@ -269,6 +185,64 @@ public class ConnectMap implements Renderable{
           }
         }
       }
+    }
+  }
+  
+  public ConnectMap(String key)
+  {
+    this.filePath = key;    
+    
+    area = new Rectangle();
+    
+    try {
+      BufferedReader reader = new BufferedReader(new FileReader(
+          new File(filePath)));
+
+      int rows = Integer.parseInt(reader.readLine());
+      int cols = Integer.parseInt(reader.readLine());
+
+      tiles = new int[rows][cols];
+      setSize(tiles[0].length, tiles.length);
+      
+      this.name = reader.readLine();
+      String test = reader.readLine();
+      
+      if(!test.substring(0, 1).matches("\\d")){
+        reader.readLine();
+      }else{
+        reader.reset();
+      }
+      
+      for (int i = 0; i < tiles.length; i++) {
+        String[] str = reader.readLine().split(" ");
+        int index = 0;
+        for (int j = 0; j < cols; j++, index++) {
+          if(str[index].equals("")){
+            index++;  //pass this token, it's blank
+          }
+          tiles[i][j] = Integer.parseInt(str[index]);
+        }
+      }
+      
+      reader.close();
+      
+      
+
+    }catch (IOException | NumberFormatException e) {
+      e.printStackTrace();
+      JOptionPane.showMessageDialog(null, 
+          "The file was not found / was corrupt, therefore, the " + 
+          "default settings were used. Please remove this map as it is invalid");
+      tiles = new int[10][10];
+
+
+      for (int i = tiles.length-1; i >= 0; i--) {
+        for (int j = 0; j < tiles[0].length; j++) {
+          tiles[i][j] = Draw.BLANK_TILE;
+        }
+      }
+
+      KeyHandler.reloadKeyboard();
     }
   }
   
@@ -306,7 +280,7 @@ public class ConnectMap implements Renderable{
   }
     
   /**
-   * Moves the map to a new x or y depending on its side
+   * Moves the map to a new x or y dependidng on its side
    * 
    * @param tx The tile x to try
    * @param ty The tile y to try
@@ -314,6 +288,7 @@ public class ConnectMap implements Renderable{
   public void setTileLocation(int tx, int ty){
       this.tx = tx;
       this.ty = ty;
+      area.setLocation(tx, ty);
   }
 
   
@@ -390,6 +365,26 @@ public class ConnectMap implements Renderable{
     collection.add(this);
     this.gather(collection);
     return collection;
+  }
+  
+  public int getWidth()
+  {
+    return tiles[0].length;
+  }
+  
+  public int getHeight()
+  {
+    return tiles.length;
+  }
+  
+  public Rectangle getArea()
+  {
+    return area;
+  }
+  
+  private void setSize(int width, int height)
+  {
+    area.setSize(width, height);
   }
   
 }

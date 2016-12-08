@@ -48,4 +48,3 @@ enemy 16 16 SATURN chaser 3
 enemy 5 15 SATURN chaser 6
 enemy 13 6 SATURN chaser 5
 sign 2 18 This is a forest
-connect Bigger_Town up 0 20
