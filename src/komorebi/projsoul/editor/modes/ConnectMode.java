@@ -72,11 +72,41 @@ public class ConnectMode extends Mode {
    */
   public ConnectMode(World world) {
     this.world = world;
+    hasNoCurrentWorld = false;
+  }
+  
+  public ConnectMode() {
+    this.world = null;
+    hasNoCurrentWorld = true;
   }
 
   @Override
   public void update() {
     int index = getSelectedMap(); //represents the map the mouse is hovering over
+    
+    if(KeyHandler.keyClick(Key.LBUTTON) && checkButtonBounds()){
+      switch(Mouse.getX()/(32*MainE.scale)){
+        case WIDTH/BUTTON_SIZE-3:
+          NewConnectDialog dialog = new NewConnectDialog();
+          EditorMap.setUnsaved();
+          KeyHandler.reloadKeyboard();
+          break;
+        case WIDTH/BUTTON_SIZE-2:
+          if(selected != -1){
+            world.tryRemove(world.getMaps().get(selected));
+            index = selected = -1;
+            EditorMap.setUnsaved();
+          }
+          break;
+        case WIDTH/BUTTON_SIZE-1:
+          FindWorldDialog find = new FindWorldDialog();
+          break;
+        default:
+          //DEBUG Button fail text
+          System.out.println("Connect mode button failure pls");
+      }
+    }
+    
     
     if (addMap!=null)
     {
@@ -98,8 +128,10 @@ public class ConnectMode extends Mode {
         selected = index;
       } else if (world.mapAtValidLocation(addMapRect))
       {
-        addMap.setTileLocation(addMapRect.x, addMapRect.y);
+        addMap.setTileLocation(addMapRect.x, addMapRect.y);        
         world.addMap(addMap);
+        world.updateConnections(addMap);
+        
         addMap = null;
         addMapRect = null;
       }
@@ -114,12 +146,22 @@ public class ConnectMode extends Mode {
       Mode.status.write("Location: " + currMap.getTileX() + ", " + 
           currMap.getTileY() + ",     Current Map: " + currMap.getName(), 175,1);
 
-      if(keyDown(Key.LBUTTON) && (mx != pmx || my != pmy) &&  
-          world.mapAtValidLocationIgnoreSelf(new Rectangle(offX, offY, currMap.getWidth(),
-              currMap.getHeight()), currMap)){
+      int presX = currMap.getTileX();
+      int presY = currMap.getTileY();
+            
+      if(keyDown(Key.LBUTTON) && (mx != pmx || my != pmy)) {
         currMap.setTileLocation(offX, offY);
-        EditorMap.setUnsaved();
-      }
+        world.updateConnections(currMap);
+        if (!world.allMapsConnected() || !world.mapAtValidLocationIgnoreSelf(
+            currMap.getArea(), currMap))
+        {
+          currMap.setTileLocation(presX, presY);
+          world.updateConnections(currMap);
+        } else
+        {
+          EditorMap.setUnsaved();
+        }
+      }   
     }
 
     if((index = getSelectedMap()) != -1 && keyClick(Key.RBUTTON)){
@@ -133,29 +175,6 @@ public class ConnectMode extends Mode {
       //dialog.pack();
       //dialog.setVisible(true);
       //KeyHandler.reloadKeyboard();
-    }
-
-    if(KeyHandler.keyClick(Key.LBUTTON) && checkButtonBounds()){
-      switch(Mouse.getX()/(32*MainE.scale)){
-        case WIDTH/BUTTON_SIZE-3:
-          NewConnectDialog dialog = new NewConnectDialog();
-          EditorMap.setUnsaved();
-          KeyHandler.reloadKeyboard();
-          break;
-        case WIDTH/BUTTON_SIZE-2:
-          if(selected != -1){
-            world.getMaps().remove(selected);
-            selected = -1;
-            EditorMap.setUnsaved();
-          }
-          break;
-        case WIDTH/BUTTON_SIZE-1:
-          FindWorldDialog find = new FindWorldDialog();
-          break;
-        default:
-          //DEBUG Button fail text
-          System.out.println("Connect mode button failure pls");
-      }
     }
   }
 
@@ -239,9 +258,22 @@ public class ConnectMode extends Mode {
   }
 
   public void move(float dx, float dy)
-  {
+  {   
     offX += dx;
     offY += dy;
+    
+    if ((dx!=0 || dy!=0) && selected != -1 && KeyHandler.keyDown(Key.LBUTTON))
+    {
+      ConnectMap curr = world.getMaps().get(selected);
+      Rectangle attempt = new Rectangle(getAdjustedMouseX()-curr.getWidth()/2,
+          getAdjustedMouseY()-curr.getHeight()/2, curr.getWidth(), curr.getHeight());
+      
+      if (world.mapAtValidLocationIgnoreSelf(attempt, curr))
+      {        
+        curr.setTileLocation(getAdjustedMouseX()-curr.getWidth()/2,
+            getAdjustedMouseY()-curr.getHeight()/2);
+      }
+    }
   }
 
   /**
@@ -481,10 +513,27 @@ public class ConnectMode extends Mode {
   {
     return (int) ((getFloatMouseY() - ConnectMode.getY())/16);
   }
-
-  public void setHasNoCurrentWorld(boolean b)
+  
+  public boolean saveMyMaps()
   {
-    hasNoCurrentWorld = b;
+    for (ConnectMap c: world.getMaps())
+    {
+      c.saveConnectionsToFile();
+    }
+    
+    for (ConnectMap c: world.getDeadMaps())
+    {
+      c.saveConnectionsToFile();
+    }
+    
+    world.getDeadMaps().clear();
+    
+    return true;
+  }
+  
+  public static void clearSelection()
+  {
+    selected = -1;
   }
 
 }

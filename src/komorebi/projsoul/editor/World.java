@@ -5,6 +5,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -25,7 +26,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import komorebi.projsoul.editor.modes.ConnectMode;
 import komorebi.projsoul.map.ConnectMap;
+import komorebi.projsoul.map.ConnectMap.Side;
 import komorebi.projsoul.script.Lock;
 
 public class World {
@@ -34,6 +37,7 @@ public class World {
   private String reference = "";
     
   private ArrayList<ConnectMap> maps = new ArrayList<ConnectMap>();
+  private ArrayList<ConnectMap> deadMaps = new ArrayList<ConnectMap>();
   private static ArrayList<World> worlds;
   private static boolean worldsLoaded = false;
   
@@ -360,7 +364,6 @@ public class World {
       fw.write("\n"+ add);
       fw.close();
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
@@ -391,8 +394,6 @@ public class World {
         {
           return world;
         }
-      
-      
     }
     
     return null;
@@ -431,42 +432,7 @@ public class World {
         return false;
       }
       
-      if (area.x + area.width == r.x && (((r.y >= area.y && r.y <
-          area.y + area.height) || (r.y + r.height > area.y && r.y + r.height 
-          < area.y + area.height)) || 
-          ((area.y >= r.y && area.y <
-          r.y + r.height) || (area.y + area.height > r.y && area.y + area.height 
-          < r.y + r.height))))
-      {
-        touches = true;
-      }
-      
-      if (r.x + r.width == area.x && (((r.y >= area.y && r.y <
-          area.y + area.height) || (r.y + r.height > area.y && r.y + r.height 
-          < area.y + area.height)) || 
-          ((area.y >= r.y && area.y <
-          r.y + r.height) || (area.y + area.height > r.y && area.y + area.height 
-          < r.y + r.height))))
-      {
-        touches = true;
-      }
-      
-      if (area.y + area.height == r.y && (((r.x >= area.x && r.x
-          < area.x + area.width) || (r.x + r.width > area.x && r.x + r.width 
-          < area.x + area.width)) || 
-          ((area.x >= r.x && area.x <
-          r.x + r.width) || (area.x + area.width > r.x && area.x + area.width 
-          < r.x + r.width))))
-      {
-        touches = true;
-      }
-      
-      if (r.y + r.height == area.y && (((r.x >= area.x && r.x
-          < area.x + area.width) || (r.x + r.width > area.x && r.x + r.width 
-          < area.x + area.width)) || 
-          ((area.x >= r.x && area.x <
-          r.x + r.width) || (area.x + area.width > r.x && area.x + area.width 
-          < r.x + r.width))))
+      if (adjacent(r, area))
       {
         touches = true;
       }
@@ -486,49 +452,16 @@ public class World {
       if (area.intersects(r) && someMap != c)
       {
         return false;
-      }
-      
-      if (area.x + area.width == r.x && (((r.y >= area.y && r.y <
-          area.y + area.height) || (r.y + r.height > area.y && r.y + r.height 
-          < area.y + area.height)) || 
-          ((area.y >= r.y && area.y <
-          r.y + r.height) || (area.y + area.height > r.y && area.y + area.height 
-          < r.y + r.height))))
+      } else if (someMap == c)
       {
-        touches = true;
+        continue;
       }
-      
-      if (r.x + r.width == area.x && (((r.y >= area.y && r.y <
-          area.y + area.height) || (r.y + r.height > area.y && r.y + r.height 
-          < area.y + area.height)) || 
-          ((area.y >= r.y && area.y <
-          r.y + r.height) || (area.y + area.height > r.y && area.y + area.height 
-          < r.y + r.height))))
-      {
-        touches = true;
-      }
-      
-      if (area.y + area.height == r.y && (((r.x >= area.x && r.x
-          < area.x + area.width) || (r.x + r.width > area.x && r.x + r.width 
-          < area.x + area.width)) || 
-          ((area.x >= r.x && area.x <
-          r.x + r.width) || (area.x + area.width > r.x && area.x + area.width 
-          < r.x + r.width))))
-      {
-        touches = true;
-      }
-      
-      if (r.y + r.height == area.y && (((r.x >= area.x && r.x
-          < area.x + area.width) || (r.x + r.width > area.x && r.x + r.width 
-          < area.x + area.width)) || 
-          ((area.x >= r.x && area.x <
-          r.x + r.width) || (area.x + area.width > r.x && area.x + area.width 
-          < r.x + r.width))))
+
+      if (adjacent(r, area))
       {
         touches = true;
       }
     }
-    
     return touches;
   }
 
@@ -549,7 +482,242 @@ public class World {
     
     throw new NoSuchElementException();
   }
+  
+  public static boolean adjacent(Rectangle r1, Rectangle r2)
+  {
+    boolean touches = false;
+    
+    if (r1.x + r1.width == r2.x && (((r2.y >= r1.y && r2.y <
+        r1.y + r1.height) || (r2.y + r2.height > r1.y && r2.y + r2.height 
+        < r1.y + r1.height)) || 
+        ((r1.y >= r2.y && r1.y <
+        r2.y + r2.height) || (r1.y + r1.height > r2.y && r1.y + r1.height 
+        < r2.y + r2.height))))
+    {
+      touches = true;
+    }
+    
+    if (r2.x + r2.width == r1.x && (((r2.y >= r1.y && r2.y <
+        r1.y + r1.height) || (r2.y + r2.height > r1.y && r2.y + r2.height 
+        < r1.y + r1.height)) || 
+        ((r1.y >= r2.y && r1.y <
+        r2.y + r2.height) || (r1.y + r1.height > r2.y && r1.y + r1.height 
+        < r2.y + r2.height))))
+    {
+      touches = true;
+    }
+    
+    if (r1.y + r1.height == r2.y && (((r2.x >= r1.x && r2.x
+        < r1.x + r1.width) || (r2.x + r2.width > r1.x && r2.x + r2.width 
+        < r1.x + r1.width)) || 
+        ((r1.x >= r2.x && r1.x <
+        r2.x + r2.width) || (r1.x + r1.width > r2.x && r1.x + r1.width 
+        < r2.x + r2.width))))
+    {
+      touches = true;
+    }
+    
+    if (r2.y + r2.height == r1.y && (((r2.x >= r1.x && r2.x
+        < r1.x + r1.width) || (r2.x + r2.width > r1.x && r2.x + r2.width 
+        < r1.x + r1.width)) || 
+        ((r1.x >= r2.x && r1.x <
+        r2.x + r2.width) || (r1.x + r1.width > r2.x && r1.x + r1.width 
+        < r2.x + r2.width))))
+    {
+      touches = true;
+    }
+    
+    return touches;
+  }
+  
+  
+  /**
+   * Returns what side of r1 r2 is located
+   * @param r1 The first rectangle
+   * @param r2 The second rectangle
+   * @return The side of r1 on which r2 lies
+   */
+  public static Side connectSide(Rectangle r1, Rectangle r2)
+  {
+    if (r1.x + r1.width == r2.x && (((r2.y >= r1.y && r2.y <
+        r1.y + r1.height) || (r2.y + r2.height > r1.y && r2.y + r2.height 
+        < r1.y + r1.height)) || 
+        ((r1.y >= r2.y && r1.y <
+        r2.y + r2.height) || (r1.y + r1.height > r2.y && r1.y + r1.height 
+        < r2.y + r2.height))))
+    {
+      return Side.RIGHT;
+    }
+    
+    if (r2.x + r2.width == r1.x && (((r2.y >= r1.y && r2.y <
+        r1.y + r1.height) || (r2.y + r2.height > r1.y && r2.y + r2.height 
+        < r1.y + r1.height)) || 
+        ((r1.y >= r2.y && r1.y <
+        r2.y + r2.height) || (r1.y + r1.height > r2.y && r1.y + r1.height 
+        < r2.y + r2.height))))
+    {
+      return Side.LEFT;
+    }
+    
+    if (r1.y + r1.height == r2.y && (((r2.x >= r1.x && r2.x
+        < r1.x + r1.width) || (r2.x + r2.width > r1.x && r2.x + r2.width 
+        < r1.x + r1.width)) || 
+        ((r1.x >= r2.x && r1.x <
+        r2.x + r2.width) || (r1.x + r1.width > r2.x && r1.x + r1.width 
+        < r2.x + r2.width))))
+    {
+      return Side.UP;
+    }
+    
+    if (r2.y + r2.height == r1.y && (((r2.x >= r1.x && r2.x
+        < r1.x + r1.width) || (r2.x + r2.width > r1.x && r2.x + r2.width 
+        < r1.x + r1.width)) || 
+        ((r1.x >= r2.x && r1.x <
+        r2.x + r2.width) || (r1.x + r1.width > r2.x && r1.x + r1.width 
+        < r2.x + r2.width))))
+    {
+      return Side.DOWN;
+    }
+    
+    return null;
+  }
+  
+  public void updateConnections(ConnectMap compare)
+  {
+    for (ConnectMap c: maps)
+    {
+      if (c==compare)
+        continue;
+      
+      if (c.isConnectedTo(compare) && 
+          !World.adjacent(c.getArea(), compare.getArea()))
+      {
+        c.breakConnection(compare);
+        compare.breakConnection(c);
+        
+      } else if (!c.isConnectedTo(compare) && 
+          World.adjacent(c.getArea(), compare.getArea()))
+      {
+        c.addConnection(compare);
+        compare.addConnection(c);
+      }
+      
+    }
+   
+    for (ConnectMap c: maps)
+    {
+      System.out.println(c);
+    }
+  }
+  
+  private void removeAllReferencesTo(ConnectMap c)
+  {
+    for (ConnectMap con: c.getConnections())
+    {
+      con.breakConnection(c);
+    }
+    
+    c.clearConnections();
+    maps.remove(c);
+    deadMaps.add(c);
+   }
+  
+  public boolean allMapsConnected()
+  {
+    if (!maps.isEmpty())
+    {
+      ArrayList<ConnectMap> test = maps.get(0).map();
+      return test.size()==maps.size();
+    }
+    
+    return true;
+  }
+  
+  public void tryRemove(ConnectMap c)
+  {
+    ArrayList<ConnectMap> refs = new ArrayList<ConnectMap>();
+    
+    for (ConnectMap ref: c.getConnections())
+    {
+      refs.add(ref);
+    }
+    
+    removeAllReferencesTo(c);
+    
+    if (!allMapsConnected())
+    {
+        for (ConnectMap con: refs)
+        {
+          con.addConnection(c);
+          c.addConnection(con);
+        }
+        
+        maps.add(c);
+        deadMaps.remove(c);
+        
+        JOptionPane.showMessageDialog(null, 
+            "You cannot remove this map; removing it would leave some maps " +
+                "unconnected.");
+      
+    } else if (c.getFilePath().equals(reference))
+    {
+      if (maps.isEmpty())
+      {
+        reference = "";
+      } else
+      {
+        reference = maps.get(0).getFilePath();
+      }
+      
+      saveReference();
+    }
+    
+    ConnectMode.clearSelection();
+  }
+  
+  public void saveReference()
+  {
+    try {
+      File temp = File.createTempFile("tmp", "");
+      
+      BufferedReader reader = new BufferedReader(new FileReader(
+          new File(worldFile)));
+      BufferedWriter writer = new BufferedWriter(new FileWriter(temp));
+      
+      String str;
+      
+      while ((str = reader.readLine())!=null)
+      {        
+        if (str.startsWith("#refs {" + name + "}"))
+        {
+          writer.write("#refs {" + name + "} " + reference.replace("res/maps/", 
+              "") + "\n");
+        } else
+        {
+          writer.write(str + "\n");
+        }
+      }
+      
+      reader.close();
+      writer.close();
+      
+      File oldFile = new File(worldFile);
+      if (oldFile.delete())
+      {
+        temp.renameTo(oldFile);
+      }
+      
+    } catch (IOException e1) {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+    }
+
+  }
+  
  
   
-
+  public ArrayList<ConnectMap> getDeadMaps()
+  {
+    return deadMaps;
+  }
 }

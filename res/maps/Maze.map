@@ -43,5 +43,4 @@ None
 1 0 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 0 1 
 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
-connect Bigger_Town right 20 -12
-connect justin up 17 20
+connect justin down -6 -35

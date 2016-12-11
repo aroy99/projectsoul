@@ -5,9 +5,10 @@ package komorebi.projsoul.map;
 
 import java.awt.Rectangle;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
@@ -281,7 +282,7 @@ public class ConnectMap implements Renderable{
     
   /**
    * Moves the map to a new x or y dependidng on its side
-   * 
+   *
    * @param tx The tile x to try
    * @param ty The tile y to try
    */
@@ -289,6 +290,13 @@ public class ConnectMap implements Renderable{
       this.tx = tx;
       this.ty = ty;
       area.setLocation(tx, ty);
+  }
+  
+  public void updateLoc(float dx, float dy)
+  {
+    tx = (int) ((tx*16 + dx) / 16);
+    ty = (int) ((ty*16 + dy) / 16);
+    
   }
 
   
@@ -330,7 +338,6 @@ public class ConnectMap implements Renderable{
   {    
     for (ConnectMap c: maps)
     {     
-      
       if (!arr.contains(c))
       {
         return true;
@@ -341,20 +348,17 @@ public class ConnectMap implements Renderable{
   }
   
   public void gather(ArrayList<ConnectMap> arr)
-  {
-    
+  {   
     for (ConnectMap c: maps)
-    {
-      //System.out.println(this.getFilePath() + " connects to " + c.getFilePath());
-      
+    {      
       if (!arr.contains(c))
       {
         arr.add(c);
-      }
-      
-      if (c.hasNewMaps(arr))
-      {
-        c.gather(arr);
+        
+        if (c.hasNewMaps(arr))
+        {
+          c.gather(arr);
+        }
       }
     }
   }
@@ -385,6 +389,92 @@ public class ConnectMap implements Renderable{
   private void setSize(int width, int height)
   {
     area.setSize(width, height);
+  }
+  
+  public boolean isConnectedTo(ConnectMap c)
+  {
+    return maps.contains(c);
+  }
+  
+  public void breakConnection(ConnectMap c)
+  {
+    maps.remove(c);
+  }
+  
+  public void addConnection(ConnectMap c)
+  {
+    maps.add(c);
+  }
+  
+  
+  public String toString()
+  {
+    String ret = filePath + " connects to:\n";
+    
+    for (ConnectMap c: maps)
+    {
+      ret += "\t" + c.getFilePath() + "\n";
+    }
+    
+    return ret;
+    
+  }
+  
+  public void saveConnectionsToFile()
+  {
+    try {
+      File temp = File.createTempFile("tmp", "");
+      
+      BufferedReader reader = new BufferedReader(new FileReader(
+          new File(filePath)));
+      BufferedWriter writer = new BufferedWriter(new FileWriter(temp));
+      
+      String str;
+      
+      while ((str = reader.readLine())!=null)
+      {        
+        if (!str.startsWith("connect"))
+        {
+          writer.write(str + "\n");
+        } 
+      }
+      
+      reader.close();
+
+      for (ConnectMap c: maps)
+      {
+        String line = "connect " + c.getFilePath().replace("res/maps/", "").
+            replace(".map", "") + " ";
+        
+        line += World.connectSide(area, c.getArea()).toString() + " ";
+        line += (c.getTileX()-tx) + " " + (c.getTileY()-ty);
+        
+        writer.write(line + "\n");
+      }
+      
+      writer.close();
+      
+      File oldFile = new File(filePath);
+      if (oldFile.delete())
+      {
+        temp.renameTo(oldFile);
+      }
+      
+    } catch (IOException e1) {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+    }
+
+  }
+  
+  public ArrayList<ConnectMap> getConnections()
+  {
+    return maps;
+  }
+  
+  public void clearConnections()
+  {
+    maps.clear();
   }
   
 }

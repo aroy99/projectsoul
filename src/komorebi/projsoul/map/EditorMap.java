@@ -353,7 +353,7 @@ public class EditorMap implements Playable, Serializable{
       connectMode = new ConnectMode(World.findWorldContainingMap(key));
     } catch (NoSuchElementException e)
     {
-      connectMode.setHasNoCurrentWorld(true);
+      connectMode = new ConnectMode();
     }
     Mode.setMap(tiles);
   }
@@ -529,88 +529,98 @@ public class EditorMap implements Playable, Serializable{
    * Saves the map
    */
   public boolean save() {
-    PrintWriter writer;
+    
+    if (mode != Modes.CONNECT)
+    {
+      PrintWriter writer;
 
-    try {
-      if(path.substring(path.length()-4).equals(".map")){
-        writer = new PrintWriter(path, "UTF-8");
-      }else{
-        writer = new PrintWriter(path+".map", "UTF-8");
-      }
-      
-      writer.println(tiles.length);
-      writer.println(tiles[0].length);
-
-      writer.println(title);
-      writer.println(song);
-      writer.println(outside?1 : 0);
-      
-      //The map itself
-      for (int[] tile : tiles) {
-        for (int t : tile) {
-          writer.print(t + " ");
-        }
-        writer.println();
-      }
-
-      //The collision
-      for (boolean[] tile : collision) {
-        for (boolean t : tile) {
-          writer.print((t?1 : 0) + " ");
-        }
-        writer.println();
-      }
-      
-      //The NPCs
-      for(NPC npc: npcs){
-        writer.println("npc " + npc.getName() + " " + npc.getOrigTX() + 
-            " " + npc.getOrigTY() + " " + npc.getType() + " " + 
-            npc.getWalkingScript().getScript() + " " + npc.getTalkingScript().getScript());
-      }
-      
-      //The Scripts and Warps
-      for(AreaScript script: scripts){
-        if(script instanceof WarpScript){
-          writer.println("warp " + ((WarpScript)script).getMap() + " " + 
-              script.getOrigTX() + " " + script.getOrigTY());
+      try {
+        if(path.substring(path.length()-4).equals(".map")){
+          writer = new PrintWriter(path, "UTF-8");
         }else{
-          writer.println("script " + script.getName() + " " + script.getOrigTX() + 
-              " " + script.getOrigTY() + 
-              (script.hasNPC()?" " + script.getNPC().getName() : ""));
+          writer = new PrintWriter(path+".map", "UTF-8");
         }
-      }
-      
-      for(Enemy enemy:enemies){
-        writer.println("enemy " + enemy.getOrigTX() + 
-            " " + enemy.getOrigTY() + " " + enemy.getType() + " " + 
-            enemy.getBehavior() + 
-            (enemy instanceof Chaser?" " +  ((Chaser)enemy).getOriginalRadius() : ""));
-      }
-      
-      for(SignPost sign:signs){
-        writer.println("sign " + sign.getOrigTX() + 
-            " " + sign.getOrigTY() + " " + sign.getText());
-      }
-      
-      for(ConnectMap map: maps){
-        writer.println("connect " + map.getName() + " " + map.getSide() + " " +
-            map.getTileX() + " " + map.getTileY());
-      }
-      
-      saved = true;
-      writer.close();
-      if(name.substring(name.length()-4).equals(".map")){
-        Display.setTitle("Clyde\'s Editor - " + name);
-      }else{
-        Display.setTitle("Clyde\'s Editor - " + name + ".map");
-      }
+        
+        writer.println(tiles.length);
+        writer.println(tiles[0].length);
+
+        writer.println(title);
+        writer.println(song);
+        writer.println(outside?1 : 0);
+        
+        //The map itself
+        for (int[] tile : tiles) {
+          for (int t : tile) {
+            writer.print(t + " ");
+          }
+          writer.println();
+        }
+
+        //The collision
+        for (boolean[] tile : collision) {
+          for (boolean t : tile) {
+            writer.print((t?1 : 0) + " ");
+          }
+          writer.println();
+        }
+        
+        //The NPCs
+        for(NPC npc: npcs){
+          writer.println("npc " + npc.getName() + " " + npc.getOrigTX() + 
+              " " + npc.getOrigTY() + " " + npc.getType() + " " + 
+              npc.getWalkingScript().getScript() + " " + npc.getTalkingScript().getScript());
+        }
+        
+        //The Scripts and Warps
+        for(AreaScript script: scripts){
+          if(script instanceof WarpScript){
+            writer.println("warp " + ((WarpScript)script).getMap() + " " + 
+                script.getOrigTX() + " " + script.getOrigTY());
+          }else{
+            writer.println("script " + script.getName() + " " + script.getOrigTX() + 
+                " " + script.getOrigTY() + 
+                (script.hasNPC()?" " + script.getNPC().getName() : ""));
+          }
+        }
+        
+        for(Enemy enemy:enemies){
+          writer.println("enemy " + enemy.getOrigTX() + 
+              " " + enemy.getOrigTY() + " " + enemy.getType() + " " + 
+              enemy.getBehavior() + 
+              (enemy instanceof Chaser?" " +  ((Chaser)enemy).getOriginalRadius() : ""));
+        }
+        
+        for(SignPost sign:signs){
+          writer.println("sign " + sign.getOrigTX() + 
+              " " + sign.getOrigTY() + " " + sign.getText());
+        }
+        
+        for(ConnectMap map: maps){
+          writer.println("connect " + map.getName() + " " + map.getSide() + " " +
+              map.getTileX() + " " + map.getTileY());
+        }
+        
+        saved = true;
+        writer.close();
+        if(name.substring(name.length()-4).equals(".map")){
+          Display.setTitle("Clyde\'s Editor - " + name);
+        }else{
+          Display.setTitle("Clyde\'s Editor - " + name + ".map");
+        }
 
 
-      return true;
-    } catch (FileNotFoundException | UnsupportedEncodingException e) {
-      e.printStackTrace();
-      return false;
+        return true;
+      } catch (FileNotFoundException | UnsupportedEncodingException e) {
+        e.printStackTrace();
+        return false;
+      }
+    } else
+    {
+      return connectMode.saveMyMaps();
+      
     }
+    
+    
 
   }
 
