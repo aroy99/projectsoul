@@ -11,15 +11,22 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Scanner;
 
+import komorebi.projsoul.engine.Bank;
 import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Item;
 import komorebi.projsoul.engine.Item.Items;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.MagicBar;
+import komorebi.projsoul.engine.ThreadHandler;
+import komorebi.projsoul.entities.Chaser;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.Player;
+import komorebi.projsoul.entities.SignPost;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.Execution;
@@ -27,6 +34,8 @@ import komorebi.projsoul.script.Fader;
 import komorebi.projsoul.script.InstructionList;
 import komorebi.projsoul.script.Instructions;
 import komorebi.projsoul.script.Lock;
+import komorebi.projsoul.script.SignHandler;
+import komorebi.projsoul.script.SpeechHandler;
 import komorebi.projsoul.script.Task;
 import komorebi.projsoul.script.Task.TaskWithNumber;
 import komorebi.projsoul.script.Task.TaskWithString;
@@ -42,25 +51,27 @@ public class Game extends State{
   public ArrayList<NPC> npcs;
   public ArrayList<AreaScript> scripts;
   public ArrayList<Item> items = new ArrayList<Item>();
-  
+ 
   public boolean[] booleans;
 
   private boolean hasText, hasChoice;
   private int pickIndex;
   private int maxOpt;
 
-  private NPC speaker;
+  private SpeechHandler speaker;
 
   private BufferedReader read;
-
-  private ArrayList<Lock> waitingLocks;
-  private ArrayList<Int> pauseFrames;
   
-  private int confidence, money;
+  private int confidence;
+  private static int money;
+  
+  public int framesToGo;
+  public boolean isPaused;
+  public Lock lock;
   
   public static String testLoc;
   
-  public HUD hud;
+  public Death death;
   
   public class Int {
     private int val;
@@ -95,15 +106,13 @@ public class Game extends State{
     npcs = new ArrayList<NPC>();
     scripts = new ArrayList<AreaScript>();
 
-    pauseFrames = new ArrayList<Int>();
-    waitingLocks = new ArrayList<Lock>();
-
     booleans = new boolean[256];
 
     confidence = 0;
-    money = 15;
+    money = 0;
     
-    hud = new HUD();
+    death = new Death();
+    
 
 
   }
@@ -111,39 +120,49 @@ public class Game extends State{
   /* (non-Javadoc)
    * @see komorebi.clyde.states.State#getInput()
    */
-  @Override
+@Override
   public void getInput() {
     
-    if (KeyHandler.keyClick(Key.SPACE))
+    if (KeyHandler.keyClick(Key.C))
     {
       if (speaker!=null)
       {
         if (speaker.isWaitingOnParagraph())
         {
-        //TODO Debug
-          System.out.println("Next");
           speaker.nextParagraph();
         } else {
-          if (!speaker.doneAsking())
+          if (!speaker.alreadyAsked())
           {
             speaker.skipScroll();
           } else
           {
             if (hasText)
             {
-              speaker.clearText();
+              speaker.clear();
 
               if (hasChoice) {
+                
                 speaker.branch(pickIndex);
               }
 
               hasChoice=false;
               hasText=false;
+              
+              if (speaker instanceof SignHandler)
+              {
+                SignHandler sign = (SignHandler) speaker;
+                sign.disengage();
+              }
+              
+              speaker.releaseLocks();
+              speaker = null;
             }
           }
         } 
       } 
     }
+              
+             
 
 
     //TODO Debug
@@ -196,28 +215,30 @@ public class Game extends State{
    */
   @Override
   public void update() {
-    // TODO Auto-generated method stub    
-
-    
+    // TODO Auto-generated method stub  
+	  death.update();
+	  
     KeyHandler.getInput();
-
-    map.update();
-    Fader.update();
-
-    for (Iterator<Int> it = pauseFrames.iterator(); it.hasNext();)
-    {      
-      Int i = it.next();
-      i.decrement();
-      if (i.intValue()==0)
+    
+    if (isPaused)
+    {
+      framesToGo--;
+      
+      if (framesToGo<=0)
       {
-        waitingLocks.get(pauseFrames.indexOf(i)).resumeThread();
-        waitingLocks.remove(pauseFrames.indexOf(i));
-        it.remove();
+        isPaused = false;
+        lock.resumeThread();
       }
-
     }
 
-
+    map.update();
+    if(KeyHandler.keyClick(Key.J))
+    {
+    	Scanner scan = new Scanner(System.in);
+    	int bleh =scan.nextInt();
+    	System.out.println(bleh);
+    }
+    Fader.update();
 
   }
 
@@ -227,13 +248,11 @@ public class Game extends State{
   @Override
   public void render() {
     map.render();
-
+    Map.getPlayer().renderHUD();
     Fader.render();
-    
-    hud.render();
-   
 
   }
+
 
   public static Map getMap(){
     return map;
@@ -244,9 +263,9 @@ public class Game extends State{
     map = m;
   }
 
-  public void setSpeaker(NPC npc)
+  public void setSpeaker(SpeechHandler talk)
   {
-    this.speaker = npc;
+    this.speaker = talk;
     this.hasText = true;
   }
 
@@ -260,19 +279,21 @@ public class Game extends State{
 
   public void pause(int frames, Lock lock)
   {
-    pauseFrames.add(new Int(frames));
-    waitingLocks.add(lock);
-
+    framesToGo = frames;
+    isPaused = true;
+    
+    this.lock = lock;
     lock.pauseThread();
+    
   }
 
   /**
    * Sets the NPC currently presenting a question to the player
    * @param npc The asking NPCS
    */
-  public void setAsker(NPC npc)
+  public void setAsker(SpeechHandler talk)
   {
-    this.speaker = npc;
+    this.speaker = talk;
     this.hasText = true;
     this.hasChoice = true;
     //this.choosesLeft = true;
@@ -383,7 +404,7 @@ public class Game extends State{
     return confidence;
   }
   
-  public void giveMoney(int add)
+  public static void giveMoney(int add)
   {
     money += add;
   }

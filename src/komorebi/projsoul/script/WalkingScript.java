@@ -24,7 +24,6 @@ public class WalkingScript extends Script {
    */
   public void run()
   {
-    isRunning = true;
     execution.setLoopable(true);
     super.run();
   }
@@ -36,7 +35,6 @@ public class WalkingScript extends Script {
   @Override
   public void abort() {
     isInterrupted = true;
-    isRunning = false;
     pause();
 
   }

@@ -32,10 +32,10 @@ public enum NPCType {
    */
   public static NPCType toEnum(String s){
     switch (s){
-      case "POKEMON":case "Ash":
+      case "POKEMON":
         return NPCType.POKEMON;
 
-      case "NESS":case "Ness":
+      case "NESS":
         return NPCType.NESS;
 
       default:

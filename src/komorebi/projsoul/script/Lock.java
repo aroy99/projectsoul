@@ -15,6 +15,9 @@ public class Lock {
     
   }
 
+  /**
+   * Pauses the current thread
+   */
   public void pauseThread()
   {    
     synchronized (this)
@@ -24,11 +27,14 @@ public class Lock {
         wait();
       } catch (InterruptedException e)
       {
-        
+        //What went wrong? :(
       }
     }
   }
   
+  /**
+   * Resumes the thread originally paused by this lock
+   */
   public void resumeThread()
   {
     synchronized (this)

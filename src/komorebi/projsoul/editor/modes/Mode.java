@@ -68,9 +68,9 @@ public abstract class Mode implements Renderable{
     
     status.clear();
     if(checkMapBounds()){
-      status.write("Mouse location: " + mx + ", " + my, 50, 1, 8);
+      status.write("Mouse location: " + mx + ", " + my, 50, 1);
     }else{
-      status.write("Mouse location: ", 50, 1, 8);
+      status.write("Mouse location: ", 50, 1);
     }
     lButtonWasDown = lButtonIsDown;
     lButtonIsDown = Mouse.isButtonDown(0);

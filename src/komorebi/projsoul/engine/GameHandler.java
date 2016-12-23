@@ -4,6 +4,7 @@
 
 package komorebi.projsoul.engine;
 
+import komorebi.projsoul.states.Death;
 import komorebi.projsoul.states.Game;
 import komorebi.projsoul.states.Menu;
 import komorebi.projsoul.states.Pause;
@@ -23,6 +24,7 @@ public class GameHandler implements Playable{
   public static Game game;
   private static Menu menu;
   private static Pause pause;
+  public static Death death;
 
   /**
    * Creates the GameHandler
@@ -32,6 +34,7 @@ public class GameHandler implements Playable{
     game = new Game();
     menu = new Menu();
     pause = new Pause();
+    death = new Death();
   }
 
   /**
@@ -47,6 +50,10 @@ public class GameHandler implements Playable{
         break;
       case PAUSE:
         pause.getInput();
+        break;
+      case DEATH:
+    	death.getInput();
+    	break;
       default:
         break;
     }
@@ -66,6 +73,10 @@ public class GameHandler implements Playable{
       case PAUSE:
         game.update();
         pause.update();
+        break;
+      case DEATH:
+    	death.update();
+    	break;
       default:
         break;
     }
@@ -85,6 +96,10 @@ public class GameHandler implements Playable{
       case PAUSE:
         game.render();
         pause.render();
+        break;
+      case DEATH:
+    	death.render();
+    	break;
       default:
         break;
     }

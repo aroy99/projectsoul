@@ -4,26 +4,39 @@ import java.awt.Rectangle;
 
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.states.Game;
+import komorebi.projsoul.entities.Characters;
 
-public class Enemy extends Entity {
 
-  private int health;
+public abstract class Enemy extends Entity {
+
+  private int attack, defense;
+  protected int health;
   public Rectangle hitBox;
 
-  private boolean isHit, wasHit;
   public boolean invincible;
-  private boolean dying;
-  private boolean dead;
+  protected boolean dying;
+  public boolean dead;
   private int hitCounter;
+  public Characters character;
+  public HUD healths;
+  
 
-  private Animation hitAni;
-  private Animation deathAni;
+  protected Animation hitAni;
+  protected Animation deathAni;
 
   public float dx, dy;
-
-  private Face hitDirection;
+  
+  private boolean[] hitBy;
+  
+  private int level;
+  
+  public abstract int xpPerLevel();
+  public abstract int baseAttack();
+  public abstract int baseDefense();
+  public abstract int baseHealth();
 
   /**
    * Creates a standard enemy
@@ -33,10 +46,21 @@ public class Enemy extends Entity {
    * @param sy The vertical size, in pixels, of the enemy
    */
   public Enemy(float x, float y, int sx, int sy) {
+   this(x,y,sx,sy,1);
+  }
+  
+  public Enemy(float x, float y, int sx, int sy, int level)
+  {
     super(x, y, sx, sy);
+    
+    this.level = level;
 
     hitBox = new Rectangle((int)x,(int)y,sx,sy);
-    health = 100;
+    hitBy = new boolean[4];
+    
+    attack = baseAttack() + level;
+    health = baseHealth() + level;
+    defense = baseDefense() + level;
 
     hitAni = new Animation(2,8,16,21,11);
     hitAni.add(0, 0);
@@ -47,16 +71,25 @@ public class Enemy extends Entity {
     deathAni.add(0, 82);
     deathAni.add(0, 103);
     deathAni.add(0, 124);
-  }
+    healths = new HUD(0,0);
+
+    }
 
   /**
    * Updates the enemy's statuses and location
    */
   public void update() {
-
+        
     if (dying && deathAni.lastFrame())
     {
       dead = true;
+      //increment coin stuff
+      //Use this for returning the amount of money a current player has, to check if they can deposit/withdraw money.
+      character = Map.currentPlayer();
+      healths = Map.getPlayer().getCharacterHUD(character);
+      //^
+      healths.giveMoney(10);
+      Game.getMap().addXPObject(new XPObject(x, y, xpPerLevel()*level, hitBy));
     } else if (dying)
     {
       dx = 0;
@@ -66,57 +99,16 @@ public class Enemy extends Entity {
     if (invincible)
     {
       hitCounter--;
-      if (dx>0) dx--;
-      if (dx<0) dx++;
-      if (dy>0) dy--;
-      if (dy<0) dy++;
+      if (dx>0) dx-=0.25;
+      if (dx<0) dx+=0.25;
+      if (dy>0) dy-=0.25;
+      if (dy<0) dy+=0.25;
     }
 
     if (hitCounter<=0)
     {
       hitAni.hStop();
       invincible = false;
-    }
-
-    if (isHit && !wasHit && !invincible)
-    {
-      health-=25;
-
-      //Kills the enemy
-      if (health<=0)
-      {
-        deathAni.resume();
-        dying = true;
-      } else
-      {
-        //Knocks back the enemy
-        invincible = true;
-        hitCounter = 50;
-        hitAni.resume();
-
-        switch (hitDirection)
-        {
-          case DOWN:
-            dx = 0;
-            dy = -5;
-            break;
-          case LEFT:
-            dx = -5;
-            dy = 0;
-            break;
-          case RIGHT:
-            dx = 5;
-            dy = 0;
-            break;
-          case UP:
-            dx = 0;
-            dy = 5;
-            break;
-          default:
-            break;
-
-        }
-      }
     }
 
     //Stops the enemy from moving places it shouldn't
@@ -129,17 +121,74 @@ public class Enemy extends Entity {
     hitBox.y = (int) y;
 
   }
-
-  /*
-   * Updates whether the enemy is being hit
-   */
-  public void updateHits(boolean isHit, Face dir)
+  
+  public void inflictPain(int attack, Face dir, Characters c)
   {
-    wasHit = this.isHit;
-    this.isHit = isHit;
+    health -= attack - (defense/2);
+    hitBy[c.getNumber()] = true;
+    
+    //Kills the enemy
+    if (health<=0)
+    {
+      deathAni.resume();
+      dying = true;
+    } else
+    {
+      //Knocks back the enemy
+      invincible = true;
+      hitCounter = 50;
+      hitAni.resume();
 
-    hitDirection = dir;
+      switch (dir)
+      {
+        case DOWN:
+          dx = 0;
+          dy = -5;
+          break;
+        case LEFT:
+          dx = -5;
+          dy = 0;
+          break;
+        case RIGHT:
+          dx = 5;
+          dy = 0;
+          break;
+        case UP:
+          dx = 0;
+          dy = 5;
+          break;
+        default:
+          break;
+      }
+    }
   }
+      
+
+  public void knockBack(int attack, Characters c)
+  {
+    health -= attack - (defense/2);
+    hitBy[c.getNumber()] = true;
+    
+    dx*=-5;
+    dy*=-5;
+    
+    //Kills the enemy
+    if (health<=0)
+    {
+      deathAni.resume();
+      dying = true;
+    } else
+    {
+      //Knocks back the enemy
+      invincible = true;
+      hitCounter = 50;
+      hitAni.resume();
+    }
+  }
+
+ 
+
+
 
   /*
    * (non-Javadoc)
@@ -172,6 +221,7 @@ public class Enemy extends Entity {
   {
     return dead;
   }
+ 
 
   /*
    * Stops the enemy from moving where it shouldn't 
@@ -201,12 +251,12 @@ public class Enemy extends Entity {
     Rectangle hypothetical = new Rectangle((int) (x+dx), (int) (y+dy),
         sx, sy);
 
-    if (hypothetical.intersects(Map.getClyde().getHitBox()))
+    if (hypothetical.intersects(Map.getPlayer().getHitBox()))
     { 
       
-      if (!Map.getClyde().invincible())
+      if (!Map.getPlayer().invincible())
       {
-        Map.getClyde().inflictPain(12*dx, 12*dy);
+        Map.getPlayer().inflictPain(attack, 12*dx, 12*dy);
       }
 
       dx = 0;
@@ -225,17 +275,8 @@ public class Enemy extends Entity {
     }
   }
 
-  /**
-   * Calculates the distance between the enemy and the player
-   * @param x The x of the enemy
-   * @param y The y of the enemy
-   * @param tarX The target X (i.e., the x of the player)
-   * @param tarY The target Y (i.e., the y of the player)
-   * @return The distance, as a double
-   */
-  public static double distanceBetween(float x, float y, float tarX, float tarY)
+  public boolean invincible()
   {
-    return Math.sqrt(Math.pow((x-tarX), 2) + Math.pow((y-tarY), 2));
+    return invincible;
   }
-
 }

@@ -3,6 +3,10 @@
  */
 package komorebi.projsoul.script;
 
+import java.util.ArrayList;
+
+import komorebi.projsoul.entities.Characters;
+
 /**
  * 
  * @author Aaron Roy
@@ -117,6 +121,11 @@ public class Task {
     {
       return s;
     }
+    
+    public void setString(String s)
+    {
+      this.s = s;
+    }
   }
   
   public static class TaskWithStringArray extends Task
@@ -130,6 +139,11 @@ public class Task {
       super(instruction);
       this.args = args;
       this.branches = branches;
+    }
+    
+    public void setStrings(String[] newArr)
+    {
+      args = newArr;
     }
     
     public String[] getStrings()
@@ -156,6 +170,7 @@ public class Task {
     Task task;
     int s;
     boolean reverse;
+    Characters character;
     
     public TaskWithTask(Instructions instruction, Task task, int predicate,
         boolean reverse)
@@ -163,6 +178,15 @@ public class Task {
       super(instruction);
       this.task = task;
       s = predicate;
+      this.reverse = reverse;
+    }
+    
+    public TaskWithTask(Instructions instruction, Task task, Characters character,
+        boolean reverse)
+    {
+      super(instruction);
+      this.character = character;
+      this.task = task;
       this.reverse = reverse;
     }
     
@@ -179,6 +203,11 @@ public class Task {
     public boolean isReversed()
     {
       return reverse;
+    }
+    
+    public Characters getCharacter()
+    {
+      return character;
     }
   }
   
@@ -243,6 +272,86 @@ public class Task {
       this.instruction = instruction;
     }
   }
+  
+  public static class TaskWithBranches extends Task
+  {
+    
+    private boolean[] flags;
+    
+    ArrayList<TaskWithBranch> branches;
+    Lock lock;
+
+    public TaskWithBranches(Instructions instruction, ArrayList<TaskWithBranch> branches) {
+      super(instruction);
+      this.branches = branches;
+      
+      flags = new boolean[branches.size()];
+    }
+    
+    public TaskWithBranches(Instructions instruction)
+    {
+      super(instruction);
+      branches = new ArrayList<TaskWithBranch>();
+          }
+    
+    public ArrayList<TaskWithBranch> getBranches()
+    {
+      return branches;
+    }
+    
+    public void setLockandLock(Lock lock) {
+      this.lock = lock;
+      lock.pauseThread();
+    }
+    
+    public void sync(InstructionList me)
+    {
+      for (int i = 0; i < branches.size(); i++)
+      {
+        if (branches.get(i).getBranch().equals(me))
+        {
+          flags[i] = true;
+          
+          if (!hasOutstandingThreads())
+          {
+            this.lock.resumeThread();
+          }
+        }
+      }
+    }
+    
+    private boolean hasOutstandingThreads()
+    {
+      for (int i = 0; i < flags.length; i++)
+      {
+        if (!flags[i])
+        {
+          return true;
+        }
+      }
+      
+      return false;
+    }
+    
+    public void addBranch(TaskWithBranch branch)
+    {
+      branches.add(branch);
+    }
+    
+    public void finalize()
+    {
+      flags = new boolean[branches.size()];
+    }
+    
+    public void reset()
+    {
+      for (int i = 0; i < flags.length; i++)
+      {
+        flags[i] = false;
+      }
+    }
+  }
+ 
 
 
 }

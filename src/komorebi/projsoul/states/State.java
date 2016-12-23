@@ -12,7 +12,9 @@ import komorebi.projsoul.map.Map;
  * 
  * @author Aaron Roy
  */
+
 public abstract class State{
+	
   protected static Map map;
 
   /**
@@ -21,7 +23,7 @@ public abstract class State{
    * @author Aaron Roy
    */
   public enum States{
-    GAME, EDITOR, MENU, PAUSE;
+    GAME, EDITOR, MENU, PAUSE, DEATH;
   }
 
   /**

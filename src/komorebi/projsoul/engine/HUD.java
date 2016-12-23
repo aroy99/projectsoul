@@ -1,275 +1,110 @@
+
 package komorebi.projsoul.engine;
+import komorebi.projsoul.script.TextHandler;
+
+import java.util.Scanner;
+
+import komorebi.projsoul.script.EarthboundFont;
+
 public class HUD implements Renderable
 {
-	public int baseHealth = 100;
-	//Max health is 250
-	public int health = 6;
-	public int hundreds = health/100;
-	public int tens = (health - hundreds * 100)/ 10; 
-	public int ones = (health - (hundreds * 100) - (tens * 10));
-	@Override
-	public void update() {
-		// TODO Auto-generated method stub
-		
-	}
+  public int baseHealth;
+  public int health;
+  public int money;
+  TextHandler text;
+  
+ //New Bank stuff
+  public Bank bank = new Bank(100);
+  int count = 0;
+  int amount;
+  //^
 
-	@Override
-	public void render() {
-		// TODO Auto-generated method stub
-		//Health bar
-		Draw.rect(5, 205, health, 10, 53, 24, 54, 25, 2);
-		//Border
-		Draw.rect(5, 204, baseHealth+2, 2, 39, 46, 40, 47, 2);
-		Draw.rect(5, 215, baseHealth+2, 2, 39, 46, 40, 47, 2);
-		Draw.rect(5, 205, 2, 10, 39, 46, 40, 47, 2);
-		Draw.rect(baseHealth+5, 205, 2, 10, 39, 46, 40, 47, 2);
-		// When Player levels up, health must be added to baseHealth as well!
-		//Drawing Text
-		/*Draw.rect(5, 207, 8, 7, 80, 16, 86, 24, 5);
-		Draw.rect(10, 207, 8, 7, 64, 16, 69, 24, 5);
-		Draw.rect(17, 207, 8, 7, 64, 16, 69, 24, 5);*/
-		if (health>99)
-		{
-			this.displayHealthHundreds();
-		}
-		else if (health > 9)
-		{
-			this.displayHealthTens();
-		}
-		else
-		{
-			this.displayHealthOnes();
-		}
-		
-		
+  public HUD(int initHealth, int initmoney)
+  {
+	money = initmoney;
+    baseHealth = health = initHealth; 
+    text = new TextHandler();
+  }
+
+  @Override
+  public void update() {
+    // TODO Auto-generated method stub
+	  //Updates the player's health as it is lost or gained
+	text.clear();
+	if(health >= 0)
+	{
+		text.write(String.valueOf(health), 7, 207, new EarthboundFont(1));
+	}
+	text.write(String.valueOf(money), 19, 194, new EarthboundFont(1));
 	
-	}
-	public void displayHealthHundreds()
+	//From here on is new Bank code
+	//For some reason this doesn't work, it crashes the game? The Scanner perhaps?
+	//Currently only works in increments of 10 coins (temporary)
+	text.write("Type d for deposit, w for withdrawal",10,100, new EarthboundFont(1));
+	if(KeyHandler.keyClick(Key.D))
 	{
-		if (hundreds == 1)
-		{
-			Draw.rect(7, 207, 8, 7, 80, 16, 86, 24, 5);			
-		}
-		else if (hundreds == 2)
-		{
-			Draw.rect(7, 207, 8, 7, 96, 16, 101, 24, 5);
-		}
-		if (tens == 0)
-		{
-			Draw.rect(14, 207, 8, 7, 64, 16, 69, 24, 5);
-		}
-		else if (tens == 1)
-		{
-			Draw.rect(14, 207, 8, 7, 80, 16, 86, 24, 5);
-		}
-		else if (tens == 2)
-		{
-			Draw.rect(14, 207, 8, 7, 96, 16, 101, 24, 5);
-		}
-		else if (tens == 3)
-		{
-			Draw.rect(14, 207, 8, 7, 112, 16, 117, 24, 5);
-		}
-		else if (tens == 4)
-		{
-			Draw.rect(14, 207, 8, 7, 128, 16, 133, 24, 5);
-		}
-		else if (tens == 5)
-		{
-			Draw.rect(14, 207, 8, 7, 144, 16, 149, 24, 5);
-		}
-		else if (tens == 6)
-		{
-			Draw.rect(14, 207, 8, 7, 160, 16, 165, 24, 5);
-		}
-		else if (tens == 7)
-		{
-			Draw.rect(14, 207, 8, 7, 176, 16, 181, 24, 5);
-		}
-		else if (tens == 8)
-		{
-			Draw.rect(14, 207, 8, 7, 0, 32, 5, 40, 5);
-		}
-		else if (tens == 9)
-		{
-			Draw.rect(14, 207, 8, 7, 16, 32, 21, 40, 5);
-		}
-		
-		if (ones == 0)
-		{
-			Draw.rect(21, 207, 8, 7, 64, 16, 69, 24, 5);
-		}
-		else if (ones == 1)
-		{
-			Draw.rect(21, 207, 8, 7, 80, 16, 86, 24, 5);
-		}
-		else if (ones == 2)
-		{
-			Draw.rect(21, 207, 8, 7, 96, 16, 101, 24, 5);
-		}
-		else if (ones == 3)
-		{
-			Draw.rect(21, 207, 8, 7, 112, 16, 117, 24, 5);
-		}
-		else if (ones == 4)
-		{
-			Draw.rect(21, 207, 8, 7, 128, 16, 133, 24, 5);
-		}
-		else if (ones == 5)
-		{
-			Draw.rect(21, 207, 8, 7, 144, 16, 149, 24, 5);
-		}
-		else if (ones == 6)
-		{
-			Draw.rect(21, 207, 8, 7, 160, 16, 165, 24, 5);
-		}
-		else if (ones == 7)
-		{
-			Draw.rect(21, 207, 8, 7, 176, 16, 181, 24, 5);
-		}
-		else if (ones == 8)
-		{
-			Draw.rect(21, 207, 8, 7, 0, 32, 5, 40, 5);
-		}
-		else if (ones == 9)
-		{
-			Draw.rect(21, 207, 8, 7, 16, 32, 21, 40, 5);
-		}
-		
+		System.out.println("Please enter an amount to deposit");
+		amount = 10;
+		bank.deposit(amount);
 	}
-	public void displayHealthTens()
+	else if(KeyHandler.keyClick(Key.W))
 	{
-	
-		if (tens == 1)
-		{
-			Draw.rect(7, 207, 8, 7, 80, 16, 86, 24, 5);
-		}
-		else if (tens == 2)
-		{
-			Draw.rect(7, 207, 8, 7, 96, 16, 101, 24, 5);
-		}
-		else if (tens == 3)
-		{
-			Draw.rect(7, 207, 8, 7, 112, 16, 117, 24, 5);
-		}
-		else if (tens == 4)			
-		{
-			Draw.rect(7, 207, 8, 7, 128, 16, 133, 24, 5);
-		}
-		else if (tens == 5)
-		{
-			Draw.rect(7, 207, 8, 7, 144, 16, 149, 24, 5);
-		}
-		else if (tens == 6)
-		{
-			Draw.rect(7, 207, 8, 7, 160, 16, 165, 24, 5);
-		}
-		else if (tens == 7)
-		{
-			Draw.rect(7, 207, 8, 7, 176, 16, 181, 24, 5);
-		}
-		else if (tens == 8)
-		{
-			Draw.rect(7, 207, 8, 7, 0, 32, 5, 40, 5);
-		}
-		else if (tens == 9)
-		{
-			Draw.rect(7, 207, 8, 7, 16, 32, 21, 40, 5);
-		}
-		if (ones == 0)
-		{
-			Draw.rect(14, 207, 8, 7, 64, 16, 69, 24, 5);
-		}
-		else if (ones == 1)
-		{
-			Draw.rect(14, 207, 8, 7, 80, 16, 86, 24, 5);
-		}
-		else if (ones == 2)
-		{
-			Draw.rect(14, 207, 8, 7, 96, 16, 101, 24, 5);
-		}
-		else if (ones == 3)
-		{
-			Draw.rect(14, 207, 8, 7, 112, 16, 117, 24, 5);
-		}
-		else if (ones == 4)
-		{
-			Draw.rect(14, 207, 8, 7, 128, 16, 133, 24, 5);
-		}
-		else if (ones == 5)
-		{
-			Draw.rect(14, 207, 8, 7, 144, 16, 149, 24, 5);
-		}
-		else if (ones == 6)
-		{
-			Draw.rect(14, 207, 8, 7, 160, 16, 165, 24, 5);
-		}
-		else if (ones == 7)
-		{
-			Draw.rect(14, 207, 8, 7, 176, 16, 181, 24, 5);
-		}
-		else if (ones == 8)
-		{
-			Draw.rect(14, 207, 8, 7, 0, 32, 5, 40, 5);
-		}
-		else if (ones == 9)
-		{
-			Draw.rect(14, 207, 8, 7, 16, 32, 21, 40, 5);
-		}
+		System.out.println("Please enter an amount to withdraw");
+		amount = 10;
+		bank.withdraw(amount);
 	}
-	public void displayHealthOnes()
-	{
-		if (ones == 0)
-		{
-			Draw.rect(7, 207, 8, 7, 64, 16, 69, 24, 5);
-		}
-		else if (ones == 1)
-		{
-			Draw.rect(7, 207, 8, 7, 80, 16, 86, 24, 5);
-		}
-		else if (ones == 2)
-		{
-			Draw.rect(7, 207, 8, 7, 96, 16, 101, 24, 5);
-		}
-		else if (ones == 3)
-		{
-			Draw.rect(7, 207, 8, 7, 112, 16, 117, 24, 5);
-		}
-		else if (ones == 4)
-		{
-			Draw.rect(7, 207, 8, 7, 128, 16, 133, 24, 5);
-		}
-		else if (ones == 5)
-		{
-			Draw.rect(7, 207, 8, 7, 144, 16, 149, 24, 5);
-		}
-		else if (ones == 6)
-		{
-			Draw.rect(7, 207, 8, 7, 160, 16, 165, 24, 5);
-		}
-		else if (ones == 7)
-		{
-			Draw.rect(7, 207, 8, 7, 176, 16, 181, 24, 5);
-		}
-		else if (ones == 8)
-		{
-			Draw.rect(7, 207, 8, 7, 0, 32, 5, 40, 5);
-		}
-		else if (ones == 9)
-		{
-			Draw.rect(7, 207, 8, 7, 16, 32, 21, 40, 5);
-		}
-		
-	}
-		
-		
-		
-		
-		
-		
+	//^
+  }
+  @Override
+  public void render() {
+    // TODO Auto-generated method stub
+    //Health bar
+    if (health > 0)
+    {
+      Draw.rect(5, 205, (int) (health*(100 / (double) baseHealth)), 10, 53, 24, 54, 25, 2);
+    }
+    //Border
+    Draw.rect(5, 204, 102, 2, 39, 46, 40, 47, 2);
+    Draw.rect(5, 215, 102, 2, 39, 46, 40, 47, 2);
+    Draw.rect(5, 205, 2, 10, 39, 46, 40, 47, 2);
+    Draw.rect(105, 205, 2, 10, 39, 46, 40, 47, 2);
+    
+    //Draws the currency symbol and the equals sign
+    Draw.rect(5, 193, (float) 8.5, 10, 80, 0, 88, 11, 14);
+    Draw.rect(14, 196, 5, 1, 80, 38, 85, 38, 5);
+    Draw.rect(14, 198, 5, 1, 80, 38, 85, 38, 5);
+    text.render();
+  }
+ 
+  public void addToMaxHealth(int add)
+  {
+    baseHealth += add;
+    health += add;
+  }
+  
+  public int getHealth()
+  {
+    return health;
+  }
+  
+  public void giveMoney(int add)
+  {
+	money += add;
+  }
+	  
+  public void takeMoney(int subtract)
+  {
+	money -= subtract;
+  }
+  
+  public int getMoney()
+  {
+	return money;
+  }
+
 }
-	
-	
-		
-	
+
+
+
+
 

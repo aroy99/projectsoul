@@ -22,6 +22,7 @@ import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glOrtho;
 
 import komorebi.projsoul.editor.Editor;
+import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
 
 import org.lwjgl.LWJGLException;
@@ -100,7 +101,7 @@ public class MainE {
     //create display
     try {
       Display.setDisplayMode(new DisplayMode(WIDTH * scale, HEIGHT * scale));
-      Display.setTitle("Project Soul Editor");
+      Display.setTitle("Clyde\'s Editor");
       //    Display.setResizable(true);
       Display.create();
       Display.setVSyncEnabled(true);
@@ -226,8 +227,8 @@ public class MainE {
   private static void updateFPS(int delta) {
     if (getTime() - lastFPS > 1000) {
       handler.clear();
-      handler.write("FPS: " + fps, 1, 10, 8);
-      handler.write("Delta: " + delta, 1, 1, 8);
+      handler.write("FPS: " + fps, 1, 10, new EarthboundFont(1));
+      handler.write("Delta: " + delta, 1, 1, new EarthboundFont(1));
       fps = 0; //reset the FPS counter
       lastFPS += 1000; //add one second
     }

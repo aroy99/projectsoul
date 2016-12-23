@@ -17,22 +17,14 @@ public class Fader {
   private static int faderIndex;
   private static boolean isFadingOut, isFadingIn;
 
-  private static Execution instructor;
   private static Lock lock;
   
-  @Deprecated
   /**
-   * Fades the screen out
-   * @param ex The thread on which the method is called
+   * Gradually fades out the screen by rendering a black rectangle that 
+   * gradually becomes opaque
+   * @param lock The lock that pauses the thread waiting for the screen to fade
+   * out
    */
-  public static void fadeOut(Execution ex)
-  {
-    isFadingOut = true;
-    instructor = ex;
-    instructor.getLock().pauseThread();
-
-  }
-  
   public static void fadeOut(Lock lock)
   {
     isFadingOut=true;
@@ -40,26 +32,17 @@ public class Fader {
     Fader.lock.pauseThread();
   }
   
+  /**
+   * Gradually fades in the screen by rendering a black rectangle that gradually
+   * becomes transparent
+   * @param lock The lock that pauses the thread waiting for the screen to fade
+   * in
+   */
   public static void fadeIn(Lock lock)
   {
     isFadingIn=true;
     Fader.lock = lock;
     Fader.lock.pauseThread();
-  }
-
-  @Deprecated
-  /**
-   * Fades the screen in
-   * @param ex The thread on which the method is called
-   */
-  public static void fadeIn(Execution ex)
-  {
-
-    isFadingIn=true;
-
-    instructor = ex;
-    instructor.getLock().pauseThread();
-
   }
 
   /**

@@ -1,0 +1,4 @@
+lock
+ask "How goes it, @me?" "Good" "Meh"
+unlock
+end

@@ -866,7 +866,7 @@ public class NPCMode extends Mode{
             case NPC:
               if(checkText(name) && checkText(walking) && checkText(talking)){
                 NPC editNPC = npcs.get(selected);
-                editNPC.setName(name.getText());
+                //editNPC.setName(name.getText());
                 editNPC.setNPCType(NPCType.toEnum((String)npcPics.getSelectedItem()));
                 editNPC.setWalkingScript(new WalkingScript(walking.getText(), editNPC));
                 editNPC.setTalkingScript(new TalkingScript(talking.getText(), editNPC));
