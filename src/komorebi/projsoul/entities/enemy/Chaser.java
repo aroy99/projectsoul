@@ -9,18 +9,19 @@ import komorebi.projsoul.states.Game;
 
 public class Chaser extends Enemy {
 
-  float targetX, targetY;
+  float targetX, targetY; //Location of the player
+  float dist;             //Calculated distance between this enemy and the player
 
-  private final float speed = 2f;
+  protected static final float speed = .25f;
 
-  private int maxClydeDist;
+  protected int maxPlayDist;
 
-  private int red, green, blue;
+  protected int red, green, blue;
 
 
-  public static final int baseAttack = 35;
+  public static final int baseAttack = 50;
   public static final int baseDefense = 50;
-  public static final int baseHealth = 50;
+  public static final int baseHealth = 100;
 
   /**
    * Creates an enemy that will chase the player within a certain range
@@ -37,8 +38,10 @@ public class Chaser extends Enemy {
   public Chaser(float x, float y, EnemyType type, int distanceFromPlay, int level) {
     super(x, y, type, level);
 
-    maxClydeDist = 16*distanceFromPlay;
+    maxPlayDist = 16*distanceFromPlay;
 
+    regAni.setSpeed((int)(6/speed));
+    
     red = (int)(Math.random()*255);
     green = (int)(Math.random()*255);
     blue = (int)(Math.random()*255);  
@@ -49,20 +52,21 @@ public class Chaser extends Enemy {
    */
   public void update()
   {   
-    super.update();
-
     targetX = Map.getPlayer().getX();
     targetY = Map.getPlayer().getY();
     if(Death.playable)
     {
 
-      if (Map.distanceBetween(x,y,targetX,targetY)>maxClydeDist && (dx!=0 || dy!=0))
+      dist = Map.distanceBetween(x,y,targetX,targetY);
+      
+      if (dist > maxPlayDist && (dx!=0 || dy!=0))
       {
         dx = 0;
         dy = 0;
+        regAni.stop();
       }
 
-      if (!invincible && Map.distanceBetween(x,y,targetX,targetY)<=maxClydeDist)
+      if (!invincible && dist <= maxPlayDist)
       {
         float triX = Math.abs(targetX-x);
         float triY = Math.abs(targetY-y);
@@ -85,6 +89,12 @@ public class Chaser extends Enemy {
         }
       }
     }
+    
+    super.update();
+  }
+  
+  protected void enemyUpdate(){
+    super.update();
   }
 
   @Override
@@ -114,10 +124,10 @@ public class Chaser extends Enemy {
   public void render() {
     //TODO Better implementation
     if(EditorMap.getMode() == Modes.EVENT){
-      Draw.circ(x, y, maxClydeDist, red, blue, green, 64);
+      Draw.circ(x, y, maxPlayDist, red, blue, green, 64);
     }
     if(Map.isHitBox){
-      Draw.circCam(x, y, maxClydeDist, red, blue, green, 64);
+      Draw.circCam(x, y, maxPlayDist, red, blue, green, 64);
     }
 
     super.render();
@@ -129,7 +139,7 @@ public class Chaser extends Enemy {
   }
 
   public int getOriginalRadius(){
-    return maxClydeDist/16;
+    return maxPlayDist/16;
   }
 
 }

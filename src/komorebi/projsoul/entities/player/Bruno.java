@@ -7,6 +7,7 @@ import komorebi.projsoul.attack.MeleeAttack;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.gameplay.MagicBar;
@@ -111,10 +112,17 @@ public class Bruno extends Player {
     
   }
   
+  @Override
   public void update()
   {
     
     super.update();
+    
+    //DEBUG shake shake
+    if(KeyHandler.keyClick(Key.U)){
+      System.out.println("Shake");
+      Camera.shake(180, 5, 1);
+    }
     
     if (isAttacking && attack1 == melee)
     {
@@ -149,6 +157,8 @@ public class Bruno extends Player {
         case RIGHT:
           aDx = 5f;
           break;
+        default:
+          break;
       }
       
       if (attack1 == melee)
@@ -156,7 +166,7 @@ public class Bruno extends Player {
         attack1.newAttack(x, y, aDx, aDy, dir, attack);
         isAttacking = true;
         
-        magic.changeMagicBy(-10);
+        magic.changeMagicBy(-3);
       }
       
     }
@@ -189,7 +199,7 @@ public class Bruno extends Player {
   public void giveXP(int xp) {
     Bruno.xp += xp;
 
-    if (Bruno.xp >= nextLevelUp)
+    while (Bruno.xp >= nextLevelUp)
     {
       levelUp();
     }

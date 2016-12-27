@@ -6,6 +6,7 @@ import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.player.Characters;
+import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.states.Game;
 
 public class Charge extends Melee {
@@ -56,6 +57,17 @@ public class Charge extends Melee {
   @Override
   public void update() {
     
+    boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
+
+    if(!col[0] || !col[2]){
+      Camera.shake(8, 2, 1);
+      dy=0;
+    }
+    if(!col[1] || !col[3]){
+      Camera.shake(8, 2, 1);
+      dx=0;
+    }
+    
     future.x += dx;
     future.y += dy;
     
@@ -75,10 +87,18 @@ public class Charge extends Melee {
     hitBox.x = (int) x;
     hitBox.y = (int) y;
     
-    if (dy > 0) dy -= 0.25;
-    if (dy < 0) dy += 0.25;
-    if (dx > 0) dx -= 0.25;
-    if (dx < 0) dx += 0.25;
+    if (dy > 0){ 
+      dy -= 0.25;
+    }
+    if (dy < 0){ 
+      dy += 0.25;
+    }
+    if (dx > 0){ 
+      dx -= 0.25;
+    }
+    if (dx < 0){ 
+      dx += 0.25;
+    }
     
     attackIndex++;
    

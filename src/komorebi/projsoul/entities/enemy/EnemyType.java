@@ -3,7 +3,11 @@
  */
 package komorebi.projsoul.entities.enemy;
 
+import komorebi.projsoul.engine.Animation;
+
 import java.util.ArrayList;
+
+import javax.print.attribute.standard.RequestingUserName;
 
 /**
  * Contains all of the enemies in the game
@@ -11,7 +15,7 @@ import java.util.ArrayList;
  * @author Aaron Roy
  */
 public enum EnemyType {
-  SATURN(16, 21);
+  SATURN(16, 21), EVIL_SATURN(16,21), SMILIN_SATURN(16,21);
   
   
   private int sx, sy;
@@ -34,16 +38,46 @@ public enum EnemyType {
     switch (s){
       case "SATURN":case "Mr. Saturn":
         return EnemyType.SATURN;
+      case "EVIL_SATURN":case "Evil Saturn":
+        return EnemyType.EVIL_SATURN;
+      case "SMILIN_SATURN":case "Smilin' Saturn":
+        return EnemyType.SMILIN_SATURN;
+
       default:
         return null;
     }
   }
   
+  /**
+   * @param type The enemy you want the animation for
+   * @return An animation for the enemy
+   */
+  public static Animation getAni(EnemyType type){
+    Animation ani;
+    int tx, ty;
+    
+    switch(type){
+      case EVIL_SATURN:   tx = 174; ty = 0; break;
+      case SATURN:        tx =   0; ty = 0; break;
+      case SMILIN_SATURN: tx = 191; ty = 0; break;
+      default: tx = 0; ty = 0;      
+    }
+    
+    ani = new Animation(2, 30, type.getSX(), type.getSY(), 11);
+    
+    ani.add(tx, ty);
+    ani.add(tx, ty, true);
+        
+    return ani;
+  }
+  
   @Override
   public String toString(){
     switch(this){
-      case SATURN: return "SATURN";
-      default:      return "bleh";
+      case SATURN: return "Mr. Saturn";
+      case EVIL_SATURN:   return "Evil Saturn";
+      case SMILIN_SATURN: return "Smilin' Saturn";
+      default:            return "bleh";
     }
   }
 

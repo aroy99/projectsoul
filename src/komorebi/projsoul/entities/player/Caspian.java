@@ -57,6 +57,8 @@ public class Caspian extends Player {
     downAni.add(71,162,16,34);
     downAni.add(91,164,17,32);
     downAni.add(112,161,18,35);
+    
+    downAni.setPausedFrame(166, 162, 16, 35);
 
     upAni.add(8,204,16,35);
     upAni.add(28,207,18,32);
@@ -64,6 +66,8 @@ public class Caspian extends Player {
     upAni.add(71,204,16,35);
     upAni.add(91,207,18,32);
     upAni.add(113,206,18,33);
+    
+    upAni.setPausedFrame(166, 207, 16, 33);
 
     rightAni.add(3,247,21,32);
     rightAni.add(30,246,14,33);
@@ -72,7 +76,7 @@ public class Caspian extends Player {
     rightAni.add(99,246,14,33);
     rightAni.add(120,245,15,34);
 
-    rightAni.setPausedFrame(99,246,14,33);
+    rightAni.setPausedFrame(166,245,14,34);
 
     leftAni.add(3,247,21,32,0,true);
     leftAni.add(30,246,14,33,0,true);
@@ -81,7 +85,7 @@ public class Caspian extends Player {
     leftAni.add(99,246,14,33,0,true);
     leftAni.add(120,245,15,34,0,true);
 
-    leftAni.setPausedFrame(99,246,14,33,0,true);
+    leftAni.setPausedFrame(166,245,14,34,0,true);
 
     hurtUpAni.add(8,204);
     hurtUpAni.add(141, 205);
@@ -155,12 +159,8 @@ public class Caspian extends Player {
 
       }
     }
-
-    System.out.println(button(Control.ATTACK) +" and "+ !isAttacking +" and "+ magic.hasEnoughMagic(
-        10));
     
-    if (button(Control.ATTACK) && !isAttacking && magic.hasEnoughMagic(
-        10))
+    if (button(Control.ATTACK) && !isAttacking && magic.hasEnoughMagic(2))
     {        
 
       isAttacking = true;
@@ -174,7 +174,7 @@ public class Caspian extends Player {
         leftAni.hStop();
         rightAni.hStop();
 
-        magic.changeMagicBy(-10);
+        magic.changeMagicBy(-2);
       } else if (attack1 == proj)
       {        
         switch (dir)
@@ -201,7 +201,7 @@ public class Caspian extends Player {
 
         currentAnimation.resume();
         
-        magic.changeMagicBy(-10);
+        magic.changeMagicBy(-6);
       }
 
       if (attack1 != null)
@@ -256,7 +256,7 @@ public class Caspian extends Player {
   public void giveXP(int xp) {
     Caspian.xp += xp;
 
-    if (Caspian.xp >= nextLevelUp)
+    while (Caspian.xp >= nextLevelUp)
     {
       levelUp();
     }

@@ -43,9 +43,9 @@ Robbers!
 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
-npc Clyde 8 10 NESS run_up_and_down scream
-enemy 16 16 SATURN chaser 3
-enemy 5 15 SATURN chaser 6
-enemy 13 6 SATURN chaser 5
+/npc Clyde 8 10 NESS run_up_and_down scream
+enemy 16 16 SMILIN_SATURN shooter 5
+/enemy 5 15 SATURN smart 6
+/enemy 13 6 SATURN smart 8
 sign 2 18 This is a forest
 connect Bigger_Town up 0 20

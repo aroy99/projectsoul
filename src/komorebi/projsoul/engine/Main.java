@@ -35,6 +35,8 @@ import static org.lwjgl.opengl.GL11.glOrtho;
 import org.newdawn.slick.openal.SoundStore;
 
 import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.script.EarthboundFont;
+import komorebi.projsoul.script.TextHandler;
 import komorebi.projsoul.states.Game;
 
 
@@ -51,6 +53,10 @@ public class Main {
   private GameHandler gamehandler;
   public int scale;
   private BufferedReader read;
+  
+  private static TextHandler handler;
+  private static long lastFrame, lastFPS;
+  private static int fps;
   
   public static final int WIDTH = 256;
   public static final int HEIGHT = 224;
@@ -120,6 +126,11 @@ public class Main {
   private void initGame(){
     gamehandler = new GameHandler();
     AudioHandler.init();
+    
+    getDelta();          // call once before loop to initialise lastFrame
+    lastFPS = getTime(); // call before loop to initialise fps timer
+    
+    handler = new TextHandler();
   }
 
 
@@ -127,8 +138,9 @@ public class Main {
     gamehandler.getInput();
   }
 
-  private void update(){
+  private void update(int delta){
     gamehandler.update();
+    updateFPS(delta);
   }
 
 
@@ -137,6 +149,7 @@ public class Main {
     glLoadIdentity();
 
     gamehandler.render();
+    handler.render();
 
     Display.update();   //updates the display with the changes
     Display.sync(60);   //makes up for lost time
@@ -150,8 +163,10 @@ public class Main {
   private void gameLoop(){
 
     while(!Display.isCloseRequested()){
+      int delta = getDelta();
+      
       getInput();
-      update();
+      update(delta);
       render();
       SoundStore.get().poll(0);
 
@@ -208,6 +223,31 @@ public class Main {
 
   public static Game getGame(){
     return GameHandler.game;
+  }
+  
+  private static long getTime(){
+    return System.currentTimeMillis();
+  }
+
+  private static int getDelta(){
+    long time = getTime();
+    int delta = (int)(time - lastFrame);
+    lastFrame = time;
+
+    return delta;
+  }
+
+  /**
+   * Calculate the FPS and set it in the title bar
+   */
+  private static void updateFPS(int delta) {
+    if (getTime() - lastFPS > 1000) {
+      handler.clear();
+      handler.write("FPS: " + fps, 1, 1, new EarthboundFont(1));
+      fps = 0; //reset the FPS counter
+      lastFPS += 1000; //add one second
+    }
+    fps++;
   }
 
 

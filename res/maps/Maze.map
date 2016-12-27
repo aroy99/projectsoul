@@ -1,8 +1,8 @@
 20
 20
-Bigger Town
+Maze
 None
-0
+1
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 
 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 
@@ -43,5 +43,10 @@ None
 1 0 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 0 1 
 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+enemy 16 16 EVIL_SATURN smart 20
+enemy 16 1 SMILIN_SATURN smart 20
+enemy 1 16 SATURN smart 20
+enemy 1 1 SATURN smart 20
 connect Bigger_Town right 20 -12
 connect justin up 17 20
+

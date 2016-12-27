@@ -20,6 +20,8 @@ import komorebi.projsoul.entities.enemy.Chaser;
 import komorebi.projsoul.entities.enemy.Dummy;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.enemy.EnemyType;
+import komorebi.projsoul.entities.enemy.Shooter;
+import komorebi.projsoul.entities.enemy.SmartEnemy;
 import komorebi.projsoul.entities.player.Bruno;
 import komorebi.projsoul.entities.player.Caspian;
 import komorebi.projsoul.entities.player.Characters;
@@ -232,6 +234,15 @@ public class Map implements Playable{
               enemies.add(new Chaser(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
                   Integer.parseInt(split[4])));
               break;
+            case "smart":
+              enemies.add(new SmartEnemy(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
+                  Integer.parseInt(split[4]), collision));
+              break;
+            case "shooter":
+              enemies.add(new Shooter(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
+                  Integer.parseInt(split[4])));
+              break;
+
             default:
               System.out.println("This shouldn't happen!");
               break;
@@ -558,70 +569,70 @@ public class Map implements Playable{
     
     
       //Speed affected
-      int x1 = (int)((x-16+dx)/16)+1; //Left
-      int y1 = (int)((y-16+dy)/16)+1; //Bottom
+    int x1 = (int)((x-16+dx)/16)+1; //Left
+    int y1 = (int)((y-16+dy)/16)+1; //Bottom
 
-      int bufX = Math.abs(x1*16 - (int) (x +dx));
-      int bufY = Math.abs(y1*16 - (int) (y +dy));      
-      int x2 = (int)((x-1+dx)/16)+1;  //Right
-      int y2 = (int)((y-1+dy)/16)+1;  //Top
+    int bufX = Math.abs(x1*16 - (int) (x +dx));
+    int bufY = Math.abs(y1*16 - (int) (y +dy));      
+    int x2 = (int)((x-1+dx)/16)+1;  //Right
+    int y2 = (int)((y-1+dy)/16)+1;  //Top
 
-      //Speed Unaffected
-      int x3 = (int)((x-16)/16)+1; //Left
-      int y3 = (int)((y-16)/16)+1; //Bottom
+    //Speed Unaffected
+    int x3 = (int)((x-16)/16)+1; //Left
+    int y3 = (int)((y-16)/16)+1; //Bottom
 
-      int x4 = (int)((x-1)/16)+1;  //Right
-      int y4 = (int)((y-1)/16)+1;  //Top
+    int x4 = (int)((x-1)/16)+1;  //Right
+    int y4 = (int)((y-1)/16)+1;  //Top
 
-      boolean[] ret = new boolean[4];
-          
-      ret[1] = x2 < collision[0].length; //East
-      ret[3] = x1-1 >= 0; //West
-      ret[0] = y2 < collision.length; //North
-      ret[2] = y1-1 >= 0; //South
+    boolean[] ret = new boolean[4];
 
-      
-       if (ret[0] && (collision[y2][x3] ^ collision[y2][x4]))
-       {
-         //Player moving up
-         if (collision[y2][x3] && (16 - bufX) >=10)
-         {
-           play.guide(-1, 0);
-         } else if (collision[y2][x4] && bufX >= 10) {
-           play.guide(1, 0);
-         }
-       } else if (ret[2] && (collision[y1][x3] ^ collision[y1][x4]))
-       {
-         //Player moving down
-         if (collision[y1][x3] && (16 - bufX) >= 10)
-         {
-           play.guide(-1, 0);
-         } else if (collision[y1][x4] && bufX>=10)
-         {
-           play.guide(1, 0);
-         }
-       } else if (ret[1] && (collision[y3][x2] ^ collision[y4][x2]))
-       {
-         //Player moving right
-         if (collision[y3][x2] && (bufY <= 6))
-         {
-           play.guide(0, -1);
-         } else if (collision[y4][x2] && (16 - bufY) <= 6)
-         {
-           play.guide(0, 1);
-         }
-         
-       } else if (ret[3] && (collision[y3][x1] ^ collision[y4][x1]))
-       {
-         //Player moving left
-         if (collision[y3][x1] && (bufY <= 6))
-         {
-           play.guide(0, -1);
-         } else if (collision[y4][x1] && (16 - bufY) <= 6)
-         {
-           play.guide(0, 1);
-         }
-       }
+    ret[1] = x2 < collision[0].length; //East
+    ret[3] = x1-1 >= 0; //West
+    ret[0] = y2 < collision.length; //North
+    ret[2] = y1-1 >= 0; //South
+
+
+    if (ret[0] && (collision[y2][x3] ^ collision[y2][x4]))
+    {
+      //Player moving up
+      if (collision[y2][x3] && (16 - bufX) >=10)
+      {
+        play.guide(-1, 0);
+      } else if (collision[y2][x4] && bufX >= 10) {
+        play.guide(1, 0);
+      }
+    } else if (ret[2] && (collision[y1][x3] ^ collision[y1][x4]))
+    {
+      //Player moving down
+      if (collision[y1][x3] && (16 - bufX) >= 10)
+      {
+        play.guide(-1, 0);
+      } else if (collision[y1][x4] && bufX>=10)
+      {
+        play.guide(1, 0);
+      }
+    } else if (ret[1] && (collision[y3][x2] ^ collision[y4][x2]))
+    {
+      //Player moving right
+      if (collision[y3][x2] && (bufY <= 6))
+      {
+        play.guide(0, -1);
+      } else if (collision[y4][x2] && (16 - bufY) <= 6)
+      {
+        play.guide(0, 1);
+      }
+
+    } else if (ret[3] && (collision[y3][x1] ^ collision[y4][x1]))
+    {
+      //Player moving left
+      if (collision[y3][x1] && (bufY <= 6))
+      {
+        play.guide(0, -1);
+      } else if (collision[y4][x1] && (16 - bufY) <= 6)
+      {
+        play.guide(0, 1);
+      }
+    }
      
   }
 
@@ -769,12 +780,12 @@ public void switchPlayer()
    * @param tarY The target Y (i.e., the y of the player)
    * @return The distance, as a double
    */
-  public static double distanceBetween(float x, float y, float tarX, float tarY)
+  public static float distanceBetween(float x, float y, float tarX, float tarY)
   {
-    return Math.sqrt(Math.pow((x-tarX), 2) + Math.pow((y-tarY), 2));
+    return (float)Math.sqrt(Math.pow((x-tarX), 2) + Math.pow((y-tarY), 2));
   }
   
-  public static double angleOf(float x, float y, float tarX, float tarY)
+  public static float angleOf(float x, float y, float tarX, float tarY)
   {
     float triX = x - tarX, triY = y - tarY;
     double ret = Math.atan(triY / triX)* (180 / Math.PI);
@@ -787,7 +798,7 @@ public void switchPlayer()
       ret-=180;
     }
         
-    return ret;
+    return (float)ret;
   }
   
   public static int quadrantOf(float x, float y, float tarX, float tarY)
@@ -835,7 +846,7 @@ public void switchPlayer()
     }
   }
   
-  public static float[] coordinatesAt(float cx, float cy, float dist, double ang)
+  public static float[] coordinatesAt(float cx, float cy, float dist, float ang)
   {
     float[] ret  = new float[2];
     
@@ -865,6 +876,11 @@ public void switchPlayer()
   
   public String getTitle(){
     return title;
+  }
+  
+  public boolean[][] getCollision(){
+    System.out.println("return");
+    return collision;
   }
 
 

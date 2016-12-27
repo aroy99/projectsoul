@@ -13,6 +13,7 @@ import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.SignPost;
 import komorebi.projsoul.entities.player.Player;
+import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Item;
 import komorebi.projsoul.gameplay.Key;
@@ -200,6 +201,7 @@ public class Game extends State{
     // TODO Auto-generated method stub  
 	  hud.update();
 	  death.update();
+	  Camera.update();
 	  
     
     if (isPaused)
@@ -212,6 +214,8 @@ public class Game extends State{
         lock.resumeThread();
       }
     }
+    
+    
 
     map.update();
     Fader.update();

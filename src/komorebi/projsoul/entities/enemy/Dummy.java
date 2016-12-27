@@ -11,41 +11,32 @@ package komorebi.projsoul.entities.enemy;
 public class Dummy extends Enemy {
 
   /**
-   * @param x
-   * @param y
-   * @param type
+   * Creates a dummy that does nothing
+   * 
+   * @param x The x location (in the map) of the enemy
+   * @param y The y location (in the map) of the enemy
+   * @param type The sprite of this enemy
+   * @param level The level of this enemy
    */
   public Dummy(float x, float y, EnemyType type, int level) {
     super(x, y, type, level);
   }
 
-  /**
-   * @see komorebi.projsoul.entities.enemy.Enemy#xpPerLevel()
-   */
   @Override
   public int xpPerLevel() {
-    return 0;
+    return 10000;
   }
 
-  /**
-   * @see komorebi.projsoul.entities.enemy.Enemy#baseAttack()
-   */
   @Override
   public int baseAttack() {
     return 0;
   }
 
-  /**
-   * @see komorebi.projsoul.entities.enemy.Enemy#baseDefense()
-   */
   @Override
   public int baseDefense() {
     return 0;
   }
 
-  /**
-   * @see komorebi.projsoul.entities.enemy.Enemy#baseHealth()
-   */
   @Override
   public int baseHealth() {
     return 100;

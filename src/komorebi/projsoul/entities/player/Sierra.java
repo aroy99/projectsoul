@@ -104,7 +104,7 @@ public class Sierra extends Player {
   public void giveXP(int xp) {
     Sierra.xp += xp;
 
-    if (Sierra.xp >= nextLevelUp)
+    while (Sierra.xp >= nextLevelUp)
     {
       levelUp();
     }

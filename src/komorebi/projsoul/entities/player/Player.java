@@ -99,7 +99,7 @@ public abstract class Player extends Entity implements Playable{
   public Player(float x, float y) {
     super(x, y, 16, 24);
     ent = Entities.CLYDE;
-
+    
     restoreMvmtX = true;
     restoreMvmtY = true;
 
@@ -815,9 +815,12 @@ public abstract class Player extends Entity implements Playable{
     if (attack - getDefense(character)/2 > 0)
     {
       health.health -= (int) (attack - (getDefense(character)/2));
+    }else{
+      health.health--;
     }
+    
     //Kills the enemy
-    if (health.health<=0)
+    if (health.health <= 0)
     {
       deathAni.resume();
       dying = true;

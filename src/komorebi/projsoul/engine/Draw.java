@@ -64,18 +64,20 @@ public class Draw {
    * Loads textures
    * 
    * <p><u>Current:</u><br>
-   *    0: Terra<br>
-   *    1: Pokemon Tiles<br>
-   *    2: Selector/Grid<br>
-   *    3: Ash Ketchum<br>
-   *    4: Ness<br>
-   *    5: Earthbound Font<br>
-   *    6: Textbox<br>
-   *    7: Picker<br>
-   *    8: Fader<br>
-   *    9: Clyde's Tiles<br>
+   *    0:  Terra<br>
+   *    1:  Pokemon Tiles<br>
+   *    2:  Selector/Grid/Debug<br>
+   *    3:  Ash Ketchum<br>
+   *    4:  Ness<br>
+   *    5:  Earthbound Font<br>
+   *    6:  Textbox<br>
+   *    7:  Picker<br>
+   *    8:  Fader<br>
+   *    9:  Clyde's Tiles<br>
    *    10: Miscellaneous Items<br>
    *    11: Fillers for Project Soul<br>
+   *    12: Other Filler Characters<br>
+   *    13: You Ded Screen
    */
   public static void loadTextures() {
     try {

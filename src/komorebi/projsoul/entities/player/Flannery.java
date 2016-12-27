@@ -140,7 +140,7 @@ public class Flannery extends Player {
     }
 
     if (button(Control.ATTACK) && !isAttacking && magic.hasEnoughMagic(
-        10))
+        5))
     {              
       if (attack1 == projectile)
       {
@@ -176,7 +176,7 @@ public class Flannery extends Player {
         }
 
         currentAnimation.resume();
-        magic.changeMagicBy(-10);
+        magic.changeMagicBy(-5);
         
         attack1.newAttack(x,y,aDx,aDy,dir,attack);
       }
@@ -198,12 +198,12 @@ public class Flannery extends Player {
       ring.getInput();
       ring.update();
     } else if (KeyHandler.keyRelease(Key.X) && !isAttacking && magic.hasEnoughMagic(
-        10) && attack1 == ring)
+        8) && attack1 == ring)
     {
       //TODO: replace final 0 with atatck
       ring.newAttack(0, 0, 0, 0, dir, attack);
       canMove = true;
-      magic.changeMagicBy(-10);
+      magic.changeMagicBy(-8);
     }
     
 
@@ -256,7 +256,7 @@ public class Flannery extends Player {
   public void giveXP(int xp) {
     Flannery.xp += xp;
     
-    if (Flannery.xp >= nextLevelUp)
+    while (Flannery.xp >= nextLevelUp)
     {
       levelUp();
     }

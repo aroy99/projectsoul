@@ -43,7 +43,7 @@ The Forest
 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
-enemy 16 16 SATURN chaser 3
-enemy 6 15 SATURN chaser 6
+enemy 16 16 SATURN smart 8
+enemy 6 15 SATURN smart 8
 enemy 16 9 SATURN chaser 5
 sign 2 18 This is a forest

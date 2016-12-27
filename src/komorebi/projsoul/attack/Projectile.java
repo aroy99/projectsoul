@@ -66,17 +66,17 @@ public abstract class Projectile implements AttackInstance {
     
     for (Enemy enemy: Game.getMap().getEnemies())
     {
-        if (enemy.getHitBox().intersects(new Rectangle((int) (x+dx), 
-            (int) (y+dy), (int) area.getWidth(), 
-            (int) area.getHeight())))
+      if (enemy.getHitBox().intersects(new Rectangle((int) (x+dx), 
+          (int) (y+dy), (int) area.getWidth(), 
+          (int) area.getHeight())))
+      {
+        destroyMe = true;
+        if (!enemy.invincible())
         {
-          destroyMe = true;
-          if (!enemy.invincible())
-          {
-            enemy.inflictPain(attack, currentDir, 
-                character);
-          }
+          enemy.inflictPain(attack, currentDir, 
+              character);
         }
+      }
         
     }
     
