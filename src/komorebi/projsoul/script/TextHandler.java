@@ -3,6 +3,7 @@
  */
 package komorebi.projsoul.script;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 
 import komorebi.projsoul.engine.Draw;
@@ -15,6 +16,8 @@ import komorebi.projsoul.engine.Draw;
 public class TextHandler {
    
   public static final int SCALE = 16;
+  
+  private Rectangle renderIfWithin;
 
   public ArrayList<Word> words;
   private static EarthboundFont defFont = new EarthboundFont(1);
@@ -25,6 +28,12 @@ public class TextHandler {
   public TextHandler()
   {
     words = new ArrayList<Word>();
+  }
+  
+  public TextHandler(Rectangle r)
+  {
+    this();
+    renderIfWithin = r;
   }
 
   /**
@@ -66,13 +75,19 @@ public class TextHandler {
     writeMindLength(s, x, y, defFont, maxLength);
   }
   
-  private int pixLengthOf(String str, Font font)
+  public void writeMindLengthCursor(String s, int x, int y, Font font, int maxLength, 
+      int cursor)
+  {
+    
+  }
+  
+  public int pixLengthOf(String str, Font font)
   {
     int num = 0;
     
     for (int i = 0; i < str.length(); i++)
     {
-      num += font.getLength(str.charAt(i)) + 1;
+      num += font.getLength(str.charAt(i))*font.getScale() + 1;
     }
     
     return num;
@@ -111,12 +126,24 @@ public class TextHandler {
       } 
 
 
-      Draw.rect(horiz, vert-under, size, size+under, 
-          word.getFont().getTexX(letters[i]), word.getFont().getTexY(letters[i]), 
-          word.getFont().getTexX(letters[i])+word.getFont().getFontPoint(), 
-          word.getFont().getTexY(letters[i]) + word.getFont().getFontPoint()+texUnder, 
-          word.getFont().getTexture());
-      horiz+=(word.getFont().getLength(letters[i])+1);
+      if (renderIfWithin==null)
+      {
+        Draw.rect(horiz, vert-under, size, size+under, 
+            word.getFont().getTexX(letters[i]), word.getFont().getTexY(letters[i]), 
+            word.getFont().getTexX(letters[i])+word.getFont().getFontPoint(), 
+            word.getFont().getTexY(letters[i]) + word.getFont().getFontPoint()+texUnder, 
+            word.getFont().getTexture());
+        horiz+=(word.getFont().getLength(letters[i])*word.getFont().getScale()+1);
+      } else
+      {
+        Draw.drawIfInBounds(renderIfWithin, horiz, vert-under, size, size+under, 
+            word.getFont().getTexX(letters[i]), word.getFont().getTexY(letters[i]), 
+            word.getFont().getTexX(letters[i])+word.getFont().getFontPoint(), 
+            word.getFont().getTexY(letters[i]) + word.getFont().getFontPoint()+texUnder, 
+            word.getFont().getTexture());
+        horiz+=(word.getFont().getLength(letters[i])*word.getFont().getScale()+1);
+      }
+      
     }
   }
 
@@ -138,6 +165,17 @@ public class TextHandler {
       if (word.getString().equals(erase))
       {
         word.setString(replace);
+      }
+    }
+  }
+  
+  public void move(String move, int dx, int dy)
+  {
+    for (Word w: words)
+    {
+      if (w.getString().equals((move)))
+      {
+        w.move(dx, dy);
       }
     }
   }

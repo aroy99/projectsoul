@@ -3,6 +3,7 @@
  */
 package komorebi.projsoul.editor.modes;
 
+import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.EditorMap.Modes;
@@ -53,14 +54,14 @@ public class MoveMode extends Mode{
       
       if(initX < 0){
         initX = 0;
-      }else if(initX >= tiles[0].length){
-        initX = tiles[0].length-1;
+      }else if(initX >= Editor.getMap().currentSublayer().getTiles()[0].length){
+        initX = Editor.getMap().currentSublayer().getTiles()[0].length-1;
       }
       
       if(initY < 0){
         initY = 0;
-      }else if(initY >= tiles.length){
-        initY = tiles.length-1;
+      }else if(initY >= Editor.getMap().currentSublayer().getTiles().length){
+        initY = Editor.getMap().currentSublayer().getTiles().length-1;
       }
     }
 

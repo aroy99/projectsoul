@@ -32,7 +32,7 @@ public abstract class Mode implements Renderable{
   protected static boolean rButtonIsDown, rButtonWasDown;//Right Button Clicked
   protected static boolean mButtonIsDown, mButtonWasDown;//Middle Button Pressed
   
-  protected static int[][] tiles;
+  protected static int height, width;
 
   
   protected static boolean mouseSame;                    //Mouse is in same pos as last frame
@@ -52,8 +52,7 @@ public abstract class Mode implements Renderable{
 
   public static final int SIZE = 16;         //Width and height of a tile
   
-  protected static TextHandler status = new TextHandler();
-    
+  protected static TextHandler status = new TextHandler();    
   /**
    * Gets input in a static way
    */
@@ -148,13 +147,14 @@ public abstract class Mode implements Renderable{
     return (Mouse.getX()/MainE.getScale() < Palette.xOffset*16 ||
         Mouse.getY()/MainE.getScale() < Palette.yOffset*16) &&
         (getMouseY() >= 0 &&
-        getMouseY() < tiles.length &&
+        getMouseY() < height &&
         getMouseX() >= 0 &&
-        getMouseX() < tiles[0].length);
+        getMouseX() < width);
   }
   
-  public static void setMap(int[][] map){
-    tiles = map;
+  public static void setSize(int width, int height){
+    Mode.width = width;
+    Mode.height = height;
   }
   
   /**
@@ -166,10 +166,18 @@ public abstract class Mode implements Renderable{
    */
   protected boolean checkTileBounds(int tx, int ty) {
     return ty >= 0 &&           
-        ty < tiles.length && 
+        ty < height && 
         tx >= 0 &&           
-        tx < tiles[0].length;
+        tx < width;
+  }
+  
+  public static float getFloatMouseX()
+  {
+    return (float) Mouse.getX()/MainE.getScale();
   }
 
-
+  public static float getFloatMouseY()
+  {
+    return (float) Mouse.getY()/MainE.getScale();
+  }
 }

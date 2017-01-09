@@ -4,7 +4,7 @@
 
 package komorebi.projsoul.engine;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_NEAREST;
 import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER;
@@ -12,6 +12,7 @@ import static org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLE_FAN;
 import static org.lwjgl.opengl.GL11.glBegin;
 import static org.lwjgl.opengl.GL11.glColor3f;
+import static org.lwjgl.opengl.GL11.glColor4f;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glEnd;
@@ -24,15 +25,16 @@ import static org.lwjgl.opengl.GL11.glTexParameteri;
 import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.opengl.GL11.glVertex2f;
 
-import komorebi.projsoul.gameplay.Camera;
-
-import org.newdawn.slick.opengl.Texture;
-import org.newdawn.slick.opengl.TextureLoader;
-
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import org.newdawn.slick.opengl.Texture;
+import org.newdawn.slick.opengl.TextureLoader;
+
+import komorebi.projsoul.gameplay.Camera;
 
 /**
  * Draws stuff. :D
@@ -48,6 +50,8 @@ public class Draw {
   private static final int NUM_PIZZA_SLICES = 30;
   
   public static final int BLANK_TILE = 0;
+  public static final Rectangle LAYER_MANAGER = new Rectangle(0, 0, 12*16, 
+      34*16-8);
   
   private static final int SPREADSHEET_SIZE = 256;
   private static final int SPREADSHEET_ROW = 16;
@@ -412,6 +416,60 @@ public class Draw {
   public static int getNumberOfSpreadsheets()
   {
     return sheets.size();
+  }
+  
+  public static void drawIfInBounds(Rectangle r, float x, float y, 
+      float sx, float sy, int texx, int texy, int texsx, int texsy,
+      int rot, int texId)
+  {
+    Rectangle obj = new Rectangle((int) x, (int) y, (int) sx, (int) sy);
+    if (r.contains(obj))
+    {
+      Draw.rect(x, y, sx, sy, texx, texy, texsx, texsy, rot, texId);
+    } else if (r.intersects(obj))
+    {
+      int scale = (int) sx / (texsx - texx);
+      
+      float drawX = Math.max(r.x, x);
+      float drawY = Math.max(r.y, y);
+      float drawMaxX = Math.min(r.x+r.width, x+sx);
+      float drawMaxY = Math.min(r.y+r.height, y+sy);
+      
+      if ((int) drawY % 2 != 0 && (int) drawMaxY % 2 == 0)
+      {
+        drawY--;
+      } else if ((int) drawY % 2 == 0 && (int) drawMaxY % 2 != 0)
+      {
+        drawMaxY++;
+      }
+      
+      if ((int) drawX % 2 != 0 && (int) drawMaxX % 2 == 0)
+      {
+        drawX--;
+      } else if ((int) drawX % 2 == 0 && (int) drawMaxX % 2 != 0)
+      {
+        drawMaxX++;
+      }      
+      float drawSx = (drawMaxX - drawX);
+      float drawSy = (drawMaxY - drawY);
+                  
+      int topOff = (int) ((y+sy-drawMaxY) / scale);
+      int botOff = (int) ((drawY - y) / scale);
+      int rightOff = (int) ((x+sx-drawMaxX) / scale);
+      int leftOff = (int) ((drawX - x) / scale);
+      
+      Draw.rect(drawX, drawY, drawSx, drawSy, texx + leftOff,
+        texy + topOff, texsx - rightOff, texsy -
+        botOff, rot, texId);
+      
+    }
+  }
+  
+  public static void drawIfInBounds(Rectangle r, float x, float y, 
+      float sx, float sy, int texx, int texy, int texsx, int texsy,
+      int texId)
+  {
+    drawIfInBounds(r, x, y, sx, sy, texx, texy, texsx, texsy, 0, texId);
   }
 
 }

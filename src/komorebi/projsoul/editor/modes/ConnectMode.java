@@ -494,16 +494,6 @@ public class ConnectMode extends Mode {
     return offY;
   }
 
-  private static float getFloatMouseX()
-  {
-    return (float) Mouse.getX()/MainE.getScale();
-  }
-
-  private static float getFloatMouseY()
-  {
-    return (float) Mouse.getY()/MainE.getScale();
-  }
-  
   private static int getAdjustedMouseX()
   {
     return (int) ((getFloatMouseX() - ConnectMode.getX())/16);

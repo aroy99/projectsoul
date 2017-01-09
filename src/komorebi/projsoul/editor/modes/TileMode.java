@@ -7,10 +7,6 @@ import static komorebi.projsoul.editor.Buttons.BUTTON_SIZE;
 import static komorebi.projsoul.engine.MainE.HEIGHT;
 import static komorebi.projsoul.engine.MainE.WIDTH;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -18,6 +14,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
 import komorebi.projsoul.editor.Editor;
+import komorebi.projsoul.editor.LayerControl;
 import komorebi.projsoul.editor.Palette;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
@@ -40,6 +37,7 @@ public class TileMode extends Mode implements Playable{
   
   private static String res = "res\\tilesets\\";
 
+
   @Override
   public void getInput() {
     pal.getInput();
@@ -50,9 +48,8 @@ public class TileMode extends Mode implements Playable{
     pal.update();
     
     //Sets mouse tile to the one from the palette
-    if(lButtonIsDown && checkMapBounds() && !isSelection){
-  
-      tiles[my][mx] = pal.getSelected();
+    if(lButtonIsDown && checkMapBounds() && !isSelection){      
+      Editor.getMap().currentSublayer().getTiles()[my][mx] = pal.getSelected();
   
       EditorMap.setUnsaved();
       if(Display.getTitle().charAt(Display.getTitle().length()-1) != '*'){
@@ -62,7 +59,7 @@ public class TileMode extends Mode implements Playable{
   
     //Sets palette's selected to mouse tile
     if(rButtonIsDown && checkMapBounds() && !rButtonWasDown){
-      pal.setLoc(tiles[getMouseY()][getMouseX()]);
+      pal.setLoc(Editor.getMap().currentSublayer().getTiles()[getMouseY()][getMouseX()]);
       clearSelection();
   
     }
@@ -72,7 +69,7 @@ public class TileMode extends Mode implements Playable{
       int mx = getMouseX();
       int my = getMouseY();
   
-      flood(mx, my, tiles[my][mx]);
+      flood(mx, my, Editor.getMap().currentSublayer().getTiles()[my][mx]);
       EditorMap.setUnsaved();
     }
   
@@ -83,14 +80,14 @@ public class TileMode extends Mode implements Playable{
       
       if(initX < 0){
         initX = 0;
-      }else if(initX >= tiles[0].length){
-        initX = tiles[0].length-1;
+      }else if(initX >= Editor.getMap().currentSublayer().getTiles()[0].length){
+        initX = Editor.getMap().currentSublayer().getTiles()[0].length-1;
       }
       
       if(initY < 0){
         initY = 0;
-      }else if(initY >= tiles.length){
-        initY = tiles.length-1;
+      }else if(initY >= Editor.getMap().currentSublayer().getTiles().length){
+        initY = Editor.getMap().currentSublayer().getTiles().length-1;
       }
       
     }
@@ -103,7 +100,7 @@ public class TileMode extends Mode implements Playable{
       for(int i = 0; i < selection.length; i++){
         for (int j = 0; j < selection[0].length; j++) {
           if(checkTileBounds(getMouseX()+j, getMouseY()+i)){
-            tiles[getMouseY()+i][getMouseX()+j] = 
+            Editor.getMap().currentSublayer().getTiles()[getMouseY()+i][getMouseX()+j] = 
                 selection[i][j];
           }
         }
@@ -152,7 +149,7 @@ public class TileMode extends Mode implements Playable{
     if(selection != null){
       for (int i = 0; i < selection.length; i++) {
         for (int j = 0; j < selection[0].length; j++) {
-          Draw.tile(EditorMap.getX()+tiles[0].length*SIZE+j*SIZE, 
+          Draw.tile(EditorMap.getX()+Editor.getMap().currentSublayer().getTiles()[0].length*SIZE+j*SIZE, 
               EditorMap.getY()+i*SIZE, 
               Draw.getTexX(selection[i][j]), Draw.getTexY(selection[i][j]), 
               Draw.getTexture(selection[i][j]));
@@ -216,7 +213,7 @@ public class TileMode extends Mode implements Playable{
   
     for(int i = 0; i <= lastY - firstY; i++){
       for(int j = 0; j <= lastX - firstX; j++){
-        selection[i][j] =  tiles[firstY+i][firstX+j];
+        selection[i][j] =  Editor.getMap().currentSublayer().getTiles()[firstY+i][firstX+j];
       }
     }
   
@@ -242,16 +239,16 @@ public class TileMode extends Mode implements Playable{
    * @param type tile to search and destroy
    */
   private void flood(int mouseX, int mouseY, int type) {
-    if (mouseX < 0 || mouseX >= tiles[0].length ||
-        mouseY < 0 || mouseY >= tiles.length){
+    if (mouseX < 0 || mouseX >= Editor.getMap().currentSublayer().getTiles()[0].length ||
+        mouseY < 0 || mouseY >= Editor.getMap().currentSublayer().getTiles().length){
       return;
     }
-    if(tiles[mouseY][mouseX] != type || 
-        tiles[mouseY][mouseX] == pal.getSelected()){
+    if(Editor.getMap().currentSublayer().getTiles()[mouseY][mouseX] != type || 
+        Editor.getMap().currentSublayer().getTiles()[mouseY][mouseX] == pal.getSelected()){
       return;
     }
 
-    tiles[mouseY][mouseX] = pal.getSelected();
+    Editor.getMap().currentSublayer().getTiles()[mouseY][mouseX] = pal.getSelected();
     flood(mouseX-1, mouseY,   type);
     flood(mouseX+1, mouseY,   type);
     flood(mouseX,   mouseY+1, type);
@@ -280,6 +277,5 @@ public class TileMode extends Mode implements Playable{
     return removeMode;
   }
 
-  
-  
+
 }
