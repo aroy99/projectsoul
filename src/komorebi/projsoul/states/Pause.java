@@ -7,6 +7,7 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Main;
+import komorebi.projsoul.engine.Save;
 import komorebi.projsoul.gameplay.Item;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.script.EarthboundFont;
@@ -28,7 +29,7 @@ public class Pause extends State {
   
   public enum PopUp
   {
-    HATS, ITEMS, OPTIONS, NONE;
+    HATS, ITEMS, OPTIONS, SAVE, NONE;
     
     public int pickIndex;
     private TextHandler text = new TextHandler();
@@ -43,6 +44,8 @@ public class Pause extends State {
           break;
         case OPTIONS:
           break;
+        case SAVE:
+        	break;
         default:
           break;
       }
@@ -141,8 +144,9 @@ public class Pause extends State {
               p.setPopUp(PopUp.NONE);
               break;
           }
-          break;
-        default:
+        case SAVE:
+        	break;
+            default:
           break;
         
       }
@@ -217,6 +221,8 @@ public class Pause extends State {
           pop.click(this); 
         }
         break;
+      case SAVE:
+    	break;
       default:
         break;
       
@@ -282,12 +288,10 @@ public class Pause extends State {
         pop.write("Normal",108,170, new EarthboundFont(1));
         pop.write("Slow", 162, 170, new EarthboundFont(1));
         pop.write("Return", 22, 15, new EarthboundFont(1));
-        
         pop.setPickIndex(1);
-        
         break;
       case 4:
-      //TODO Implement saving
+        Save.newSaveGame();
         System.out.println("Save!");
         break;
       case 5:

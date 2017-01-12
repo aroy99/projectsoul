@@ -49,6 +49,7 @@ import java.util.Iterator;
  * @author Aaron Roy
  * @version 
  */
+@SuppressWarnings("unused")
 public class Game extends State{
 
   public ArrayList<Item> items = new ArrayList<Item>();
@@ -374,4 +375,12 @@ public class Game extends State{
   {
     return booleans[index];
   }
+
+public BufferedReader getRead() {
+	return read;
+}
+
+public void setRead(BufferedReader read) {
+	this.read = read;
+}
 }

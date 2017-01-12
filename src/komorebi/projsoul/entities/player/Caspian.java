@@ -29,7 +29,7 @@ public class Caspian extends Player {
   private Animation upThrow;
   private Animation downThrow;
 
-  private Animation currentAnimation;
+  private Animation currentAnimation; 
 
   public Caspian(float x, float y) {
     super(x, y);
@@ -156,8 +156,7 @@ public class Caspian extends Player {
       }
     }
 
-    System.out.println(button(Control.ATTACK) +" and "+ !isAttacking +" and "+ magic.hasEnoughMagic(
-        10));
+    //System.out.println(button(Control.ATTACK) +" and "+ !isAttacking +" and "+ magic.hasEnoughMagic(10));
     
     if (button(Control.ATTACK) && !isAttacking && magic.hasEnoughMagic(
         10))

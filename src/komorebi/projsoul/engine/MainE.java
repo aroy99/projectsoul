@@ -20,7 +20,6 @@ import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glOrtho;
-
 import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
@@ -43,6 +42,7 @@ import java.io.IOException;
  * 
  * @author Aaron Roy
  */
+@SuppressWarnings("unused")
 public class MainE {
 
   public static Editor edit;

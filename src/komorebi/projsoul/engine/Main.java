@@ -36,6 +36,7 @@ import org.newdawn.slick.openal.SoundStore;
 
 import komorebi.projsoul.audio.AudioHandler;
 import komorebi.projsoul.states.Game;
+//import komorebi.projsoul.engine.Save;
 
 
 
@@ -51,6 +52,7 @@ public class Main {
   private GameHandler gamehandler;
   public int scale;
   private BufferedReader read;
+  private static BufferedReader readSave;
   
   public static final int WIDTH = 256;
   public static final int HEIGHT = 224;
@@ -86,7 +88,25 @@ public class Main {
       e.printStackTrace();
       scale = 1;
     }
+   // /* Reads from your save file
+    try{
+    	readSave = new BufferedReader(new FileReader(new File("res/saves")));
+    	String str;
 
+      while ((str = readSave.readLine()) != null) {
+        if(str.equals("") || str.charAt(0) == '#'){
+          continue;
+        }
+        if(scale == 0){
+          scale = Integer.parseInt(str);
+        } else if(Game.testLoc == null){
+          Game.testLoc = str;
+        }
+    }}catch (IOException | NumberFormatException e) {
+      e.printStackTrace();
+      scale = 1;
+    }
+    // */
     initDisplay();
     initGL();
 
@@ -132,7 +152,8 @@ public class Main {
   }
 
 
-  private void render(){
+
+private void render(){
     glClear(GL_COLOR_BUFFER_BIT);   //clears the matrix with black
     glLoadIdentity();
 
@@ -152,7 +173,6 @@ public class Main {
     while(!Display.isCloseRequested()){
       getInput();
       update();
-      render();
       SoundStore.get().poll(0);
 
       if (!Keyboard.isCreated())
@@ -166,7 +186,7 @@ public class Main {
       if(Keyboard.isKeyDown(Keyboard.KEY_F4)){
         break;
       }
-
+      
     }
   }
 

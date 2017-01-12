@@ -809,8 +809,7 @@ public abstract class Player extends Entity implements Playable{
 
     }
 
-    System.out.println("Damage = " + attack + " - " + 
-        getDefense(character) + "/2");
+    System.out.println("Damage = " + attack + " - " + getDefense(character) + "/2");
 
     if (attack - getDefense(character)/2 > 0)
     {
