@@ -88,7 +88,7 @@ public class Main {
       e.printStackTrace();
       scale = 1;
     }
-   // /* Reads from your save file
+   /* Reads from your save file
     try{
     	readSave = new BufferedReader(new FileReader(new File("res/saves")));
     	String str;
@@ -106,11 +106,14 @@ public class Main {
       e.printStackTrace();
       scale = 1;
     }
-    // */
+     */
     initDisplay();
+
     initGL();
 
+
     initGame();
+
     gameLoop();
     cleanUp();
   }
@@ -173,6 +176,7 @@ private void render(){
     while(!Display.isCloseRequested()){
       getInput();
       update();
+      render();
       SoundStore.get().poll(0);
 
       if (!Keyboard.isCreated())
