@@ -4,17 +4,6 @@
 
 package komorebi.projsoul.engine;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-
-import org.lwjgl.LWJGLException;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.openal.AL;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
-
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
@@ -31,13 +20,24 @@ import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glOrtho;
-
-import org.newdawn.slick.openal.SoundStore;
+import static org.lwjgl.opengl.GL11.glViewport;
 
 import komorebi.projsoul.audio.AudioHandler;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
 import komorebi.projsoul.states.Game;
+
+import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.openal.AL;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
+import org.newdawn.slick.openal.SoundStore;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 
 
@@ -60,6 +60,11 @@ public class Main {
   
   public static final int WIDTH = 256;
   public static final int HEIGHT = 224;
+  
+  public static final float ASPECT = (float)WIDTH/HEIGHT;
+  
+  public static int oldWidth = WIDTH, oldHeight = HEIGHT;
+  public static int renderWidth, renderHeight;
   
 
   public static void main(String[] args){
@@ -108,10 +113,13 @@ public class Main {
   public void initDisplay(){
     //create display
     try {
+      renderWidth = WIDTH*scale;
+      renderHeight = HEIGHT*scale;
       Display.setDisplayMode(new DisplayMode(WIDTH*scale,HEIGHT*scale));
       Display.setTitle("Project Soul");
       Display.create();
       Display.setVSyncEnabled(true);
+//      Display.setResizable(true);
 
     } catch (LWJGLException e) {
       e.printStackTrace();
@@ -139,6 +147,33 @@ public class Main {
   }
 
   private void update(int delta){
+    if(Display.wasResized()){
+      System.out.println("HAI HO");
+      resizeHandler(Display.getWidth(), Display.getHeight());
+    }
+    if(Keyboard.isKeyDown(Keyboard.KEY_0)){
+      try {
+        Display.setDisplayMode(new DisplayMode(WIDTH*scale,HEIGHT*scale));
+        Display.setFullscreen(false);
+
+        glViewport(0, 0, WIDTH*scale, HEIGHT*scale);
+      } catch (LWJGLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+    if(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) && Keyboard.isKeyDown(Keyboard.KEY_RETURN)){
+      try {
+        Display.setFullscreen(true);
+        Display.setDisplayModeAndFullscreen(Display.getDesktopDisplayMode());
+        resizeHandler(Display.getWidth(), Display.getHeight());
+      } catch (LWJGLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+
+    
     gamehandler.update();
     updateFPS(delta);
   }
@@ -249,6 +284,19 @@ public class Main {
     }
     fps++;
   }
+  
+  private void resizeHandler(int windowWidth, int windowHeight){
+    if(renderWidth < windowWidth && windowHeight == oldHeight){
+      //Recenter the screen
+      int offX = (windowWidth - renderWidth)/2;
+      glViewport(offX, 0, renderWidth, windowHeight);
+    }
+    
+//    glViewport(0, 0, windowWidth, windowHeight);
+    oldWidth = windowWidth;
+    oldHeight = windowHeight;    
+  }
+
 
 
 }

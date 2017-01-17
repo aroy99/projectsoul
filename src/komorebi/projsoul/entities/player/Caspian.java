@@ -3,9 +3,9 @@ package komorebi.projsoul.entities.player;
 import static komorebi.projsoul.engine.KeyHandler.button;
 
 import komorebi.projsoul.attack.MeleeAttack;
-import komorebi.projsoul.attack.ProjectileAttack;
-import komorebi.projsoul.attack.WaterKunai;
 import komorebi.projsoul.attack.WaterSword;
+import komorebi.projsoul.attack.projectile.ProjectileAttack;
+import komorebi.projsoul.attack.projectile.WaterKunai;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.KeyHandler.Control;
 import komorebi.projsoul.entities.enemy.Enemy;
@@ -15,11 +15,22 @@ import komorebi.projsoul.states.Game;
 
 import java.awt.Rectangle;
 
+/**
+ * The water fighter Caspian, which there can be only one of
+ *
+ * @author Andrew Faulkenberry
+ * @author Aaron Roy
+ */
 public class Caspian extends Player {
 
-  public static int attack = 50, defense = 50, 
-      maxHealth = 50, maxMagic = 50;
+  //Stats
+  public static int attack = 50,  defense = 50, 
+                 maxHealth = 50, maxMagic = 50;
   public static int level = 1, xp = 0, nextLevelUp = 10;
+  
+  //Magic cost
+  public static final int SWORD_COST = -2;
+  public static final int PROJ_COST = -6;
 
   private MeleeAttack<WaterSword> melee;
   private ProjectileAttack<WaterKunai> proj;
@@ -31,6 +42,12 @@ public class Caspian extends Player {
 
   private Animation currentAnimation;
 
+  /**
+   * Creates Caspian
+   * 
+   * @param x X pixel location
+   * @param y Y pixel location
+   */
   public Caspian(float x, float y) {
     super(x, y);
 
@@ -38,13 +55,11 @@ public class Caspian extends Player {
 
     upAni =    new Animation(6, 8, 11);
     downAni =  new Animation(6, 8, 11);
-    leftAni =  new Animation(6, 8, 11);
     rightAni = new Animation(6, 8, 11);
 
     upThrow = new Animation(3,8,11,false);
     downThrow = new Animation(3,8,11,false);
     rightThrow = new Animation(3,8,11,false);
-    leftThrow = new Animation(3,8,11,false);
 
     hurtUpAni = new Animation(2,8,16,35,11);
     hurtDownAni = new Animation(2,8,16,34,11);
@@ -78,15 +93,8 @@ public class Caspian extends Player {
 
     rightAni.setPausedFrame(166,245,14,34);
 
-    leftAni.add(3,247,21,32,0,true);
-    leftAni.add(30,246,14,33,0,true);
-    leftAni.add(52,245,14,34,0,true);
-    leftAni.add(72,247,22,32,0,true);
-    leftAni.add(99,246,14,33,0,true);
-    leftAni.add(120,245,15,34,0,true);
-
-    leftAni.setPausedFrame(166,245,14,34,0,true);
-
+    leftAni = rightAni.getFlipped();
+    
     hurtUpAni.add(8,204);
     hurtUpAni.add(141, 205);
 
@@ -111,9 +119,7 @@ public class Caspian extends Player {
     rightThrow.add(52,245,14,34);
     rightThrow.add(52,245,14,34);
 
-    leftThrow.add(52,245,14,34,0,true);
-    leftThrow.add(52,245,14,34,0,true);
-    leftThrow.add(52,245,14,34,0,true);
+    leftThrow = rightThrow.getFlipped();
 
     melee = new MeleeAttack<WaterSword>(new WaterSword());
     proj = new ProjectileAttack<WaterKunai>(new WaterKunai());
@@ -125,6 +131,7 @@ public class Caspian extends Player {
     attack2 = proj;
   }
 
+  @Override
   public void update()
   {
     super.update();
@@ -140,16 +147,6 @@ public class Caspian extends Player {
           isAttacking = false;
         } 
 
-        for (Enemy enemy: Game.getMap().getEnemies())
-        {
-          if (melee.getAttackInstance().getHitBox().intersects(enemy.getHitBox()) 
-              && !enemy.invincible())
-          {
-            enemy.inflictPain((int) (Player.getAttack(Characters.CASPIAN)), dir,
-                Characters.CASPIAN);
-          }
-
-        }
       } else if (attack1 == proj)
       {
         if (!currentAnimation.playing())
@@ -174,7 +171,7 @@ public class Caspian extends Player {
         leftAni.hStop();
         rightAni.hStop();
 
-        magic.changeMagicBy(-2);
+        magic.changeMagicBy(SWORD_COST);
       } else if (attack1 == proj)
       {        
         switch (dir)
@@ -201,7 +198,7 @@ public class Caspian extends Player {
 
         currentAnimation.resume();
         
-        magic.changeMagicBy(-6);
+        magic.changeMagicBy(PROJ_COST);
       }
 
       if (attack1 != null)
@@ -235,7 +232,7 @@ public class Caspian extends Player {
     level++;
 
     Caspian.xp-=nextLevelUp;
-    nextLevelUp += 10;
+    nextLevelUp = getRequiredExp(level);
 
     int nAtt = (int) (Math.random()*3 + 1);
     int nDef = (int) (Math.random()*3 + 1);

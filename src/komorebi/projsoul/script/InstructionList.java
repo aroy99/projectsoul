@@ -3,9 +3,9 @@
  */
 package komorebi.projsoul.script;
 
-import java.util.ArrayList;
-
 import komorebi.projsoul.script.Task.TaskWithBranches;
+
+import java.util.ArrayList;
 
 /**
  * 

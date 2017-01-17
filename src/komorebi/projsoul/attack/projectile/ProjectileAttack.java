@@ -1,10 +1,17 @@
-package komorebi.projsoul.attack;
+package komorebi.projsoul.attack.projectile;
+
+import komorebi.projsoul.attack.Attack;
+import komorebi.projsoul.entities.Face;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import komorebi.projsoul.entities.Face;
-
+/**
+ * A character attack that shoots projectiles
+ * 
+ * @param <T> Has to extend Projectile
+ * @author Andrew Faulkenberry
+ */
 public class ProjectileAttack<T extends Projectile> extends Attack<T> {
   
   private static ArrayList<Projectile> projs = new ArrayList<Projectile>();
@@ -14,12 +21,6 @@ public class ProjectileAttack<T extends Projectile> extends Attack<T> {
   public ProjectileAttack(T factory)
   {
     super(factory);
-  }
-
-  public void newAttack(T add)
-  { 
-    projs.add(add);
-    playing = true;
   }
   
   public static void play() {
@@ -53,9 +54,19 @@ public class ProjectileAttack<T extends Projectile> extends Attack<T> {
   }
 
   @SuppressWarnings("unchecked")
-  public void newAttack(float x, float y, float dx, float dy, Face dir,
-      int attack) {
-      projs.add((T) factory.build(x, y, dx, dy, dir, attack));
+  @Override
+  public T newAttack(float x, float y, float dx, float dy, Face dir, int attack) {
+    T ins = (T) factory.build(x, y, dx, dy, dir, attack);
+    
+    projs.add((T)ins);
+    
+    return ins;
+  }
+  
+  public void newAttack(T add)
+  { 
+    projs.add(add);
+    playing = true;
   }
   
   

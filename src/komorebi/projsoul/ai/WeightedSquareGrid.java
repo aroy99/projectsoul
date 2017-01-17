@@ -1,5 +1,5 @@
 /**
- * WeightedSquareGrid.java	   Dec 4, 2016, 9:35:48 PM
+ * WeightedSquareGrid.java    Dec 4, 2016, 9:35:48 PM
  */
 package komorebi.projsoul.ai;
 
@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.PriorityQueue;
 
 /**
- * 
+ * A square grid that can contain obstacles
  *
  * @author Aaron Roy
  */
@@ -17,7 +17,6 @@ public class WeightedSquareGrid extends SquareGrid {
   
   
   private HashSet<Location> obstacles = new HashSet<Location>();
-  private boolean[][] walls;
   
   /**
    * Represents a Location with priority for the queue
@@ -59,7 +58,6 @@ public class WeightedSquareGrid extends SquareGrid {
    */
   public WeightedSquareGrid(int nwidth, int nheight) {
     super(nwidth, nheight);
-    walls = new boolean[height][width];
   }
   
   /**
@@ -69,9 +67,7 @@ public class WeightedSquareGrid extends SquareGrid {
    */
   public WeightedSquareGrid(boolean[][] obstacles){
     super(obstacles[0].length, obstacles.length);
-    
-    walls = obstacles;
-    
+        
     for(int i = 0; i < height; i++){
       for(int j = 0; j < width; j++){
         if(!obstacles[i][j]){

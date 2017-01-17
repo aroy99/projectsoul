@@ -9,6 +9,7 @@ import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.map.EditorMap;
 
 /**
+ * Represents a script to be activated on the map
  * 
  * @author Andrew Faulkenberry
  */
@@ -74,7 +75,7 @@ public class AreaScript extends Script implements Editable{
 
   public boolean isLocationIntersected(int tx, int ty)
   {
-    return (tx==getTileX() && ty==getTileY());
+    return (tx == getTileX() && ty == getTileY());
   }
 
   public boolean hasRun()

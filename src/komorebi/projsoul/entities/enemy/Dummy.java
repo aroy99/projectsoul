@@ -1,5 +1,5 @@
 /**
- * Dummy.java	   Nov 18, 2016, 9:46:48 PM
+ * Dummy.java   Nov 18, 2016, 9:46:48 PM
  */
 package komorebi.projsoul.entities.enemy;
 
@@ -21,6 +21,15 @@ public class Dummy extends Enemy {
   public Dummy(float x, float y, EnemyType type, int level) {
     super(x, y, type, level);
   }
+  
+  @Override
+  public void update() {
+    super.update();
+    if(!invincible){
+      dx *= 0.9;
+      dy *= 0.9;
+    }
+  }
 
   @Override
   public int xpPerLevel() {
@@ -39,7 +48,7 @@ public class Dummy extends Enemy {
 
   @Override
   public int baseHealth() {
-    return 100;
+    return 5000;
   }
 
 }

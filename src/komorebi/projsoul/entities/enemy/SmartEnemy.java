@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * 
+ * A smart enemy that can go everywhere no prob
  *
  * @author Aaron Roy
  */
@@ -99,7 +99,8 @@ public class SmartEnemy extends Chaser {
       path = grid.reconstructPath(start, goal, cameFrom);
       fineMode = false;
 
-      grid.drawGrid(1, start, goal, null, null, path);
+      //DEBUG Draw Grid
+//      grid.drawGrid(1, start, goal, null, null, path);
       
       regAni.resume();
 
@@ -131,8 +132,8 @@ public class SmartEnemy extends Chaser {
 
 
         //DEBUG Draw Location and Grid
-        System.out.println(nextX + ", " + nextY);
-        System.out.println(path.get(0).x*16 + ", " + path.get(0).y*16);
+//        System.out.println(nextX + ", " + nextY);
+//        System.out.println(path.get(0).x*16 + ", " + path.get(0).y*16);
 
 //        System.out.println(path.size());
 
@@ -144,9 +145,9 @@ public class SmartEnemy extends Chaser {
       }
       
       //DEBUG Draw Location and Grid
-      System.out.println(nextX + ", " + nextY);
+//      System.out.println(nextX + ", " + nextY);
       if(!path.isEmpty()){
-        System.out.println("Calc Loc : " + path.get(0).x*16 + ", " + path.get(0).y*16);
+//        System.out.println("Calc Loc : " + path.get(0).x*16 + ", " + path.get(0).y*16);
       }
     }
 
@@ -235,7 +236,7 @@ public class SmartEnemy extends Chaser {
       }
       */
       
-      //DEBUG Smart Enemy Velocity
+      //DEBUG Smart Enemy Velocity, Key.V
       if(KeyHandler.keyClick(Key.V)){
         System.out.println("Velocity   : " + dx + ", " + dy);
         System.out.println("Trig Stuff : " + triX + ", " + triY + ", " + theta);

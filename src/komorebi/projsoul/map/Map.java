@@ -7,6 +7,7 @@ package komorebi.projsoul.map;
 import static komorebi.projsoul.engine.Main.HEIGHT;
 import static komorebi.projsoul.engine.Main.WIDTH;
 
+import komorebi.projsoul.attack.CircleStrike;
 import komorebi.projsoul.audio.AudioHandler;
 import komorebi.projsoul.audio.Song;
 import komorebi.projsoul.engine.Draw;
@@ -80,7 +81,7 @@ public class Map implements Playable{
   //DEBUG Map Debug variables
   public static boolean isHitBox;
   public static boolean isGrid;
-
+  
 
   private int debugCount;
 
@@ -284,7 +285,7 @@ public class Map implements Playable{
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
     }
-    
+        
   }
 
 
@@ -419,8 +420,6 @@ public class Map implements Playable{
       }
     }
 
-
-
     for (NPC npc: npcs) {
       if (npc != null) 
       {
@@ -441,7 +440,7 @@ public class Map implements Playable{
         }
       }
     }
-
+        
     play.render();
 
     for (Enemy enemy: enemies)
@@ -463,6 +462,8 @@ public class Map implements Playable{
     if(isHitBox){
       Draw.rectCam((int)play.getX(), (int)play.getY(), 16, 16, 18, 16, 18, 16, 2);
     }
+    
+    
   }
 
   /**

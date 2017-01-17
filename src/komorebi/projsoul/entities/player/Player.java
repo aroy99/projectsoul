@@ -3,22 +3,17 @@
  */
 package komorebi.projsoul.entities.player;
 
-import java.awt.Rectangle;
-
-import org.lwjgl.input.Keyboard;
-
 import komorebi.projsoul.attack.Attack;
 import komorebi.projsoul.attack.AttackInstance;
 import komorebi.projsoul.attack.FireRingInstance;
-import komorebi.projsoul.attack.ProjectileAttack;
 import komorebi.projsoul.attack.RingOfFire;
+import komorebi.projsoul.attack.projectile.ProjectileAttack;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.entities.Entity;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.NPC;
-import komorebi.projsoul.entities.Entity.Entities;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
@@ -28,6 +23,10 @@ import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
 import komorebi.projsoul.states.Game;
+
+import org.lwjgl.input.Keyboard;
+
+import java.awt.Rectangle;
 
 /**
  * @author Aaron Roy
@@ -70,6 +69,7 @@ public abstract class Player extends Entity implements Playable{
   public Animation deathAni;
 
   private int hurtCount;
+  public static int INVINCIBILITY = 60;
 
   private Rectangle area;
   protected boolean invincible;
@@ -788,7 +788,7 @@ public abstract class Player extends Entity implements Playable{
     restoreMvmtX = false;
     restoreMvmtY = false;
 
-    hurtCount = 40;
+    hurtCount = INVINCIBILITY;
 
     switch (dir)
     {
@@ -809,21 +809,28 @@ public abstract class Player extends Entity implements Playable{
 
     }
 
+    //DEBUG Damage calculation
     System.out.println("Damage = " + attack + " - " + 
         getDefense(character) + "/2");
+    
+    //DEBUG WHAT WAS PASSED INTO HEREEEE
+    System.out.println(dx + ", " + dy);
 
     if (attack - getDefense(character)/2 > 0)
     {
       health.health -= (int) (attack - (getDefense(character)/2));
-    }else{
+    }else if(attack < 0){
       health.health--;
     }
     
-    //Kills the enemy
+    //Kills the player
     if (health.health <= 0)
     {
       deathAni.resume();
       dying = true;
+      
+      //DEBUG Kill teh player
+      System.out.println(character.getName() + " ded");
     }
 
     this.dx = dx;
@@ -871,6 +878,8 @@ public abstract class Player extends Entity implements Playable{
         return Sierra.attack;
       case BRUNO:
         return Bruno.attack;
+      default:
+        break;
     }
 
     return 0;
@@ -888,6 +897,8 @@ public abstract class Player extends Entity implements Playable{
         return Sierra.defense;
       case BRUNO:
         return Bruno.defense;
+      default:
+        break;
     }
 
     return 0;
@@ -905,6 +916,8 @@ public abstract class Player extends Entity implements Playable{
         return Sierra.maxMagic;
       case BRUNO:
         return Bruno.maxMagic;
+      default:
+        break;
     }
 
     return 0;  
@@ -922,6 +935,8 @@ public abstract class Player extends Entity implements Playable{
         return Sierra.maxHealth;
       case BRUNO:
         return Bruno.maxHealth;
+      default:
+        break;
     }
 
     return 0;  
@@ -939,6 +954,8 @@ public abstract class Player extends Entity implements Playable{
         return Sierra.xp;
       case BRUNO:
         return Bruno.xp;
+      default:
+        break;
     }
 
     return 0;  
@@ -956,6 +973,8 @@ public abstract class Player extends Entity implements Playable{
         return Sierra.nextLevelUp;
       case BRUNO:
         return Bruno.nextLevelUp;
+      default:
+        break;
     }
 
     return 0;  
@@ -973,6 +992,8 @@ public abstract class Player extends Entity implements Playable{
         return Sierra.level;
       case BRUNO:
         return Bruno.level;
+      default:
+        break;
     }
 
     return 0;  
@@ -1020,6 +1041,10 @@ public abstract class Player extends Entity implements Playable{
   public int getHealth()
   {
     return health.getHealth();
+  }
+  
+  public int getRequiredExp(int level){
+    return (int)(level*level + 10*level + 10);
   }
 
 

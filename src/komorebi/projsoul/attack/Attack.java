@@ -17,7 +17,7 @@ public abstract class Attack<T extends AttackInstance> {
     this.factory = factory;
   }
   
-  public abstract void newAttack(float x, float y, float dx, float dy, 
+  public abstract T newAttack(float x, float y, float dx, float dy, 
       Face dir, int attack);
   
 }

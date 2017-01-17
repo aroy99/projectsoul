@@ -261,7 +261,7 @@ public class Execution implements Runnable {
         }        
         
         (new Execution(npc, taskStrArr.getTask(answer).getBranch())).run();
-         break;
+        break;
       case RUN_BRANCH:
         taskBr = (TaskWithBranch) task;
         (new Execution(npc, taskBr.getBranch())).run();

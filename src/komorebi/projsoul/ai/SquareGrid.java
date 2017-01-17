@@ -1,5 +1,5 @@
 /**
- * SquareGrid.java	   Nov 29, 2016, 9:39:20 AM
+ * SquareGrid.java     Nov 29, 2016, 9:39:20 AM
  */
 package komorebi.projsoul.ai;
 
@@ -8,8 +8,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-
-import javax.swing.undo.CannotUndoException;
 
 /**
  * Represents a square grid to be used with pathfinding and other endeavors

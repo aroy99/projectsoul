@@ -1,7 +1,5 @@
 package komorebi.projsoul.attack;
 
-import java.awt.Rectangle;
-
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
@@ -9,16 +7,21 @@ import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.states.Game;
 
+import java.awt.Rectangle;
+
+/**
+ * A charge attack for Bruno
+ * 
+ * @author Andrew Faulkenberry
+ * @author Aaron Roy
+ */
 public class Charge extends Melee {
  
   private Rectangle future;
   
   private int attackIndex;
   
-  public Charge()
-  {
-    
-  }
+  public Charge(){}
   
   private Charge(float x, float y, float dx, float dy, Face dir, int attack)
   {

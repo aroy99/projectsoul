@@ -1,5 +1,5 @@
 /**
- * PathFindingTest.java	   Nov 28, 2016, 9:42:59 AM
+ * PathFindingTest.java    Nov 28, 2016, 9:42:59 AM
  */
 package komorebi.projsoul.ai;
 
@@ -16,6 +16,11 @@ import java.util.HashMap;
  */
 public class PathFindingTest {
   
+  /**
+   * Starts the pathfinding test
+   * 
+   * @param args Does absolutely nothing
+   */
   public static void main(String[] args){
     Map testMap = new Map("res/maps/Maze.map");
     

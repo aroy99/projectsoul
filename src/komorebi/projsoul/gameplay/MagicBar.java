@@ -67,7 +67,9 @@ public class MagicBar implements Renderable {
    */
   public boolean hasEnoughMagic(int magicNeeded)
   {
-    return magic>=magicNeeded;
+    //TODO Make magic limited again
+    return true;
+    //return magic>=magicNeeded;
   }
   
   public void addToMaxMagic(int add)

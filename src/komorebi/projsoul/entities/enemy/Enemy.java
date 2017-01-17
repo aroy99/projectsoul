@@ -1,11 +1,8 @@
 package komorebi.projsoul.entities.enemy;
 
-import java.awt.Rectangle;
-
 import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.Entity;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.XPObject;
@@ -13,10 +10,20 @@ import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.states.Game;
 
+import java.awt.Rectangle;
+
+/**
+ * Represents an Enemy in the game
+ * 
+ * @author Andrew Faulkenberry
+ * @author Aaron Roy
+ */
 public abstract class Enemy extends Entity {
 
   protected int attack, defense;
   protected int health;
+  protected int level;
+  
   public Rectangle hitBox;
 
   public boolean invincible;
@@ -24,17 +31,24 @@ public abstract class Enemy extends Entity {
   protected boolean dead;
   protected int hitCounter;
 
-  protected Animation regAni;
-  protected Animation hitAni;
-  protected Animation deathAni;
+  //Animations
+  protected final Animation regAni;
+  protected final Animation hitAni;
+  protected final Animation deathAni;
 
-  public static final int KNOCKBACK = 6;
+  public static final int DEFAULT_KNOCK = 6;
+  public static final int INVINCIBILITY = 15;
 
   public float dx, dy;
 
   protected boolean[] hitBy;
+  
+  //Does something
+  private Face hitDirection;
 
-  protected int level;
+  //Sprite of this enemy
+  private EnemyType type;
+
 
   /**
    * @return The amount of exp this enemy gives per level
@@ -55,11 +69,6 @@ public abstract class Enemy extends Entity {
    * @return The base health of this enemy
    */
   public abstract int baseHealth();
-
-
-  private Face hitDirection;
-
-  private EnemyType type;
 
   /**
    * Creates a standard enemy
@@ -125,21 +134,11 @@ public abstract class Enemy extends Entity {
     if (invincible)
     {
       hitCounter--;
-      if (dx > 0){
-        dx--;
-      }
-      if (dx < 0){
-        dx++;
-      }
-      if (dy > 0){
-        dy--;
-      }
-      if (dy < 0){
-        dy++;
-      }
+      dx *= 0.9;
+      dy *= 0.9;
     }
 
-    if (hitCounter<=0)
+    if (hitCounter <= 0)
     {
       hitAni.hStop();
       invincible = false;
@@ -166,6 +165,13 @@ public abstract class Enemy extends Entity {
 
   }
 
+  /**
+   * Hits the enemy in one direction
+   * 
+   * @param attack The damage done to the enemy
+   * @param dir The direction to whack the enemy
+   * @param c The character that hit the enemy (used for exp)
+   */
   public void inflictPain(int attack, Face dir, Characters c)
   {
     int chgx = 0, chgy = 0;
@@ -196,15 +202,49 @@ public abstract class Enemy extends Entity {
   }
 
 
+  /**
+   * Updates whether the enemy is being hit with default knockback
+   * 
+   * @param attack The damage done to the enemy
+   * @param ang The angle to knock the enemy back (in degrees)
+   * @param c The character that hit the enemy (used for exp)
+   */
+  public void inflictPain(int attack, double ang, Characters c)
+  {
+    inflictPain(attack, ang, c, DEFAULT_KNOCK);
+  }
+  
+  /**
+   * Updates whether the enemy is being hit, and gives extra knockback
+   * 
+   * @param attack The damage done to the enemy
+   * @param ang The angle to knock the enemy back (in degrees)
+   * @param c The character that hit the enemy (used for exp)
+   * @param knock The custom knockback
+   */
+  public void inflictPain(int attack, double ang, Characters c, int knock)
+  {
+    float chgx = (float) Math.cos(ang * (Math.PI/180)) * knock;
+    float chgy = (float) Math.sin(ang * (Math.PI/180)) * knock;
 
+    inflictPain(attack, chgx, chgy, c);
+  }
 
-  private void inflictPain(int attack, float dx, float dy, Characters c)
+  /**
+   * Whacks the enemy and kills it if his health is low enough
+   * 
+   * @param attack The damage done to the enemy
+   * @param dx The new x velocity of the target
+   * @param dy The new y velocity of the target
+   * @param c The character that hit the enemy (used for exp)
+   */
+  public void inflictPain(int attack, float dx, float dy, Characters c)
   {
     health -= attack - (defense/2);
     hitBy[c.getNumber()] = true;
 
     //Kills the enemy
-    if (health<=0)
+    if (health <= 0)
     {
       deathAni.resume();
       dying = true;
@@ -212,26 +252,15 @@ public abstract class Enemy extends Entity {
     {
       //Knocks back the enemy
       invincible = true;
-      hitCounter = 50;
+      hitCounter = INVINCIBILITY;
       hitAni.resume();
 
-      System.out.println(dx + " " + dy);
+      //DEBUG Enemy movement speed
+      System.out.println("----ENEMY MOVEMENT----\n"+dx + " " + dy);
 
       this.dx = dx;
       this.dy = dy;
     }
-  }
-
-
-  /**
-   * Updates whether the enemy is being hit
-   */
-  public void inflictPain(int attack, double ang, Characters c)
-  {
-    float chgx = (float) Math.cos(ang * (Math.PI/180)) * 5;
-    float chgy = (float) Math.sin(ang * (Math.PI/180)) * 5;
-
-    inflictPain(attack, chgx, chgy, c);
   }
 
 
@@ -280,21 +309,21 @@ public abstract class Enemy extends Entity {
    */
   public void overrideImproperMovements()
   {
-    if (x+dx<0)
+    if (x+dx < 0)
     {
       x = 0;
       dx = 0;
-    } else if (x+dx>Game.getMap().getWidth()*16 - sx)
+    } else if (x+dx > Game.getMap().getWidth()*16 - sx)
     {
       dx = 0;
       x = Game.getMap().getHeight() * 16 - sx;
     }
 
-    if (y+dy<0)
+    if (y+dy < 0)
     {
       dy = 0;
       y = 0;
-    } else if (y+dy>Game.getMap().getHeight()*16 - sy)
+    } else if (y+dy > Game.getMap().getHeight()*16 - sy)
     {
       dy = 0;
       y = Game.getMap().getHeight() * 16 - sy;
@@ -308,8 +337,11 @@ public abstract class Enemy extends Entity {
 
       if (!Map.getPlayer().invincible())
       {
-        Map.getPlayer().inflictPain(30, KNOCKBACK*Math.signum(dx)*(float)Math.sqrt(Math.abs(dx)), 
-            KNOCKBACK*Math.signum(dy)*(float)Math.sqrt(Math.abs(dy)));
+        //DEBUG Enemy movements Part II
+        System.out.println(dx + ", " + dy);
+        Map.getPlayer().inflictPain(attack, 
+            DEFAULT_KNOCK*Math.signum(dx)*(float)Math.sqrt(Math.abs(dx)), 
+            DEFAULT_KNOCK*Math.signum(dy)*(float)Math.sqrt(Math.abs(dy)));
 
       }
 

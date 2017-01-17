@@ -3,23 +3,23 @@
  */
 package komorebi.projsoul.entities.enemy;
 
-import komorebi.projsoul.ai.WeightedSquareGrid;
+import komorebi.projsoul.attack.projectile.ProjectileAttack;
+import komorebi.projsoul.attack.projectile.StraightShot;
+import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.map.EditorMap;
-import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.EditorMap.Modes;
+import komorebi.projsoul.map.Map;
 
 import java.util.Random;
-
-import javax.swing.plaf.BorderUIResource.CompoundBorderUIResource;
 
 /**
  * 
  *
  * @author Aaron Roy
  */
-public class Shooter extends Enemy {
+public class Shooter extends MagicEnemy {
 
   float targetX, targetY; //Location of the player
   float currDist;         //Calculated distance between this enemy and the player
@@ -28,6 +28,11 @@ public class Shooter extends Enemy {
   protected static final float WALK_SPEED = 0.5f;
 
   protected int red, green, blue;
+  
+  private ProjectileAttack<StraightShot> projectile;
+  
+  private Animation shoot;
+  private Animation normal;
 
 
   /**
@@ -56,11 +61,18 @@ public class Shooter extends Enemy {
 
   private Face direction = Face.DOWN;
 
+  //Stats
   public static final int baseAttack = 25;
-  public static final int baseMagicAttack = 50;
+  public static final int baseMagicAttack = 30;
   public static final int baseDefense = 50;
-  public static final int baseHealth = 100;
+  public static final int baseHealth = 250;
   public static final int baseMagic = 50;
+  
+  /** Cost to shoot one projectile */
+  public static final int SHOOT_COST = 5;
+  
+  /** Speed of projectiles */
+  private static final int PROJ_SPEED = 2;
 
 
   /**
@@ -96,139 +108,225 @@ public class Shooter extends Enemy {
     red = (int)(Math.random()*255);
     green = (int)(Math.random()*255);
     blue = (int)(Math.random()*255);  
+    
+    projectile = new ProjectileAttack<StraightShot>(new StraightShot());
   }
 
   @Override
   public void update(){
-    dx = 0;
-    dy = 0;
+    if(!invincible){
+      dx = 0;
+      dy = 0;
 
-    targetX = Map.getPlayer().getX();
-    targetY = Map.getPlayer().getY();
+      targetX = Map.getPlayer().getX();
+      targetY = Map.getPlayer().getY();
 
-    currDist = Map.distanceBetween(x,y,targetX,targetY);
+      currDist = Map.distanceBetween(x,y,targetX,targetY);
 
-    if (currState != ShootStates.IDLE && currState != ShootStates.WALK && 
-        currDist > distance)
-    {
-      regAni.stop();
-      currState = ShootStates.IDLE;
-    }
-
-    if (currState != ShootStates.RUN && !invincible && currDist <= runDistance)
-    {
-      currState = ShootStates.RUN;
-      regAni.resume();
-      regAni.setSpeed((int)(6/RUN_SPEED));
-    }
-
-    if(currState != ShootStates.ATTACK && currState != ShootStates.SHOOT && 
-        currDist <= distance && currDist > runDistance){
-      regAni.resume();
-      regAni.setSpeed((int)(6/RUN_SPEED));
-
-      //DEBUG Labels
-      System.out.println("Switch to Attack");
-      currState = ShootStates.ATTACK;
-    }
-
-    switch (currState) {
-      //Idle and Walk Animations run as a pair
-      case IDLE:
-        idleCount--;
-
-        if(idleCount <= 0){
-          idleCount = GEN.nextInt(30)+30;
-          currState = ShootStates.WALK;
-          regAni.resume();
-          regAni.setSpeed((int)(6/WALK_SPEED));
-        }
-        break;
-      case WALK:        
-        walkCount--;
-
-        if(walkCount <= 0){
-          walkCount = GEN.nextInt(60)+60;
-          direction = Face.random();
+      if(currState != ShootStates.TIRED){
+        if (currState != ShootStates.IDLE && currState != ShootStates.WALK && 
+            currDist > distance)
+        {
+          regAni.stop();
           currState = ShootStates.IDLE;
-          regAni.stop();
         }
 
-        switch (direction) {
-          case DOWN: dy = -WALK_SPEED; break;
-          case LEFT: dx = -WALK_SPEED; break;
-          case RIGHT:dx =  WALK_SPEED; break;
-          case UP:   dy =  WALK_SPEED; break;
-          default:;
+        if (currState != ShootStates.RUN && !invincible && currDist <= runDistance)
+        {
+          currState = ShootStates.RUN;
+          regAni.resume();
+          regAni.setSpeed((int)(6/RUN_SPEED));
         }
 
-        break;
+        if(currState != ShootStates.ATTACK && currState != ShootStates.SHOOT && 
+            currDist <= distance && currDist > runDistance){
+          regAni.resume();
+          regAni.setSpeed((int)(6/RUN_SPEED));
 
-      //Attack and Shoot work as a pair
-      case ATTACK:
-        float delX = targetX-x;
-        float delY = targetY-y;
-
-        if(Math.abs(delX) < 8 || Math.abs(delY) < 8){
           //DEBUG Labels
-          System.out.println("Switch to SHoot"); 
-          regAni.stop();
-          currState = ShootStates.SHOOT;
+          System.out.println("Switch to Attack");
+          currState = ShootStates.ATTACK;
         }
+      }
 
-        else if(Math.abs(delX) < Math.abs(delY)){
-          if(Math.signum(delX) == -1){
-            dx = -RUN_SPEED;
+      switch (currState) {
+        //Idle and Walk Animations run as a pair
+        case IDLE:
+          idleCount--;
+
+          if(idleCount <= 0){
+            idleCount = GEN.nextInt(30)+30;
+            currState = ShootStates.WALK;
+            regAni.resume();
+            regAni.setSpeed((int)(6/WALK_SPEED));
           }
-          else if(Math.signum(delX) == 1){
-            dx = RUN_SPEED;
+          break;
+        case WALK:        
+          walkCount--;
+
+          if(walkCount <= 0){
+            walkCount = GEN.nextInt(60)+60;
+            direction = Face.random();
+            currState = ShootStates.IDLE;
+            regAni.stop();
           }
-        }
 
-        else if(Math.abs(delY) < Math.abs(delX)){
-          if(Math.signum(delY) == -1){
-            dy = -RUN_SPEED;
+          switch (direction) {
+            case DOWN: dy = -WALK_SPEED; break;
+            case LEFT: dx = -WALK_SPEED; break;
+            case RIGHT:dx =  WALK_SPEED; break;
+            case UP:   dy =  WALK_SPEED; break;
+            default:;
           }
-          else if(Math.signum(delY) == 1){
-            dy = RUN_SPEED;
+
+          break;
+
+          //Attack and Shoot work as a pair
+        case ATTACK:
+          float delX = targetX-x;
+          float delY = targetY-y;
+
+          if(Math.abs(delX) < 8 || Math.abs(delY) < 8){
+            //DEBUG Labels
+            System.out.println("Switch to SHoot"); 
+            regAni.stop();
+            shootCount = 10;
+            currState = ShootStates.SHOOT;
           }
-        }
 
-        break;
-      case SHOOT:
-        shootCount--;
-        if(shootCount <= 0){
-          
-          shootCount = GEN.nextInt(60)+60;
-        }
-        
-        break;
-        
-      case RUN:
-        float triX = Math.abs(targetX-x);
-        float triY = Math.abs(targetY-y);
-        float theta = (float)Math.atan(triY/triX);
+          else if(Math.abs(delX) < Math.abs(delY)){
+            if(delX < 0){
+              dx = -RUN_SPEED;
+            }
+            else if(delX > 0){
+              dx = RUN_SPEED;
+            }
 
-        if (targetX > x && triX > 12)
-        {
-          dx = -RUN_SPEED*(float)Math.cos(theta);
-        } else if (targetX < x)
-        {
-          dx = RUN_SPEED*(float)Math.cos(theta);
-        }
+            if (delY < 0) {
+              direction = Face.DOWN;
+            }
+            else if (delY > 0) {
+              direction = Face.UP;
+            }
+          }
 
-        if (targetY > y && triY > 12)
-        {
-          dy = -RUN_SPEED*(float)Math.sin(theta);
-        } else if (targetY < y)
-        {
-          dy = RUN_SPEED*(float)Math.sin(theta);
-        }
-        break;
-      case TIRED:
-        break;
-      default:
-        break;
+          else if(Math.abs(delY) < Math.abs(delX)){
+            if(delY < 0){
+              dy = -RUN_SPEED;
+            }
+            else if(delY > 0){
+              dy = RUN_SPEED;
+            }
+
+            if (delX < 0) {
+              direction = Face.LEFT;
+            }
+            else if (delX > 0) {
+              direction = Face.RIGHT;
+            }
+          }
+
+          break;
+        case SHOOT:
+          shootCount--;
+
+          switch(direction){
+            case DOWN: case UP:
+              float deX = targetX-x;
+              if(Math.abs(deX) > 8){
+                currState = ShootStates.RUN;
+              }
+              break;
+            case LEFT: case RIGHT:
+              float deY = targetY-y;
+              if(Math.abs(deY) > 8){
+                currState = ShootStates.RUN;
+              }
+              break;
+            default:
+              break;
+          }
+
+          if(shootCount <= 0){
+            int aDx = 0, aDy = 0;
+
+            switch (direction)
+            {
+              case DOWN:
+                aDy = -PROJ_SPEED;
+                break;
+              case LEFT:
+                aDx = -PROJ_SPEED;
+                break;
+              case RIGHT:
+                aDx = PROJ_SPEED;
+                break;
+              case UP:
+                aDy = PROJ_SPEED;
+                break;
+              default:
+                break;
+            }
+
+            if (magic > SHOOT_COST){
+              projectile.newAttack(x, y, aDx, aDy, direction, magicAttack);
+              magic -= SHOOT_COST;          
+              shootCount = (int) (currDist/distance * (GEN.nextInt(60)+60));
+            }
+            else{
+              currState = ShootStates.TIRED;
+              regAni.resume();
+              regAni.setSpeed((int)(6/WALK_SPEED*2));
+            }
+          }
+
+          break;
+
+        case RUN:
+          float triX = Math.abs(targetX-x);
+          float triY = Math.abs(targetY-y);
+          float theta = (float)Math.atan(triY/triX);
+
+          if (targetX > x && triX > 12)
+          {
+            dx = -RUN_SPEED*(float)Math.cos(theta);
+          } else if (targetX < x)
+          {
+            dx = RUN_SPEED*(float)Math.cos(theta);
+          }
+
+          if (targetY > y && triY > 12)
+          {
+            dy = -RUN_SPEED*(float)Math.sin(theta);
+          } else if (targetY < y)
+          {
+            dy = RUN_SPEED*(float)Math.sin(theta);
+          }
+          break;
+        case TIRED:
+          float tiX = Math.abs(targetX-x);
+          float tiY = Math.abs(targetY-y);
+          float teta = (float)Math.atan(tiY/tiX);
+
+          if (targetX > x && tiX > 12)
+          {
+            dx = WALK_SPEED*(float)Math.cos(teta)/2;
+          } else if (targetX < x)
+          {
+            dx = -WALK_SPEED*(float)Math.cos(teta)/2;
+          }
+
+          if (targetY > y && tiY > 12)
+          {
+            dy = WALK_SPEED*(float)Math.sin(teta)/2;
+          } else if (targetY < y)
+          {
+            dy = -WALK_SPEED*(float)Math.sin(teta)/2;
+          }
+          break;
+        default:
+          break;
+      }
     }
 
     super.update();
@@ -254,17 +352,25 @@ public class Shooter extends Enemy {
 
   @Override
   public int xpPerLevel() {
-    return 20;
+    return 100;
   }
 
   @Override
   public int baseAttack() {
     return baseAttack;
   }
-
+  
+  @Override
   public int baseMagicAttack() {
     return baseMagicAttack;
   }
+  
+  @Override
+  public int baseMagic() {
+    // TODO Auto-generated method stub
+    return baseMagic;
+  }
+
 
   @Override
   public int baseDefense() {
@@ -276,14 +382,9 @@ public class Shooter extends Enemy {
     return baseHealth;
   }
 
-  public int baseMagic() {
-    return baseMagic;
-  }
-
   @Override
   public String getBehavior(){
     return "shooter";
   }
-
 
 }

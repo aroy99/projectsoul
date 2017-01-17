@@ -2,10 +2,10 @@ package komorebi.projsoul.entities.player;
 
 import static komorebi.projsoul.engine.KeyHandler.button;
 
-import komorebi.projsoul.attack.FireBall;
 import komorebi.projsoul.attack.FireRingInstance;
-import komorebi.projsoul.attack.ProjectileAttack;
 import komorebi.projsoul.attack.RingOfFire;
+import komorebi.projsoul.attack.projectile.FireBall;
+import komorebi.projsoul.attack.projectile.ProjectileAttack;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.KeyHandler.Control;
@@ -13,6 +13,12 @@ import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.gameplay.MagicBar;
 
+/**
+ * The fiery chick Flannery, which there can be only one of
+ *
+ * @author Andrew Faulkenberry
+ * @author Aaron Roy
+ */
 public class Flannery extends Player {
 
   private ProjectileAttack<FireBall> projectile;
@@ -26,10 +32,22 @@ public class Flannery extends Player {
 
   private Animation currentAnimation;
 
-  public static int attack = 60, defense = 50, 
-      maxHealth = 50, maxMagic = 40; 
+  //Stats
+  public static int    attack = 60,  defense = 50, 
+                    maxHealth = 50, maxMagic = 40; 
   public static int level = 1, xp = 0, nextLevelUp = 10;
+  
+  //Magic costs
+  public static final int PROJ_COST = -5;
+  public static final int RING_COST = -8;
 
+
+  /**
+   * Creates Flannery
+   * 
+   * @param x X pixel location
+   * @param y Y pixel location
+   */
   public Flannery(float x, float y) {
 
     super(x,y);
@@ -176,7 +194,7 @@ public class Flannery extends Player {
         }
 
         currentAnimation.resume();
-        magic.changeMagicBy(-5);
+        magic.changeMagicBy(PROJ_COST);
         
         attack1.newAttack(x,y,aDx,aDy,dir,attack);
       }
@@ -203,7 +221,7 @@ public class Flannery extends Player {
       //TODO: replace final 0 with atatck
       ring.newAttack(0, 0, 0, 0, dir, attack);
       canMove = true;
-      magic.changeMagicBy(-8);
+      magic.changeMagicBy(RING_COST);
     }
     
 
@@ -235,7 +253,7 @@ public class Flannery extends Player {
     level++;
 
     Flannery.xp-=nextLevelUp;
-    nextLevelUp += 10;
+    nextLevelUp = getRequiredExp(level);
 
     int nAtt = (int) (Math.random()*3 + 1);
     int nDef = (int) (Math.random()*3 + 1);

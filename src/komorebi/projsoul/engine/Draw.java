@@ -4,7 +4,7 @@
 
 package komorebi.projsoul.engine;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_NEAREST;
 import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER;
@@ -12,6 +12,7 @@ import static org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLE_FAN;
 import static org.lwjgl.opengl.GL11.glBegin;
 import static org.lwjgl.opengl.GL11.glColor3f;
+import static org.lwjgl.opengl.GL11.glColor4f;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glEnd;
@@ -59,6 +60,9 @@ public class Draw {
 
   /** Determines whether textures are loaded.*/
   private static boolean texLoaded;
+  
+  //No instances of this class!
+  private Draw(){}
 
   /**
    * Loads textures
@@ -322,7 +326,7 @@ public class Draw {
   
   public static void tile(int x, int y, int texX, int texY, int texID)
   {
-      Draw.rectCam(x, y, 16, 16, texX, texY, texX+16, texY+16, sheets.get(texID));
+    Draw.rectCam(x, y, 16, 16, texX, texY, texX+16, texY+16, sheets.get(texID));
    
   }
   
@@ -336,16 +340,22 @@ public class Draw {
     return ((id % SPREADSHEET_SIZE) / SPREADSHEET_ROW) * SPREADSHEET_ROW;
   }
   
+  /**
+   * @param id The number of the spreadsheet
+   * @return The correct texture for the spreadsheet
+   */
   public static int getTexture(int id)
   {
-    if (id==-1) return -1;
+    if (id == -1) {
+      return -1;
+    }
     return id / SPREADSHEET_SIZE;
   }
   
   /**
    * Creates an approximated circle at the specified point
    * 
-   * @param x the X position on the screen, starting from the left         
+   * @param x the X position on the screen, starting from the left
    * @param y the Y position on the screen, starting from the <i>bottom</i>
    * @param radius The radius of the circle in pixels
    * @param r Red, max 255
@@ -381,9 +391,20 @@ public class Draw {
     glPopMatrix();
   }
   
+  /**
+   * Creates an approximated circle at the specified point, adjusting for Camera
+   * 
+   * @param x the X position on the screen, starting from the left         
+   * @param y the Y position on the screen, starting from the <i>bottom</i>
+   * @param radius The radius of the circle in pixels
+   * @param r Red, max 255
+   * @param g Green, max 255
+   * @param b Blue, max 255
+   * @param a Alpha value (Transparency), max 255
+   */
   public static void circCam(float x, float y, float radius, 
       float r, float g, float b, float a){
     circ(x-Camera.getX(), y-Camera.getY(), radius, r, g, b, a);
   }
-
+  
 }

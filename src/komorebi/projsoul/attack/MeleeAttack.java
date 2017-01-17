@@ -67,9 +67,13 @@ public class MeleeAttack<T extends Melee> extends Attack<T> {
   
   @SuppressWarnings("unchecked")
   @Override
-  public void newAttack(float x, float y, float dx, float dy, Face dir,
+  public T newAttack(float x, float y, float dx, float dy, Face dir,
       int attack) {
-    melee = (T) factory.build(x, y, dx, dy, dir, attack);
+    T ins = (T) factory.build(x, y, dx, dy, dir, attack);
+    
+    melee = ins;
+    
+    return ins;
   }
 
 

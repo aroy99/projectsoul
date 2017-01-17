@@ -1,5 +1,10 @@
 package komorebi.projsoul.script;
 
+/**
+ * The EarthBound font, a placeholder for now
+ *
+ * @author Andrew Faulkenberry
+ */
 public class EarthboundFont extends Font {
 
   public static final int SCALE = 16;

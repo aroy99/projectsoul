@@ -1,5 +1,10 @@
 package komorebi.projsoul.script;
 
+/**
+ * Represents a font to be displayed ingame
+ *
+ * @author Andrew Faulkenberry
+ */
 public abstract class Font {
 
   public int scale;

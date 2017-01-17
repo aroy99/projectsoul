@@ -27,12 +27,16 @@ public class RingOfFire extends Attack<FireRingInstance> {
   }
 
   @Override
-  public void newAttack(float x, float y, float dx, float dy, Face dir,
+  public FireRingInstance newAttack(float x, float y, float dx, float dy, Face dir,
       int attack) {
-    rings.add((FireRingInstance) factory.build(this.x, this.y, dx, dy, dir, attack));
-    aiming = false;
+    FireRingInstance ins = (FireRingInstance) factory.build(this.x, this.y, 
+        this.dx, this.dy, dir, attack);
     
-    System.out.println("FIRE");
+    rings.add(ins);
+    
+    aiming = false;
+
+    return ins;
   }
   
   public void getInput()
@@ -176,7 +180,9 @@ public class RingOfFire extends Attack<FireRingInstance> {
             dy = 0;
           }
           break;
-        }
+        default:
+          break;
+      }
      
     }
             
