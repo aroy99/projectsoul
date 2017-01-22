@@ -256,7 +256,7 @@ public abstract class Enemy extends Entity {
       hitAni.resume();
 
       //DEBUG Enemy movement speed
-      System.out.println("----ENEMY MOVEMENT----\n"+dx + " " + dy);
+      System.out.println("----ENEMY MOVEMENT----\n"+dx + " " + dy + "\nHealth: " + health);
 
       this.dx = dx;
       this.dy = dy;

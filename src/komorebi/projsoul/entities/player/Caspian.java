@@ -3,6 +3,8 @@ package komorebi.projsoul.entities.player;
 import static komorebi.projsoul.engine.KeyHandler.button;
 
 import komorebi.projsoul.attack.MeleeAttack;
+import komorebi.projsoul.attack.SingleAttack;
+import komorebi.projsoul.attack.WaterBarrier;
 import komorebi.projsoul.attack.WaterSword;
 import komorebi.projsoul.attack.projectile.ProjectileAttack;
 import komorebi.projsoul.attack.projectile.WaterKunai;
@@ -30,17 +32,24 @@ public class Caspian extends Player {
   
   //Magic cost
   public static final int SWORD_COST = -2;
-  public static final int PROJ_COST = -6;
+  public static final int PROJ_COST = -3;
+  public static final int SUPP_COST = -10;
+  
+  //Other constants
+  private static final int PROJ_SPEED = 3;
+  private static final int SUPP_COOLDOWN = 50;
 
-  private MeleeAttack<WaterSword> melee;
-  private ProjectileAttack<WaterKunai> proj;
-
-  private Animation leftThrow;
-  private Animation rightThrow;
-  private Animation upThrow;
-  private Animation downThrow;
-
-  private Animation currentAnimation;
+  public static final MeleeAttack<WaterSword>  melee = 
+                                  new MeleeAttack<WaterSword>(new WaterSword());     
+  public static final ProjectileAttack<WaterKunai> proj = 
+                                  new ProjectileAttack<WaterKunai>(new WaterKunai()); 
+  public static final SingleAttack<WaterBarrier> support = 
+                                  new SingleAttack<WaterBarrier>(new WaterBarrier());
+  private Animation[] castAni = new Animation[4];
+  
+  private int index;
+  
+  private int suppCounter = SUPP_COOLDOWN;
 
   /**
    * Creates Caspian
@@ -57,14 +66,10 @@ public class Caspian extends Player {
     downAni =  new Animation(6, 8, 11);
     rightAni = new Animation(6, 8, 11);
 
-    upThrow = new Animation(3,8,11,false);
-    downThrow = new Animation(3,8,11,false);
-    rightThrow = new Animation(3,8,11,false);
-
-    hurtUpAni = new Animation(2,8,16,35,11);
-    hurtDownAni = new Animation(2,8,16,34,11);
+    hurtUpAni =    new Animation(2,8,16,35,11);
+    hurtDownAni =  new Animation(2,8,16,34,11);
     hurtRightAni = new Animation(2,8,14,33,11);
-    hurtLeftAni = new Animation(2,8,14,33,11);
+    hurtLeftAni =  new Animation(2,8,14,33,11);
 
     downAni.add(8,162,16,34);
     downAni.add(28,164,17,32);
@@ -107,28 +112,30 @@ public class Caspian extends Player {
     hurtLeftAni.add(30, 246, true);
     hurtLeftAni.add(141, 246, true);
 
-    upThrow.add(50,206,18,33);
-    upThrow.add(50,206,18,33);
-    upThrow.add(50,206,18,33);
+    for(int i = 0; i < 3; i++){
+      castAni[i] = new Animation(3, 4, 11, false);
+    }
+    
+    castAni[0].add(50,206,18,33);
+    castAni[0].add(50,206,18,33);
+    castAni[0].add(50,206,18,33);
 
-    downThrow.add(49,161,18,35);
-    downThrow.add(49,161,18,35);
-    downThrow.add(49,161,18,35);
+    castAni[1].add(49,161,18,35);
+    castAni[1].add(49,161,18,35);
+    castAni[1].add(49,161,18,35);
 
-    rightThrow.add(52,245,14,34);
-    rightThrow.add(52,245,14,34);
-    rightThrow.add(52,245,14,34);
+    castAni[2].add(52,245,14,34);
+    castAni[2].add(52,245,14,34);
+    castAni[2].add(52,245,14,34);
 
-    leftThrow = rightThrow.getFlipped();
-
-    melee = new MeleeAttack<WaterSword>(new WaterSword());
-    proj = new ProjectileAttack<WaterKunai>(new WaterKunai());
+    castAni[3] = castAni[2].getFlipped();
 
     magic = new MagicBar(maxMagic);
     health = new HUD(maxHealth);
 
     attack1 = melee;
     attack2 = proj;
+    attack3 = support;
   }
 
   @Override
@@ -149,11 +156,23 @@ public class Caspian extends Player {
 
       } else if (attack1 == proj)
       {
-        if (!currentAnimation.playing())
+        if (!castAni[index].playing())
         {
           isAttacking = false;
         }
 
+      } else if (attack1 == support){
+        dx = 0; dy = 0;
+        
+        if (!castAni[index].playing())
+        {
+          suppCounter--;
+          
+          if(suppCounter < 0){
+            isAttacking = false;
+            suppCounter = SUPP_COOLDOWN;
+          }
+        }
       }
     }
     
@@ -172,38 +191,74 @@ public class Caspian extends Player {
         rightAni.hStop();
 
         magic.changeMagicBy(SWORD_COST);
+        
+        attack1.newAttack(x,y,aDx,aDy,dir,attack);
       } else if (attack1 == proj)
       {        
+        //TODO Refactor, since this is ugly
+        float sideX = 0.5f*PROJ_SPEED, sideY = 0.87f*PROJ_SPEED;
+        
         switch (dir)
         {
           case DOWN:
-            aDy = -3;
-            currentAnimation = downThrow;
+            aDy = -PROJ_SPEED;
+            sideX = 0.5f*PROJ_SPEED;
+            sideY = 0.87f*PROJ_SPEED;
+            
+            attack1.newAttack(x,y,-sideX,-sideY,dir,attack);
+            attack1.newAttack(x,y, sideX,-sideY,dir,attack);
             break;
           case LEFT:
-            aDx = -3;
-            currentAnimation = leftThrow;
+            aDx = -PROJ_SPEED;
+            sideX = 0.87f*PROJ_SPEED;
+            sideY = 0.5f*PROJ_SPEED; 
+
+            attack1.newAttack(x,y,-sideX,-sideY,dir,attack);
+            attack1.newAttack(x,y,-sideX, sideY,dir,attack);
             break;
           case RIGHT:
-            aDx = 3;
-            currentAnimation = rightThrow;
+            aDx = PROJ_SPEED;
+            sideX = 0.87f*PROJ_SPEED;
+            sideY = 0.5f*PROJ_SPEED;
+
+            attack1.newAttack(x,y, sideX,-sideY,dir,attack);
+            attack1.newAttack(x,y, sideX, sideY,dir,attack);
             break;
           case UP:
-            aDy = 3;
-            currentAnimation = upThrow;
+            aDy = PROJ_SPEED;
+            sideX = 0.5f*PROJ_SPEED;
+            sideY = 0.87f*PROJ_SPEED;
+
+            attack1.newAttack(x,y,-sideX, sideY,dir,attack);
+            attack1.newAttack(x,y, sideX, sideY,dir,attack);
             break;
           default:
             break;          
         }
-
-        currentAnimation.resume();
+        index = dir.getFaceNum();
+        castAni[index].resume();
         
         magic.changeMagicBy(PROJ_COST);
-      }
-
-      if (attack1 != null)
-      {
+        
         attack1.newAttack(x,y,aDx,aDy,dir,attack);
+      } else if(attack1 == support){
+        dx = 0;
+        dy = 0;
+        
+        upAni.hStop();
+        downAni.hStop();
+        leftAni.hStop();
+        rightAni.hStop();
+
+        magic.changeMagicBy(SUPP_COST);
+        
+        index = dir.getFaceNum();
+        castAni[index].resume();
+        
+        attack1.newAttack(x+castAni[index].getCurrSX()/2+
+            castAni[index].getCurrOffX(), y +
+            castAni[index].getCurrSY()/2+castAni[index].getCurrOffY(),
+            21, 0,dir,attack);
       }
     }
   }
@@ -219,9 +274,9 @@ public class Caspian extends Player {
     if (attack1 == melee)
     {
       melee.getAttackInstance().play(x, y);
-    } else if (attack1 == proj)
+    } else if (attack1 == proj || attack1 == support)
     {
-      currentAnimation.playCam(x, y);
+      castAni[index].playCam(x, y);
     }
 
   }

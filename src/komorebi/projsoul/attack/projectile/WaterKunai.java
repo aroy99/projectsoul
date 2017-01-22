@@ -18,10 +18,7 @@ public class WaterKunai extends PlayProjectile {
     character = Characters.CASPIAN;
   }
   
-  public WaterKunai()
-  {
-    super();
-  }
+  public WaterKunai(){}
   
   public AttackInstance build(float x, float y, float dx, float dy, Face dir,
       int attack)

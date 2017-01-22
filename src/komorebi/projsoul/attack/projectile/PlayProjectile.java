@@ -35,6 +35,8 @@ public abstract class PlayProjectile extends Projectile{
         if (!enemy.invincible())
         {
           enemy.inflictPain(attack, currentDir, character);
+          //DEBUG Print out projectile attack on hit
+          System.out.println(attack);
         }
       }
         

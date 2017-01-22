@@ -25,7 +25,6 @@ public class CircleStrike implements SingleInstance {
   //Center of the circle
   private float ox, oy;
   private int attack;
-  private boolean destroyMe = false;
   
   public static final float STEP = 1.25f/2;
   public static final int KNOCKBACK = 5;
@@ -63,9 +62,6 @@ public class CircleStrike implements SingleInstance {
     
     ani.setPausedFrame(909, 838, 80, 80);
     
-    //DEBUG SPACING
-//    System.out.println("--------Circle Strike-------------");
-
   }
   
 
@@ -112,8 +108,6 @@ public class CircleStrike implements SingleInstance {
 
       }
 
-    }else{
-      destroyMe  = true;
     }
   }
   

@@ -41,7 +41,7 @@ public abstract class Projectile implements AttackInstance {
    * @param dir Direction this projectile is facing
    * @param attack The damage this will do
    */
-  public Projectile(float x, float y, float dx, float dy, Face dir, int attack,
+  protected Projectile(float x, float y, float dx, float dy, Face dir, int attack,
       ProjectileType type) {
     this.x = x;
     this.y = y;
@@ -108,6 +108,10 @@ public abstract class Projectile implements AttackInstance {
       dx=0;
       destroyMe = true;
     }
+  }
+  
+  public void destroy(){
+    destroyMe = true;
   }
 
   public void play()

@@ -44,13 +44,13 @@ Robbers!
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 /npc Clyde 8 10 NESS run_up_and_down scream
-/enemy 16 16 SMILIN_SATURN shooter 10
-/enemy 3 16 SMILIN_SATURN shooter 10
+enemy 16 16 SMILIN_SATURN shooter 10
+enemy 3 16 SMILIN_SATURN shooter 10
 enemy 3 16 SMILIN_SATURN none
-/enemy 16 3 SMILIN_SATURN shooter 10
-/enemy 3 3 SMILIN_SATURN shooter 10
+enemy 16 3 SMILIN_SATURN shooter 10
+enemy 3 3 SMILIN_SATURN shooter 10
 /
-/enemy 5 15 EVIL_SATURN smart 6
-/enemy 13 6 SATURN smart 8
+enemy 5 15 EVIL_SATURN smart 6
+enemy 13 6 SATURN smart 8
 sign 2 18 This is a forest
 connect Bigger_Town up 0 20

@@ -5,8 +5,6 @@ import komorebi.projsoul.attack.AttackInstance;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.player.Characters;
 
-import java.awt.Rectangle;
-
 /**
  * Flannery's fireball
  * 
@@ -14,13 +12,20 @@ import java.awt.Rectangle;
  */
 public class FireBall extends PlayProjectile {
     
-  public FireBall(float x, float y, float dx, float dy, Face dir, int attack){
+  /**
+   * Creates a new FireBall projectile
+   * 
+   * @param x The x location (in the map) of the projectile
+   * @param y The y location (in the map) of the projectile
+   * @param dx The x velocity, in pixels per frame
+   * @param dy The y velocity, in pixels per frame
+   * @param dir Direction this projectile is facing
+   * @param attack The damage this will do
+   */
+  private FireBall(float x, float y, float dx, float dy, Face dir, int attack){
     super(x,y,dx,dy,dir,attack, ProjectileType.FIRE);
     
-    character = Characters.FLANNERY;
-           
-    area = new Rectangle((int) x, (int) y, 11, 8);
-  
+    character = Characters.FLANNERY;  
   }
   
   public FireBall(){}

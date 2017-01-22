@@ -11,7 +11,7 @@ import komorebi.projsoul.engine.Animation;
  * @author Aaron Roy
  */
 public enum ProjectileType {
-  WATER, FIRE;
+  WATER, FIRE, AIR;
 
 
   /**
@@ -26,6 +26,8 @@ public enum ProjectileType {
         return WATER;
       case "fire":
         return FIRE;
+      case "air":
+        return AIR;
       default:
         return null;
     }
@@ -88,6 +90,34 @@ public enum ProjectileType {
 
 
         break;
+        
+      case AIR:
+        
+        for(int i=0; i < 4;i+=2){
+          ani[i] = new Animation(5,4,12,false);
+        }
+        //UP  
+        ani[0].add(795, 574, 8, 43, 1, false);
+        ani[0].add(804, 574, 7, 43, 1, false);
+        ani[0].add(813, 574, 6, 43, 1, false);
+        ani[0].add(820, 574, 5, 43, 1, false);
+        ani[0].add(827, 574, 6, 43, 1, false);
+        ani[0].setPausedFrame(827, 574, 6, 43, 1, false);
+        //DOWN
+        ani[1] = ani[0].getFlipped();
+        //RIGHT
+        ani[2].add(795, 574, 8, 43);
+        ani[2].add(804, 574, 7, 43);
+        ani[2].add(813, 574, 6, 43);
+        ani[2].add(820, 574, 5, 43);
+        ani[2].add(827, 574, 6, 43);
+        ani[2].setPausedFrame(827, 574, 6, 43);
+        //LEFT
+        ani[3] = ani[2].getFlipped();
+
+
+        break;
+
       default:
         break;
     }

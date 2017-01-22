@@ -5,8 +5,10 @@ package komorebi.projsoul.entities.player;
 
 import komorebi.projsoul.attack.Attack;
 import komorebi.projsoul.attack.AttackInstance;
+import komorebi.projsoul.attack.CircleStrike;
 import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.RingOfFire;
+import komorebi.projsoul.attack.WaterBarrier;
 import komorebi.projsoul.attack.projectile.ProjectileAttack;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.KeyHandler;
@@ -370,6 +372,16 @@ public abstract class Player extends Entity implements Playable{
 
     ProjectileAttack.update();
     RingOfFire.updateAll();
+    
+    CircleStrike aoe = Sierra.aoe.getAttackInstance();
+    if(aoe != null && aoe.playing()){
+      aoe.update();
+    }
+    
+    WaterBarrier barr = Caspian.support.getAttackInstance();
+    if(barr != null && barr.playing()){
+      barr.update();
+    }
 
     //TODO: Auto-level up
     if (KeyHandler.controlDown() && KeyHandler.keyClick(Key.PLUS))
@@ -383,13 +395,12 @@ public abstract class Player extends Entity implements Playable{
       for (Characters c: Characters.values())
       {
         System.out.println(c + ": ");
-        System.out.println("Att: " + Player.getAttack(c)
-        + "\tDef: " + Player.getDefense(c));
-        System.out.println("Mag: " + Player.getMaxMagic(c)
-        + "\tHth: " + Player.getMaxHealth(c));
+        System.out.println("Att: " + Player.getAttack(c) + 
+                         "\tDef: " + Player.getDefense(c));
+        System.out.println("Mag: " + Player.getMaxMagic(c)+ 
+                         "\tHth: " + Player.getMaxHealth(c));
         System.out.println("XP: " + Player.getXP(c) + " / " + 
-            Player.getXPToNextLevel(c) + "\tLevel " + Player.getLevel(c)
-            + "\n");
+            Player.getXPToNextLevel(c) + "\tLevel " + Player.getLevel(c) + "\n");
       }
     }
 
@@ -443,6 +454,16 @@ public abstract class Player extends Entity implements Playable{
 
     ProjectileAttack.play();
     RingOfFire.play();
+    
+    CircleStrike aoe = Sierra.aoe.getAttackInstance();
+    if(aoe != null && aoe.playing()){
+      aoe.play();
+    }
+    
+    WaterBarrier barr = Caspian.support.getAttackInstance();
+    if(barr != null && barr.playing()){
+      barr.play();
+    }
   }
 
   public void pause(int frames, Lock lock)
