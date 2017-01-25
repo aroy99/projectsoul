@@ -195,45 +195,39 @@ public class Caspian extends Player {
         attack1.newAttack(x,y,aDx,aDy,dir,attack);
       } else if (attack1 == proj)
       {        
-        //TODO Refactor, since this is ugly
+        //TODO Refactor/Move to WaterKunai, since this is ugly
         float sideX = 0.5f*PROJ_SPEED, sideY = 0.87f*PROJ_SPEED;
         
         switch (dir)
         {
-          case DOWN:
-            aDy = -PROJ_SPEED;
+          case DOWN:  aDy = -PROJ_SPEED; break;
+          case LEFT:  aDx = -PROJ_SPEED; break;
+          case RIGHT: aDx =  PROJ_SPEED; break;
+          case UP:    aDy =  PROJ_SPEED; break;
+          default:
+        }
+        
+        int sign;
+        
+        switch (dir){
+          case DOWN: case UP:
             sideX = 0.5f*PROJ_SPEED;
             sideY = 0.87f*PROJ_SPEED;
-            
-            attack1.newAttack(x,y,-sideX,-sideY,dir,attack);
-            attack1.newAttack(x,y, sideX,-sideY,dir,attack);
+            sign  = Integer.signum(aDy);
+                
+            attack1.newAttack(x,y,-sideX, sign*sideY,dir,attack);
+            attack1.newAttack(x,y, sideX, sign*sideY,dir,attack);
             break;
-          case LEFT:
-            aDx = -PROJ_SPEED;
+          case LEFT: case RIGHT:
             sideX = 0.87f*PROJ_SPEED;
             sideY = 0.5f*PROJ_SPEED; 
-
-            attack1.newAttack(x,y,-sideX,-sideY,dir,attack);
-            attack1.newAttack(x,y,-sideX, sideY,dir,attack);
-            break;
-          case RIGHT:
-            aDx = PROJ_SPEED;
-            sideX = 0.87f*PROJ_SPEED;
-            sideY = 0.5f*PROJ_SPEED;
-
-            attack1.newAttack(x,y, sideX,-sideY,dir,attack);
-            attack1.newAttack(x,y, sideX, sideY,dir,attack);
-            break;
-          case UP:
-            aDy = PROJ_SPEED;
-            sideX = 0.5f*PROJ_SPEED;
-            sideY = 0.87f*PROJ_SPEED;
-
-            attack1.newAttack(x,y,-sideX, sideY,dir,attack);
-            attack1.newAttack(x,y, sideX, sideY,dir,attack);
+            sign  = Integer.signum(aDx);
+            
+            attack1.newAttack(x,y,sign*sideX, -sideY,dir,attack);
+            attack1.newAttack(x,y,sign*sideX,  sideY,dir,attack);
             break;
           default:
-            break;          
+            break;
         }
         index = dir.getFaceNum();
         castAni[index].resume();

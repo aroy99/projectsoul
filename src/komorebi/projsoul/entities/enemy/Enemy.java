@@ -24,8 +24,11 @@ public abstract class Enemy extends Entity {
   protected int health;
   protected int level;
   
+  protected boolean hitWall, hitPlayer;
+  
   public Rectangle hitBox;
 
+  public boolean hurt;
   public boolean invincible;
   protected boolean dying;
   protected boolean dead;
@@ -131,25 +134,29 @@ public abstract class Enemy extends Entity {
       dy = 0;
     }
 
-    if (invincible)
+    if (hurt)
     {
       hitCounter--;
       dx *= 0.9;
       dy *= 0.9;
     }
 
-    if (hitCounter <= 0)
+    if (hurt && hitCounter <= 0)
     {
       hitAni.hStop();
+      hurt = false;
       invincible = false;
     }
 
+    hitWall = false;
+    hitPlayer = false;
+    
     //Stops the enemy from moving places it shouldn't
     overrideImproperMovements();
 
     for (FireRingInstance ring: RingOfFire.allInstances())
     {
-      if (ring.intersects(new Rectangle((int) (x+dx),(int) (y+dy),sx,sy)) && !invincible)
+      if (ring.intersects(new Rectangle((int) (x+dx),(int) (y+dy),sx,sy)) && !hurt)
       {          
         float[] coords = ring.getCenter();
         inflictPain(ring.getDamage(), Map.angleOf(x, y, coords[0], coords[1]), 
@@ -240,26 +247,29 @@ public abstract class Enemy extends Entity {
    */
   public void inflictPain(int attack, float dx, float dy, Characters c)
   {
-    health -= attack - (defense/2);
-    hitBy[c.getNumber()] = true;
+    if(!invincible){
+      health -= attack - (defense/2);
+      hitBy[c.getNumber()] = true;
 
-    //Kills the enemy
-    if (health <= 0)
-    {
-      deathAni.resume();
-      dying = true;
-    } else
-    {
-      //Knocks back the enemy
-      invincible = true;
-      hitCounter = INVINCIBILITY;
-      hitAni.resume();
+      //Kills the enemy
+      if (health <= 0)
+      {
+        deathAni.resume();
+        dying = true;
+      } else
+      {
+        //Knocks back the enemy
+        hurt = true;
+        invincible = true;
+        hitCounter = INVINCIBILITY;
+        hitAni.resume();
 
-      //DEBUG Enemy movement speed
-      System.out.println("----ENEMY MOVEMENT----\n"+dx + " " + dy + "\nHealth: " + health);
+        //DEBUG Enemy movement speed
+        System.out.println("----ENEMY MOVEMENT----\n"+dx + " " + dy + "\nHealth: " + health);
 
-      this.dx = dx;
-      this.dy = dy;
+        this.dx = dx;
+        this.dy = dy;
+      }
     }
   }
 
@@ -269,7 +279,7 @@ public abstract class Enemy extends Entity {
 
   @Override
   public void render() {
-    if (invincible)
+    if (hurt)
     {
       hitAni.playCam(x, y);
     } else if (dying)
@@ -313,20 +323,24 @@ public abstract class Enemy extends Entity {
     {
       x = 0;
       dx = 0;
+      hitWall = true;
     } else if (x+dx > Game.getMap().getWidth()*16 - sx)
     {
       dx = 0;
       x = Game.getMap().getHeight() * 16 - sx;
+      hitWall = true;
     }
 
     if (y+dy < 0)
     {
       dy = 0;
       y = 0;
+      hitWall = true;
     } else if (y+dy > Game.getMap().getHeight()*16 - sy)
     {
       dy = 0;
       y = Game.getMap().getHeight() * 16 - sy;
+      hitWall = true;
     }
 
     Rectangle hypothetical = new Rectangle((int) (x+dx), (int) (y+dy),
@@ -342,11 +356,13 @@ public abstract class Enemy extends Entity {
         Map.getPlayer().inflictPain(attack, 
             DEFAULT_KNOCK*Math.signum(dx)*(float)Math.sqrt(Math.abs(dx)), 
             DEFAULT_KNOCK*Math.signum(dy)*(float)Math.sqrt(Math.abs(dy)));
-
+        hitPlayer = true;
+        
       }
 
       dx = 0;
       dy = 0;
+      hitPlayer = true;
     }
 
     boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
@@ -354,15 +370,18 @@ public abstract class Enemy extends Entity {
     if(!col[0] || !col[2]){
       dy=0;
       dx*=.75f;
+      hitWall = true;
     }
     if(!col[1] || !col[3]){
       dx=0;
       dy*=.75f;
+      hitWall = true;
     }
+    
   }
 
   public boolean invincible()
   {    
-    return invincible;
+    return hurt;
   }
 }

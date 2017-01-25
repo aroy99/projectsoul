@@ -24,6 +24,9 @@ import komorebi.projsoul.entities.enemy.Chaser;
 import komorebi.projsoul.entities.enemy.Dummy;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.enemy.EnemyType;
+import komorebi.projsoul.entities.enemy.Shooter;
+import komorebi.projsoul.entities.enemy.SmartEnemy;
+import komorebi.projsoul.entities.enemy.Tackler;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.ConnectMap.Side;
 import komorebi.projsoul.script.AreaScript;
@@ -239,7 +242,7 @@ public class EditorMap implements Playable, Serializable{
       path = key;
       this.name = name;
 
-      Display.setTitle("Clyde\'s Editor - "+name);
+      Display.setTitle("Project Soul Editor - "+name);
 
       do
       {
@@ -294,10 +297,22 @@ public class EditorMap implements Playable, Serializable{
           
           switch(split[3]){
             case "none":
-              enemies.add(new Dummy(x+arg0*16, y+arg1*16, EnemyType.toEnum(split[2]), 1));
+              enemies.add(new Dummy(arg0*16, arg1*16, EnemyType.toEnum(split[2]), 1));
               break;
             case "chaser":
-              enemies.add(new Chaser(x+arg0*16, y+arg1*16, EnemyType.toEnum(split[2]),
+              enemies.add(new Chaser(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
+                  Integer.parseInt(split[4])));
+              break;
+            case "smart":
+              enemies.add(new SmartEnemy(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
+                  Integer.parseInt(split[4]), collision));
+              break;
+            case "shooter":
+              enemies.add(new Shooter(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
+                  Integer.parseInt(split[4])));
+              break;
+            case "tackler":
+              enemies.add(new Tackler(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
                   Integer.parseInt(split[4])));
               break;
             default:

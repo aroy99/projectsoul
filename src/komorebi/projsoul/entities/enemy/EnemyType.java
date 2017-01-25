@@ -15,7 +15,7 @@ import javax.print.attribute.standard.RequestingUserName;
  * @author Aaron Roy
  */
 public enum EnemyType {
-  SATURN(16, 21), EVIL_SATURN(16,21), SMILIN_SATURN(16,21);
+  SATURN(16, 21), EVIL_SATURN(16,21), SMILIN_SATURN(16,21), BLUE_DETRAL(16, 16);
   
   
   private int sx, sy;
@@ -36,15 +36,11 @@ public enum EnemyType {
    */
   public static EnemyType toEnum(String s){
     switch (s){
-      case "SATURN":case "Mr. Saturn":
-        return EnemyType.SATURN;
-      case "EVIL_SATURN":case "Evil Saturn":
-        return EnemyType.EVIL_SATURN;
-      case "SMILIN_SATURN":case "Smilin' Saturn":
-        return EnemyType.SMILIN_SATURN;
-
-      default:
-        return null;
+      case "SATURN":case "Mr. Saturn":            return SATURN;
+      case "EVIL_SATURN":case "Evil Saturn":      return EVIL_SATURN;
+      case "SMILIN_SATURN":case "Smilin' Saturn": return SMILIN_SATURN;
+      case "BLUE_DETRAL":case "Blue Detral":      return BLUE_DETRAL;
+      default: return null;
     }
   }
   
@@ -57,9 +53,10 @@ public enum EnemyType {
     int tx, ty;
     
     switch(type){
-      case EVIL_SATURN:   tx = 174; ty = 0; break;
-      case SATURN:        tx =   0; ty = 0; break;
-      case SMILIN_SATURN: tx = 191; ty = 0; break;
+      case EVIL_SATURN:   tx = 174; ty =   0; break;
+      case SATURN:        tx =   0; ty =   0; break;
+      case SMILIN_SATURN: tx = 191; ty =   0; break;
+      case BLUE_DETRAL:   tx = 223; ty =   0; break;
       default: tx = 0; ty = 0;      
     }
     
@@ -74,9 +71,10 @@ public enum EnemyType {
   @Override
   public String toString(){
     switch(this){
-      case SATURN: return "Mr. Saturn";
+      case SATURN:        return "Mr. Saturn";
       case EVIL_SATURN:   return "Evil Saturn";
       case SMILIN_SATURN: return "Smilin' Saturn";
+      case BLUE_DETRAL:   return "Blue Detral";
       default:            return "bleh";
     }
   }

@@ -25,7 +25,7 @@ public class Dummy extends Enemy {
   @Override
   public void update() {
     super.update();
-    if(!invincible){
+    if(!hurt){
       dx *= 0.9;
       dy *= 0.9;
     }

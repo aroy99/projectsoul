@@ -23,6 +23,7 @@ import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.enemy.EnemyType;
 import komorebi.projsoul.entities.enemy.Shooter;
 import komorebi.projsoul.entities.enemy.SmartEnemy;
+import komorebi.projsoul.entities.enemy.Tackler;
 import komorebi.projsoul.entities.player.Bruno;
 import komorebi.projsoul.entities.player.Caspian;
 import komorebi.projsoul.entities.player.Characters;
@@ -243,6 +244,10 @@ public class Map implements Playable{
               enemies.add(new Shooter(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
                   Integer.parseInt(split[4])));
               break;
+            case "tackler":
+              enemies.add(new Tackler(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
+                  Integer.parseInt(split[4])));
+              break;
 
             default:
               System.out.println("This shouldn't happen!");
@@ -258,7 +263,8 @@ public class Map implements Playable{
           signs.add(new SignPost(arg0*16, arg1*16, split[2]));
 
         }
-      } while ((s=reader.readLine()) != null);
+      } 
+      while ((s=reader.readLine()) != null);
 
       for (Script script: scripts)
       {

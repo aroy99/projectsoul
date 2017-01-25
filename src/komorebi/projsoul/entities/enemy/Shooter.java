@@ -1,5 +1,5 @@
 /**
- * Shooter.java	   Dec 20, 2016, 9:15:13 AM
+ * Shooter.java    Dec 20, 2016, 9:15:13 AM
  */
 package komorebi.projsoul.entities.enemy;
 
@@ -27,10 +27,12 @@ public class Shooter extends MagicEnemy {
   protected static final float RUN_SPEED = 1.5f;
   protected static final float WALK_SPEED = 0.5f;
 
+  //DEBUG radius
   protected int red, green, blue;
   
   private ProjectileAttack<StraightShot> projectile;
   
+  //TODO Implement
   private Animation shoot;
   private Animation normal;
 
@@ -41,7 +43,7 @@ public class Shooter extends MagicEnemy {
    * @author Aaron Roy
    */
   public enum ShootStates{
-    IDLE, WALK, ATTACK, SHOOT, RUN, TIRED;
+    IDLE, WALK, LINE_UP, SHOOT, RUN, TIRED;
   }
 
   private ShootStates currState = ShootStates.IDLE;
@@ -114,7 +116,7 @@ public class Shooter extends MagicEnemy {
 
   @Override
   public void update(){
-    if(!invincible){
+    if(!hurt){
       dx = 0;
       dy = 0;
 
@@ -131,21 +133,21 @@ public class Shooter extends MagicEnemy {
           currState = ShootStates.IDLE;
         }
 
-        if (currState != ShootStates.RUN && !invincible && currDist <= runDistance)
+        if (currState != ShootStates.RUN && !hurt && currDist <= runDistance)
         {
           currState = ShootStates.RUN;
           regAni.resume();
           regAni.setSpeed((int)(6/RUN_SPEED));
         }
 
-        if(currState != ShootStates.ATTACK && currState != ShootStates.SHOOT && 
+        if(currState != ShootStates.LINE_UP && currState != ShootStates.SHOOT && 
             currDist <= distance && currDist > runDistance){
           regAni.resume();
           regAni.setSpeed((int)(6/RUN_SPEED));
 
           //DEBUG Labels
           System.out.println("Switch to Attack");
-          currState = ShootStates.ATTACK;
+          currState = ShootStates.LINE_UP;
         }
       }
 
@@ -182,7 +184,7 @@ public class Shooter extends MagicEnemy {
           break;
 
           //Attack and Shoot work as a pair
-        case ATTACK:
+        case LINE_UP:
           float delX = targetX-x;
           float delY = targetY-y;
 
@@ -367,7 +369,6 @@ public class Shooter extends MagicEnemy {
   
   @Override
   public int baseMagic() {
-    // TODO Auto-generated method stub
     return baseMagic;
   }
 

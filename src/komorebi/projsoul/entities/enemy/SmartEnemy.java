@@ -86,7 +86,7 @@ public class SmartEnemy extends Chaser {
       regAni.stop();
     }
 
-    if(!invincible && Map.distanceBetween(x, y, targetX,targetY) <= maxPlayDist && 
+    if(!hurt && Map.distanceBetween(x, y, targetX,targetY) <= maxPlayDist && 
         (ptx != ctx || pty != cty)){
       HashMap<Location, Location> cameFrom = new HashMap<Location, Location>();
       HashMap<Location, Double> costSoFar = new HashMap<Location, Double>();
@@ -151,7 +151,7 @@ public class SmartEnemy extends Chaser {
       }
     }
 
-    if (!invincible && Map.distanceBetween(x,y,targetX,targetY) <= maxPlayDist)
+    if (!hurt && Map.distanceBetween(x,y,targetX,targetY) <= maxPlayDist)
     {   
       /*
       float ex, ey;

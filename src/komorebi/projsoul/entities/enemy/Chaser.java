@@ -66,7 +66,7 @@ public class Chaser extends Enemy {
         regAni.stop();
       }
 
-      if (!invincible && dist <= maxPlayDist)
+      if (!hurt && dist <= maxPlayDist)
       {
         float triX = Math.abs(targetX-x);
         float triY = Math.abs(targetY-y);
