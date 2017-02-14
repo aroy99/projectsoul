@@ -3,11 +3,12 @@ package komorebi.projsoul.engine;
 import komorebi.projsoul.entities.Characters;
 import komorebi.projsoul.map.Map;
 
-public class Bank implements Renderable 
+public class Bank 
 {
 	public static int balance;
 	public Characters character;
 	public int characterCash;
+	public static final int max = 999999;
 	
 	public Bank(int bal)
 	{
@@ -18,49 +19,28 @@ public class Bank implements Renderable
 	{
 		character = Map.currentPlayer();
 	    characterCash = Map.getPlayer().getCharacterHUD(character).getMoney();
-	    
-	    if(characterCash < amount)
+	    if(balance == max)
 	    {
-	    	System.out.println("You don't have enough money fool");
+	    	balance = max;
 	    }
 	    else
 	    {
 	    	Map.getPlayer().getCharacterHUD(character).takeMoney(amount);
 	    	balance+=amount;
 	    }
-	    System.out.println(balance);
 	}
 	
 	public void withdraw(int amount)
 	{
-	    if(balance < amount)
-	    {
-	    	System.out.println("Your bank is empty fool");
-	    }
-	    else
 	    {
 	    	character = Map.currentPlayer();
 	    	Map.getPlayer().getCharacterHUD(character).giveMoney(amount);
 	    	balance-=amount;
 	    }
-	    System.out.println(balance);
 	}
 	
 	public int getBalance()
 	{
 		return balance;
 	}
-	
-	@Override
-	public void update() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void render() {
-		// TODO Auto-generated method stub
-
-	}
-
 }

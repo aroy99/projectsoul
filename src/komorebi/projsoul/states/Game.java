@@ -207,6 +207,10 @@ public class Game extends State{
     {
       GameHandler.switchState(States.PAUSE);
     }
+    else if(KeyHandler.keyClick(Key.Y))
+    {
+    	GameHandler.switchState(States.BANKSTATE);
+    }
 
   }
 
@@ -232,12 +236,6 @@ public class Game extends State{
     }
 
     map.update();
-    if(KeyHandler.keyClick(Key.J))
-    {
-    	Scanner scan = new Scanner(System.in);
-    	int bleh =scan.nextInt();
-    	System.out.println(bleh);
-    }
     Fader.update();
 
   }

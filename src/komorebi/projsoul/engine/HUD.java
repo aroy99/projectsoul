@@ -1,29 +1,20 @@
 
 package komorebi.projsoul.engine;
 import komorebi.projsoul.script.TextHandler;
-
-import java.util.Scanner;
-
 import komorebi.projsoul.script.EarthboundFont;
 
 public class HUD implements Renderable
 {
   public int baseHealth;
   public int health;
-  public int money;
-  TextHandler text;
-  
- //New Bank stuff
-  public Bank bank = new Bank(100);
-  int count = 0;
-  int amount;
-  //^
+  public int money;  
+  TextHandler text = new TextHandler();
 
   public HUD(int initHealth, int initmoney)
   {
+	//Possible limit on wallet size?
 	money = initmoney;
-    baseHealth = health = initHealth; 
-    text = new TextHandler();
+    baseHealth = health = initHealth;
   }
 
   @Override
@@ -35,25 +26,7 @@ public class HUD implements Renderable
 	{
 		text.write(String.valueOf(health), 7, 207, new EarthboundFont(1));
 	}
-	text.write(String.valueOf(money), 19, 194, new EarthboundFont(1));
-	
-	//From here on is new Bank code
-	//For some reason this doesn't work, it crashes the game? The Scanner perhaps?
-	//Currently only works in increments of 10 coins (temporary)
-	text.write("Type d for deposit, w for withdrawal",10,100, new EarthboundFont(1));
-	if(KeyHandler.keyClick(Key.D))
-	{
-		System.out.println("Please enter an amount to deposit");
-		amount = 10;
-		bank.deposit(amount);
-	}
-	else if(KeyHandler.keyClick(Key.W))
-	{
-		System.out.println("Please enter an amount to withdraw");
-		amount = 10;
-		bank.withdraw(amount);
-	}
-	//^
+	text.write(String.valueOf(money), 20, 194, new EarthboundFont(1));
   }
   @Override
   public void render() {
@@ -101,7 +74,6 @@ public class HUD implements Renderable
   {
 	return money;
   }
-
 }
 
 

@@ -84,10 +84,8 @@ public abstract class Enemy extends Entity {
     {
       dead = true;
       //increment coin stuff
-      //Use this for returning the amount of money a current player has, to check if they can deposit/withdraw money.
       character = Map.currentPlayer();
       healths = Map.getPlayer().getCharacterHUD(character);
-      //^
       healths.giveMoney(10);
       Game.getMap().addXPObject(new XPObject(x, y, xpPerLevel()*level, hitBy));
     } else if (dying)

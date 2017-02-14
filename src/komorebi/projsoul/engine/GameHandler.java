@@ -4,6 +4,7 @@
 
 package komorebi.projsoul.engine;
 
+import komorebi.projsoul.states.BankState;
 import komorebi.projsoul.states.Death;
 import komorebi.projsoul.states.Game;
 import komorebi.projsoul.states.Menu;
@@ -25,6 +26,7 @@ public class GameHandler implements Playable{
   private static Menu menu;
   private static Pause pause;
   public static Death death;
+  public static BankState bank;
 
   /**
    * Creates the GameHandler
@@ -35,6 +37,7 @@ public class GameHandler implements Playable{
     menu = new Menu();
     pause = new Pause();
     death = new Death();
+    bank = new BankState();
   }
 
   /**
@@ -54,6 +57,9 @@ public class GameHandler implements Playable{
       case DEATH:
     	death.getInput();
     	break;
+      case BANKSTATE:
+    	bank.getInput();
+    	break;
       default:
         break;
     }
@@ -71,11 +77,15 @@ public class GameHandler implements Playable{
         menu.update();
         break;
       case PAUSE:
-        game.update();
+    	game.update();
         pause.update();
         break;
       case DEATH:
     	death.update();
+    	break;
+      case BANKSTATE:
+    	game.update();
+    	bank.update();
     	break;
       default:
         break;
@@ -99,6 +109,10 @@ public class GameHandler implements Playable{
         break;
       case DEATH:
     	death.render();
+    	break;
+      case BANKSTATE:
+    	game.render();
+    	bank.render();
     	break;
       default:
         break;

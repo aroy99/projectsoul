@@ -267,9 +267,6 @@ public class Pause extends State {
       default: break;
     }
     
-    
-    
-    
     pop.render();
   }
   
