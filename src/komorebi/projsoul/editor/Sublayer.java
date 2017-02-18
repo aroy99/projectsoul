@@ -121,8 +121,6 @@ public class Sublayer {
 
           for (Layer l: Editor.getMap().getLayerControl().getLayers())
           {
-
-
             if (l.getSubs().contains(this))
             {
               boolean push = false;
@@ -212,11 +210,12 @@ public class Sublayer {
     {
       for (int j = 0; j < tiles[0].length; j++)
       {
-        if(EditorMap.checkTileInBounds(EditorMap.getX()+j*16, EditorMap.getY()+i*16)){
-          Draw.tile(EditorMap.getX()+j*16, EditorMap.getY()+i*16, Draw.getTexX(tiles[i][j]), 
-              Draw.getTexY(tiles[i][j]), Draw.getTexture(tiles[i][j]));
+        if(EditorMap.checkTileInBounds(EditorMap.getX()+j*16*Editor.zoom(), 
+            EditorMap.getY()+i*16*Editor.zoom())){
+          Draw.tileZoom(EditorMap.getX()+j*16, EditorMap.getY()+i*16, Draw.getTexX(tiles[i][j]), 
+              Draw.getTexY(tiles[i][j]), Draw.getTexture(tiles[i][j]), Editor.zoom(),
+              EditorMap.getX(), EditorMap.getY());
         }
-
       }
     }
   }

@@ -294,6 +294,29 @@ public class NPC extends Entity {
 
   }
 
+  
+  public void renderE() {
+
+    if (isVisible) {
+      switch (direction)
+      {
+        case DOWN:
+          downAni.playZoom(x,y);
+          break;
+        case LEFT:
+          leftAni.playZoom(x,y);
+          break;
+        case RIGHT:
+          rightAni.playZoom(x,y);
+          break;
+        case UP:
+          upAni.playZoom(x,y);
+          break;
+        default:
+          break;
+      }
+    }
+  }
   /**
    * Moves the NPC indefinitely in a given direction
    * @param dir The direction in which the NPC should move

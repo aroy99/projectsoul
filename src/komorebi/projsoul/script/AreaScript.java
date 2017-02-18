@@ -4,6 +4,7 @@
 package komorebi.projsoul.script;
 
 import komorebi.projsoul.editor.Editable;
+import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.map.EditorMap;
@@ -152,8 +153,9 @@ public class AreaScript extends Script implements Editable{
   /**
    * Renders the "S" tile
    */
-  public void render() {
-    Draw.rect(x, y, 16, 16, 32, 0, 2);
+  public void renderE() {
+    Draw.rectZoom(x, y, 16, 16, 32, 0, 48, 16, 2, 
+        Editor.zoom(), EditorMap.getX(), EditorMap.getY());
   }
   
   /**

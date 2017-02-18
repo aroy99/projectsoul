@@ -5,6 +5,7 @@ package komorebi.projsoul.script;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 
 import komorebi.projsoul.engine.Draw;
 
@@ -177,6 +178,29 @@ public class TextHandler {
       {
         w.move(dx, dy);
       }
+    }
+  }
+  
+  public Word getWord(String str) throws NoSuchElementException
+  {
+    for (Word word: words)
+    {
+      if (word.getString().equals(str))
+      {
+        return word;
+      }
+    }
+    
+    throw new NoSuchElementException("No Word object found with string " + str);
+  }
+  
+  public void pushAll(int dy)
+  {
+    System.out.println("w moved " + dy);
+    
+    for (Word w: words)
+    {
+      w.move(0, -dy);
     }
   }
  

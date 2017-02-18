@@ -52,6 +52,8 @@ public class Draw {
   public static final int BLANK_TILE = 0;
   public static final Rectangle LAYER_MANAGER = new Rectangle(0, 0, 12*16, 
       34*16-8);
+  public static final Rectangle FULL_SCREEN =
+      new Rectangle(0, 0, MainE.WIDTH*MainE.scale, MainE.HEIGHT*MainE.scale);
   
   private static final int SPREADSHEET_SIZE = 256;
   private static final int SPREADSHEET_ROW = 16;
@@ -274,6 +276,13 @@ public class Draw {
         0, texture);
   }
   
+  public static void rect(float x, float y, float sx, float sy, int texx,
+      int texy, int texsx, int texsy, Texture texture)
+  {
+    rect(x, y, sx, sy, texx, texy, texsx, texsy,
+        0, texture);
+  }
+  
   /**
    * Draws a camera fixed sprite on the screen from the specified image, assumed the texsx
    * and texsy are the same as sx and sy
@@ -311,8 +320,7 @@ public class Draw {
   
   public static void tile(float x, float y, int texX, int texY, int texID)
   {
-      Draw.rectCam(x, y, 16, 16, texX, texY, texX+16, texY+16, sheets.get(texID));
-   
+      Draw.rect(x, y, 16, 16, texX, texY, texX+16, texY+16, sheets.get(texID));
   }
   
   public static void tileCam(float x, float y, int texX, int texY, int texID)
@@ -471,5 +479,30 @@ public class Draw {
   {
     drawIfInBounds(r, x, y, sx, sy, texx, texy, texsx, texsy, 0, texId);
   }
-
-}
+  
+  public static void tileZoom(float x, float y, int texx, int texy, 
+      int texID, float zoom, float pivx, float pivy)
+  {
+    rect((x-pivx)*zoom+pivx, (y-pivy)*zoom+pivy, 16*zoom, 16*zoom, texx, texy, 
+        texx+16, texy+16, sheets.get(texID));
+  }
+  
+  public static void rectZoom(float x, float y, float sx, float sy,
+      int texx, int texy, int texsx, int texsy, int texID, float zoom,
+      float ex, float ey)
+  { 
+    rect((x-ex)*zoom+ex, (y-ey)*zoom+ey, sx*zoom, sy*zoom, 
+        texx, texy, texsx, texsy, texID);
+    
+    /*rectZoom(x, y, sx, sy, texx, texy, texsx, texsy, 0, texID, zoom,
+        ex, ey);*/
+    
+  }
+  
+  public static void rectZoom(float x, float y, float sx, float sy,
+      int texx, int texy, int texsx, int texsy, int rot, int texID, float zoom,
+      float ex, float ey)
+  { 
+    rect((x-ex)*zoom+ex, (y-ey)*zoom+ey, sx*zoom, sy*zoom, 
+        texx, texy, texsx, texsy, rot, texID);
+  }}

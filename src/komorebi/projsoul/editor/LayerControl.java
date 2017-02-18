@@ -1,17 +1,17 @@
 package komorebi.projsoul.editor;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.lwjgl.input.Mouse;
 
 import komorebi.projsoul.editor.Layer.LayerType;
+import komorebi.projsoul.editor.controls.TabControl.Tab;
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Renderable;
 import komorebi.projsoul.map.EditorMap;
 
-public class LayerControl implements Renderable {
+public class LayerControl extends Tab implements Renderable {
   
   private static final int MIN_HT = 34*16;
   private static final int WIDTH = 12*16;
@@ -22,8 +22,6 @@ public class LayerControl implements Renderable {
   
   private Layer[] layers;
   
-  private Sublayer curr;
-
   public LayerControl()
   {
     layers = new Layer[4];
@@ -34,6 +32,7 @@ public class LayerControl implements Renderable {
     }
     
     bottom = MIN_HT - 32*4;
+    tabTitle = "Layers";
     
   }
   
@@ -55,9 +54,9 @@ public class LayerControl implements Renderable {
     
     scrollMax = Math.max(MIN_HT, layersSize);
         
-    double dMouse = 0.1*Mouse.getDWheel();
+    double dMouse = 0.1*Editor.dWheel;
     int prevScroll = scroll;
-    
+        
     if (dMouse > 0 && scroll > 0)
     {
       scroll -= dMouse; 
@@ -121,9 +120,7 @@ public class LayerControl implements Renderable {
   }
 
   @Override
-  public void render() {
-    Draw.rect(0, 0, WIDTH, MIN_HT, 0, 66, 1, 67, 2);
-    
+  public void render() {        
     for (int i = 0; i < layers.length; i++)
     {
       layers[i].render();

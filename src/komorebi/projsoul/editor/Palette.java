@@ -91,8 +91,8 @@ public class Palette implements Playable{
 
     selection = new Animation(8, 8, 16, 16, 2);
     for(int i=3; i >= 0; i--){
-      selection.add(0 , 0 , i);
-      selection.add(16, 0 , i);
+      selection.add(0 , 0, i);
+      selection.add(16, 0, i);
     }
 
     text = new TextHandler();

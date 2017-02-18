@@ -8,6 +8,7 @@ import javax.swing.JOptionPane;
 import komorebi.projsoul.editor.controls.ExpandArrow;
 import komorebi.projsoul.editor.controls.RadioButton;
 import komorebi.projsoul.editor.modes.Mode;
+import komorebi.projsoul.editor.modes.TileMode;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.gameplay.Key;
@@ -22,7 +23,7 @@ public class Layer {
     STRUCTURES("Structures", 57, 82),
     TERRAIN("Terrain", 41, 82);
     
-    int texx, texy;
+    int notSelectedX, notSelectedY;
     String str;
     
     static int[] subNums = new int[4];
@@ -41,19 +42,19 @@ public class Layer {
     
     public int getTexX()
     {
-      return texx;
+      return notSelectedX;
     }
     
     public int getTexY()
     {
-      return texy;
+      return notSelectedY;
     }
     
     private LayerType(String str, int texx, int texy)
     {
       this.str = str;
-      this.texx = texx;
-      this.texy = texy;
+      this.notSelectedX = texx;
+      this.notSelectedY = texy;
     }
     
     public static int numOf(LayerType t)
@@ -168,8 +169,8 @@ public class Layer {
   
   public void render()
   {
-    Draw.drawIfInBounds(Draw.LAYER_MANAGER, icon.x, icon.y, icon.width, icon.height, type.getTexX(), type.getTexY(), 
-        type.getTexX()+16, type.getTexY()+16, 2);
+    Draw.drawIfInBounds(Draw.LAYER_MANAGER, icon.x, icon.y, icon.width, icon.height, 
+        type.getTexX(), type.getTexY(), type.getTexX()+16, type.getTexY()+16, 2);
     
     if (visible.isVisible())
     {
@@ -222,6 +223,7 @@ public class Layer {
           Mode.getFloatMouseY()) && KeyHandler.doubleClick(Key.LBUTTON))
       {
         Editor.getMap().setCurrentSublayer(sub);
+        TileMode.updateCurrentSublayer();
       } else if (!expand.pointsDown() && sub.draggableArea(Mode.getFloatMouseX(), 
           Mode.getFloatMouseY()) && KeyHandler.keyClick(Key.LBUTTON))
       {

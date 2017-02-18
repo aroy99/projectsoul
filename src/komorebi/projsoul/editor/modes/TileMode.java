@@ -14,8 +14,8 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
 import komorebi.projsoul.editor.Editor;
-import komorebi.projsoul.editor.LayerControl;
 import komorebi.projsoul.editor.Palette;
+import komorebi.projsoul.editor.history.TileRevision;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MainE;
@@ -36,7 +36,27 @@ public class TileMode extends Mode implements Playable{
   private static boolean removeMode = false;
   
   private static String res = "res\\tilesets\\";
+  
+  private static int[][] prevState;
+  private static int minx, maxx, miny, maxy;
+  private static boolean changed;
+  
 
+  public TileMode(int[][] initialTiles)
+  {
+    prevState = new int[EditorMap.getWidth()][EditorMap.getHeight()];
+    
+    for (int i = 0; i < prevState.length; i++)
+    {
+      for (int j = 0; j < prevState[i].length; j++)
+      {
+        prevState[i][j] = initialTiles[i][j];
+      }
+    }
+    
+    changed = false;
+    
+  }
 
   @Override
   public void getInput() {
@@ -47,14 +67,40 @@ public class TileMode extends Mode implements Playable{
   public void update(){
     pal.update();
     
+    if (KeyHandler.keyClick(Key.LBUTTON) && checkMapBounds())
+    {
+      minx = maxx = mx;
+      miny = maxy = my;
+    }
+    
     //Sets mouse tile to the one from the palette
-    if(lButtonIsDown && checkMapBounds() && !isSelection){      
+    if(lButtonIsDown && (!mouseSame || !lButtonWasDown) 
+        && checkMapBounds() && !isSelection){    
+            
+      if (mx < minx)
+        minx = mx;
+      if (mx > maxx)
+        maxx = mx;
+      if (my < miny)
+        miny = my;
+      if (my > maxy)
+        maxy = my;
+      
+      changed = true;
+      
       Editor.getMap().currentSublayer().getTiles()[my][mx] = pal.getSelected();
   
       EditorMap.setUnsaved();
       if(Display.getTitle().charAt(Display.getTitle().length()-1) != '*'){
         Display.setTitle(Display.getTitle()+"*");
       }
+    }
+    
+   
+    
+    if (KeyHandler.keyRelease(Key.LBUTTON) && changed)
+    {
+      createRevision();
     }
   
     //Sets palette's selected to mouse tile
@@ -68,8 +114,11 @@ public class TileMode extends Mode implements Playable{
     if(mButtonIsDown && !mButtonWasDown && checkMapBounds()){
       int mx = getMouseX();
       int my = getMouseY();
-  
+      
+      changed = true;
       flood(mx, my, Editor.getMap().currentSublayer().getTiles()[my][mx]);
+      createRevision();
+      
       EditorMap.setUnsaved();
     }
   
@@ -149,16 +198,17 @@ public class TileMode extends Mode implements Playable{
     if(selection != null){
       for (int i = 0; i < selection.length; i++) {
         for (int j = 0; j < selection[0].length; j++) {
-          Draw.tile(EditorMap.getX()+Editor.getMap().currentSublayer().getTiles()[0].length*SIZE+j*SIZE, 
+          Draw.tileZoom(EditorMap.getX()+Editor.getMap().currentSublayer().getTiles()[0].length*SIZE+j*SIZE, 
               EditorMap.getY()+i*SIZE, 
               Draw.getTexX(selection[i][j]), Draw.getTexY(selection[i][j]), 
-              Draw.getTexture(selection[i][j]));
+              Draw.getTexture(selection[i][j]), Editor.zoom(), EditorMap.getX(),
+              EditorMap.getY());
         }
       }
       //Render preview block
       if(checkMapBounds()){
-        Draw.rect(EditorMap.getX()+mx*SIZE, EditorMap.getY()+my*SIZE, 
-            selection[0].length*SIZE, selection.length*SIZE, 
+        Draw.rect(EditorMap.getX()+mx*SIZE*Editor.zoom(), EditorMap.getY()+my*SIZE*Editor.zoom(), 
+            selection[0].length*SIZE*Editor.zoom(), selection.length*SIZE*Editor.zoom(), 
             16, 16,16,16, 2);
       }
     }
@@ -247,6 +297,15 @@ public class TileMode extends Mode implements Playable{
         Editor.getMap().currentSublayer().getTiles()[mouseY][mouseX] == pal.getSelected()){
       return;
     }
+    
+    if (mouseX < minx)
+      minx = mouseX;
+    if (mouseX > maxx)
+      maxx = mouseX;
+    if (mouseY < miny)
+      miny = mouseY;
+    if (mouseY > maxy)
+      maxy = mouseY;
 
     Editor.getMap().currentSublayer().getTiles()[mouseY][mouseX] = pal.getSelected();
     flood(mouseX-1, mouseY,   type);
@@ -276,6 +335,40 @@ public class TileMode extends Mode implements Playable{
   {
     return removeMode;
   }
+  
+  public static void updateCurrentSublayer()
+  {
+    for (int i = 0; i < prevState.length; i++)
+    {
+      for (int j = 0; j < prevState[i].length; j++)
+      {
+        prevState[i][j] = Editor.getMap().currentSublayer().
+            getTiles()[i][j];
+      }
+    }
+  }
 
+  private void createRevision()
+  {    
+    int[][] preTiles = new int[maxy-miny+1][maxx-minx+1];
+    int[][] postTiles = new int[maxy-miny+1][maxx-minx+1];
+    
+    for (int i = miny; i <= maxy; i++)
+    {
+      for (int j = minx; j <= maxx; j++)
+      {
+        preTiles[i-miny][j-minx] = prevState[i][j];
+        postTiles[i-miny][j-minx] = Editor.getMap().
+            currentSublayer().getTiles()[i][j];
+        prevState[i][j] = Editor.getMap().currentSublayer().
+            getTiles()[i][j];
+      }
+    }
+    
+    Editor.getMap().addRevision(
+        new TileRevision(preTiles, postTiles, minx, miny, 
+            Editor.getMap().currentSublayer()));
+    changed = false;
+  }
 
 }

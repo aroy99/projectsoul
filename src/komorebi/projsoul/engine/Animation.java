@@ -4,6 +4,9 @@
 
 package komorebi.projsoul.engine;
 
+import komorebi.projsoul.editor.Editor;
+import komorebi.projsoul.map.EditorMap;
+
 /**
  * Represents a set of pictures
  * 
@@ -15,6 +18,8 @@ public class Animation {
   private int frames;
   private int time;
   private int counter;
+  
+  private int scale;
 
   private int[] texx;
   private int[] texy;
@@ -31,8 +36,7 @@ public class Animation {
   private boolean playing = true;
   private boolean onlyOnce = false;  
   
-  private boolean hasCustomFrame;
-  
+  private boolean hasCustomFrame;  
   /**
    * Creates a playable animation
    * 
@@ -46,7 +50,14 @@ public class Animation {
    * @param loop Whether the animation should play on loop
    */
   public Animation(int f, int t, float sx, float sy, int id, boolean loop){
+    this(f,t,sx,sy,id,loop,1);
+  }
+  
+  public Animation(int f, int t, float sx, float sy, int id, boolean loop,
+      int scale){
 
+    
+    this.scale = scale;
     onlyOnce = !loop;
 
     frames = f;
@@ -97,8 +108,13 @@ public class Animation {
    * @param loop Whether the animation should play on loop
    */
   public Animation(int f, int t, int id, boolean loop){
-
+    this(f,t,id,loop,1);
+  }
+  
+  public Animation(int f, int t, int id, boolean loop, int scale)
+  {
     onlyOnce = !loop;
+    this.scale = scale;
 
     frames = f;
     texx = new int[frames+1];
@@ -214,6 +230,11 @@ public class Animation {
   public void add(int tx, int ty, int rot){
     add(tx, ty, sx[cAddFrame], sy[cAddFrame], 0,
         0, rot, false);  }
+  
+  public void add(int tx, int ty, int sx, int sy, int rot)
+  {
+    add(tx, ty, sx, sy, 0, 0, rot, false);
+  }
 
   /**
    * Adds a frame to the animation, given  the texture coordinates, angle, and
@@ -266,24 +287,24 @@ public class Animation {
     if(!flipped[currFrame]){
       switch(rot[currFrame]){
         case 0:
-          Draw.rect(x+offX[currFrame], y+offY[currFrame], sx[currFrame], sy[currFrame], texx[currFrame], texy[currFrame], 
+          Draw.rect(x+offX[currFrame], y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], texID);
           break;
         case 1:
-          Draw.rect(x+offX[currFrame]+sy[currFrame], y+offY[currFrame], sx[currFrame], sy[currFrame], 
+          Draw.rect(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame],
               1, texID);
           break;
         case 2:
-          Draw.rect(x+offX[currFrame]+sx[currFrame], y+offY[currFrame]+sy[currFrame],
-              sx[currFrame], sy[currFrame], 
+          Draw.rect(x+offX[currFrame]+sx[currFrame]*scale, y+offY[currFrame]+sy[currFrame]*scale,
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               2, texID);
           break;
         case 3:
-          Draw.rect(x+offX[currFrame], y+offY[currFrame]+sx[currFrame], sx[currFrame], sy[currFrame], 
+          Draw.rect(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               3, texID);
@@ -294,27 +315,101 @@ public class Animation {
     }else{
       switch(rot[currFrame]){
         case 0:
-          Draw.rect(x+offX[currFrame], y+offY[currFrame], sx[currFrame], sy[currFrame], texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
+          Draw.rect(x+offX[currFrame], y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame], texID);
           break;
         case 1:
-          Draw.rect(x+offX[currFrame]+sy[currFrame], y+offY[currFrame], sx[currFrame], sy[currFrame], 
+          Draw.rect(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame],
               1, texID);
           break;
         case 2:
-          Draw.rect(x+offX[currFrame]+sx[currFrame], y+offY[currFrame]+sy[currFrame],
-              sx[currFrame], sy[currFrame], 
+          Draw.rect(x+offX[currFrame]+sx[currFrame]*scale, y+offY[currFrame]+sy[currFrame]*scale,
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               2, texID);
           break;
         case 3:
-          Draw.rect(x+offX[currFrame], y+offY[currFrame]+sx[currFrame], sx[currFrame], sy[currFrame], 
+          Draw.rect(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               3, texID);
+          break;
+        default:
+          //Do nothing, invalid value
+      }
+    }
+
+    if(playing){
+      counter++;
+      if(counter > time){
+        counter = 0;
+        currFrame++;
+        if(currFrame > frames-1){
+          currFrame = 0;
+        }
+      }
+    }
+  }
+  
+  public void playZoom(float x, float y){
+        
+    if(!flipped[currFrame]){
+      switch(rot[currFrame]){
+        case 0:
+          Draw.rectZoom(x+offX[currFrame], y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, texx[currFrame], texy[currFrame], 
+              texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], 0, texID,
+              Editor.zoom(), EditorMap.getX(), EditorMap.getY());
+          break;
+        case 1:
+          Draw.rectZoom(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, 
+              texx[currFrame], texy[currFrame], 
+              texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame],
+              1, texID, Editor.zoom(), EditorMap.getX(), EditorMap.getY());
+          break;
+        case 2:
+          Draw.rectZoom(x+offX[currFrame]+sx[currFrame]*scale, y+offY[currFrame]+sy[currFrame]*scale,
+              sx[currFrame]*scale, sy[currFrame]*scale, 
+              texx[currFrame], texy[currFrame], 
+              texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], 
+              2, texID, Editor.zoom(), EditorMap.getX(), EditorMap.getY());
+          break;
+        case 3:
+          Draw.rectZoom(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, sx[currFrame]*scale, sy[currFrame]*scale, 
+              texx[currFrame], texy[currFrame], 
+              texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], 
+              3, texID, Editor.zoom(), EditorMap.getX(), EditorMap.getY());
+          break;
+        default:
+          //Do nothing, invalid value
+      }
+    }else{
+      switch(rot[currFrame]){
+        case 0:
+          Draw.rectZoom(x+offX[currFrame], y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
+              texx[currFrame], texy[currFrame]+(int)sy[currFrame], texID, Editor.zoom(), 
+              EditorMap.getX(), EditorMap.getY());
+          break;
+        case 1:
+          Draw.rectZoom(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, 
+              texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
+              texx[currFrame], texy[currFrame]+(int)sy[currFrame],
+              1, texID, Editor.zoom(), EditorMap.getX(), EditorMap.getY());
+          break;
+        case 2:
+          Draw.rectZoom(x+offX[currFrame]+sx[currFrame]*scale, y+offY[currFrame]+sy[currFrame]*scale,
+              sx[currFrame]*scale, sy[currFrame]*scale, 
+              texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
+              texx[currFrame], texy[currFrame]+(int)sy[currFrame], 
+              2, texID, Editor.zoom(), EditorMap.getX(), EditorMap.getY());
+          break;
+        case 3:
+          Draw.rectZoom(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, sx[currFrame]*scale, sy[currFrame]*scale, 
+              texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
+              texx[currFrame], texy[currFrame]+(int)sy[currFrame], 
+              3, texID, Editor.zoom(), EditorMap.getX(), EditorMap.getY());
           break;
         default:
           //Do nothing, invalid value
@@ -344,25 +439,25 @@ public class Animation {
     if(!flipped[currFrame]){
       switch(rot[currFrame]){
         case 0:
-          Draw.rectCam(x+offX[currFrame], y+offY[currFrame], sx[currFrame], 
-              sy[currFrame], texx[currFrame], texy[currFrame], 
+          Draw.rectCam(x+offX[currFrame], y+offY[currFrame], sx[currFrame]*scale, 
+              sy[currFrame]*scale, texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], texID);
           break;
         case 1:
-          Draw.rectCam(x+offX[currFrame]+sy[currFrame], y+offY[currFrame], sx[currFrame], sy[currFrame], 
+          Draw.rectCam(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame],
               1, texID);
           break;
         case 2:
-          Draw.rectCam(x+offX[currFrame]+sx[currFrame], y+offY[currFrame]+sy[currFrame],
-              sx[currFrame], sy[currFrame], 
+          Draw.rectCam(x+offX[currFrame]+sx[currFrame]*scale, y+offY[currFrame]+sy[currFrame]*scale,
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               2, texID);
           break;
         case 3:
-          Draw.rectCam(x+offX[currFrame], y+offY[currFrame]+sx[currFrame], sx[currFrame], sy[currFrame], 
+          Draw.rectCam(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               3, texID);
@@ -373,24 +468,24 @@ public class Animation {
     }else{
       switch(rot[currFrame]){
         case 0:
-          Draw.rectCam(x+offX[currFrame], y+offY[currFrame], sx[currFrame], sy[currFrame], texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
+          Draw.rectCam(x+offX[currFrame], y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame], texID);
           break;
         case 1:
-          Draw.rectCam(x+offX[currFrame]+sy[currFrame], y+offY[currFrame], sx[currFrame], sy[currFrame], 
+          Draw.rectCam(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame],
               1, texID);
           break;
         case 2:
-          Draw.rectCam(x+offX[currFrame]+sx[currFrame], y+offY[currFrame]+sy[currFrame],
-              sx[currFrame], sy[currFrame], 
+          Draw.rectCam(x+offX[currFrame]+sx[currFrame]*scale, y+offY[currFrame]+sy[currFrame]*scale,
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               2, texID);
           break;
         case 3:
-          Draw.rectCam(x+offX[currFrame], y+offY[currFrame]+sx[currFrame], sx[currFrame], sy[currFrame], 
+          Draw.rectCam(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               3, texID);
