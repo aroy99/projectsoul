@@ -42,7 +42,8 @@ public class HistoryTab extends Tab {
     {
       if (KeyHandler.keyClick(Key.LBUTTON))
       {
-        int hoveringOver = (int) (Mode.getFloatMouseX()-GARBAGE_ICONS.x)/32;
+        int hoveringOver = (int) 
+            (Mode.getFloatMouseX()-GARBAGE_ICONS.x)/32;
         switch (hoveringOver)
         {
           case CLEAR_ALL:
@@ -56,8 +57,14 @@ public class HistoryTab extends Tab {
             break;
         }
       }
-      
-        
+    }
+    
+    for (Revision revision: revisions)
+    {
+      if (revision.isDoubleClicked())
+      {
+        setCurrentRevision(revisions.indexOf(revision));
+      }
     }
     
   }
@@ -183,5 +190,24 @@ public class HistoryTab extends Tab {
         revisions.get(curr).redo();
       }
     }
+  }
+  
+  private void setCurrentRevision(int index)
+  {
+    if (index > curr)
+    {
+      for (int i = curr + 1; i <= index; i++)
+      {
+        revisions.get(i).redo();
+      }
+    } else
+    {
+      for (int i = curr; i > index; i--)
+      {
+        revisions.get(i).undo();
+      }
+    }
+    
+    curr = index;
   }
 }

@@ -9,6 +9,7 @@ import komorebi.projsoul.editor.Layer.LayerType;
 import komorebi.projsoul.editor.controls.CheckBox;
 import komorebi.projsoul.editor.controls.RadioButton;
 import komorebi.projsoul.editor.controls.TextField;
+import komorebi.projsoul.editor.history.SublayerNameChangedRevision;
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
@@ -31,7 +32,7 @@ public class Sublayer {
 
   private int[][] tiles;
 
-  private boolean kill;
+  private boolean queueForRemoval;
 
   public Sublayer(int headerLoc, LayerType type)
   {
@@ -97,7 +98,7 @@ public class Sublayer {
           text.setFocused(!text.isFocused());
 
           if (text.isFocused())
-          {
+          {    
             for (Layer l: Editor.getMap().getLayerControl().getLayers())
             {
               for (Sublayer sub: l.getSubs())
@@ -108,13 +109,17 @@ public class Sublayer {
                 }
               }
             }
+          } else if (text.wasChanged())
+          {
+            createRevision();
+            text.setUnchanged();
           }
 
           KeyHandler.tempDisable(Key.LBUTTON);
         } else if (minus.contains(Mode.getFloatMouseX(), 
             Mode.getFloatMouseY()) && confirmDelete())
         {
-          kill = true;
+          queueForRemoval = true;
           KeyHandler.tempDisable(Key.LBUTTON);
 
           boolean layPush = false;
@@ -129,7 +134,7 @@ public class Sublayer {
               {
                 if (push)
                 {
-                  s.push(-32);
+                 // s.push(-32);
                 }
 
                 if (s == this)
@@ -144,7 +149,7 @@ public class Sublayer {
 
             if (!layPush)
             {
-              l.push(-32);
+              //l.push(-32);
             }
 
           } 
@@ -165,9 +170,14 @@ public class Sublayer {
     {
       text.update();
     }
+    
+    if (text.wasChanged())
+    {
+      
+    }
   }
 
-  public void push(float dy)
+ /* public void push(float dy)
   {
     pencil.y -= dy;
     minus.y -= dy;
@@ -176,7 +186,7 @@ public class Sublayer {
     visible.push(dy);
     checkbox.push(dy);
     text.push(dy);
-  }
+  }*/
 
   public void setMerging(boolean b)
   {
@@ -230,10 +240,16 @@ public class Sublayer {
     return text;
   }
 
-  public boolean kill()
+  public boolean isQueuedForRemoval()
   {
-    return kill; 
+    return queueForRemoval; 
   }
+  
+  public void kill()
+  {
+    queueForRemoval = false;
+  }
+ 
 
   public int[][] getTiles()
   {
@@ -296,5 +312,11 @@ public class Sublayer {
     
     return (returnee == JOptionPane.YES_OPTION);
   
+  }
+  
+  private void createRevision()
+  {
+    Editor.getMap().addRevision(new SublayerNameChangedRevision(
+        text.getPreviousText(), text.getText(), this));
   }
 }

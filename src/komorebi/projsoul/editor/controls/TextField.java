@@ -8,6 +8,7 @@ import komorebi.projsoul.script.TextHandler;
 
 public class TextField {
 
+  private String stringAtBeginningEdit;
   private String string;
   private int x, y;
   private TextHandler text;
@@ -23,7 +24,7 @@ public class TextField {
   private boolean isFocused;
   private static final int PENCIL_TIME = 50;
   private int arbCount;
-  
+    
   public TextField(int x, int y)
   {
     blinker = 0;
@@ -55,11 +56,16 @@ public class TextField {
     
     if (!isFocused)
     {
+      
       text.clear();
       text.writeMindLength(string, 
         x, y, new EarthboundFont(2), 90);
+      
+      
     } else
     {
+      stringAtBeginningEdit = string + "";
+      
       text.clear();
       visMax = string.length();
       visMin = visMax-1;
@@ -77,6 +83,7 @@ public class TextField {
   
   public void setText(String str)
   {
+    this.stringAtBeginningEdit = str + "";
     this.string = str;
     
     visMin = 0;
@@ -144,8 +151,8 @@ public class TextField {
       
       if (keyDown % CURSOR_MOD == 0)
       {
-        string = string.substring(0, cursor-1) + string.substring(cursor, 
-            string.length());
+        setString(string.substring(0, cursor-1) + string.substring(cursor, 
+            string.length()));
         cursor--;
         if (visMin > 0)
         {
@@ -167,8 +174,8 @@ public class TextField {
       
       if (keyDown % CURSOR_MOD == 0)
       {
-        string = string.substring(0, cursor) + string.substring(cursor+1, 
-            string.length());
+        setString(string.substring(0, cursor) + string.substring(cursor+1, 
+            string.length()));
         updateText();
       }
       
@@ -195,8 +202,8 @@ public class TextField {
             }
           }
          
-          string = string.substring(0, cursor) + c + 
-              string.substring(cursor, string.length());
+          setString(string.substring(0, cursor) + c + 
+              string.substring(cursor, string.length()));
           cursor++;
           
           
@@ -261,5 +268,24 @@ public class TextField {
         x, y, new EarthboundFont(2));
   }
   
+  public boolean wasChanged()
+  {
+    return !stringAtBeginningEdit.equals(string);
+  }
   
+  public void setUnchanged()
+  {
+    stringAtBeginningEdit = string + "";
+  }
+  
+  private void setString(String newStr)
+  {
+    string = newStr;
+  }
+  
+  public String getPreviousText()
+  {
+    return stringAtBeginningEdit;
+  }
+
 }

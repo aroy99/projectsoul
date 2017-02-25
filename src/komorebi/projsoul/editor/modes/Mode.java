@@ -122,7 +122,7 @@ public abstract class Mode implements Renderable{
    * Converts Mouse X into a tile index, adjusting for map position
    * @return adjusted mouse x
    */
-  protected static int getMouseX(){
+  public static int getMouseX(){
     return (int) ((Mouse.getX()/MainE.getScale() - 
         EditorMap.getX()) / (Editor.zoom()*16));
   }
@@ -131,7 +131,7 @@ public abstract class Mode implements Renderable{
    * Converts Mouse Y into a tile index, adjusting for map position
    * @return adjusted mouse y
    */
-  protected static int getMouseY() {   
+  public static int getMouseY() {   
     
     return (int) ((Mouse.getY()/MainE.getScale() - 
         EditorMap.getY()) / (Editor.zoom()*16));

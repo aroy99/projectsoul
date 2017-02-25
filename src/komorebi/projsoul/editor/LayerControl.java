@@ -2,10 +2,9 @@ package komorebi.projsoul.editor;
 
 import java.util.Iterator;
 
-import org.lwjgl.input.Mouse;
-
 import komorebi.projsoul.editor.Layer.LayerType;
 import komorebi.projsoul.editor.controls.TabControl.Tab;
+import komorebi.projsoul.editor.history.RemoveSublayerRevision;
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Renderable;
@@ -55,7 +54,6 @@ public class LayerControl extends Tab implements Renderable {
     scrollMax = Math.max(MIN_HT, layersSize);
         
     double dMouse = 0.1*Editor.dWheel;
-    int prevScroll = scroll;
         
     if (dMouse > 0 && scroll > 0)
     {
@@ -72,14 +70,9 @@ public class LayerControl extends Tab implements Renderable {
         scroll = scrollMax - MIN_HT;
       }
     }
+   
+    refresh();
     
-    if (scroll!=prevScroll)
-    {
-      for (Layer l: layers)
-      {
-        l.push(prevScroll-scroll);
-      }
-    }
     
    
     boolean any = false;
@@ -106,9 +99,13 @@ public class LayerControl extends Tab implements Renderable {
       for (Iterator<Sublayer> it = layer.getSubs().iterator(); it.hasNext();)
       {
         Sublayer sub = it.next();
-        if (sub.kill())
+        if (sub.isQueuedForRemoval())
         {
           it.remove();
+          sub.kill();
+          
+          Editor.getMap().addRevision(new RemoveSublayerRevision(sub,
+              layer.getSubs()));
         }
       }
     }
@@ -195,6 +192,17 @@ public class LayerControl extends Tab implements Renderable {
     for (Layer lay: layers)
     {
       lay.getSubs().clear();
+    }
+  }
+  
+  public void refresh()
+  {
+    int layerY = MIN_HT - 32 + scroll;
+    
+    for (int layer = layers.length - 1; layer >= 0; layer--)
+    {
+      layers[layer].setY(layerY);
+      layerY -= layers[layer].getVisibleHeight();
     }
   }
   

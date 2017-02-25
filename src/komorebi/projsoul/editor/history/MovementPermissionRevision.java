@@ -6,7 +6,8 @@ import komorebi.projsoul.engine.Draw;
 
 public class MovementPermissionRevision extends Revision {
   
-  private PermissionArrangement[] prePermissions; //what the tiles were before
+  private PermissionArrangement[] prePermissions; //what the tiles 
+                                                  //were before
   private PermissionArrangement[] postPermissions; //what they are after
   
   private MoveMode moveMode;
@@ -42,8 +43,8 @@ public class MovementPermissionRevision extends Revision {
 
   @Override
   public void render() {
-    Draw.rect(clickableArea.x, clickableArea.y, clickableArea.width, 
-        clickableArea.height, 16, 32, 32, 48, 2);
+    Draw.drawIfInBounds(Draw.LAYER_MANAGER, clickableArea.x, 
+        clickableArea.y, 16, 16, 16, 32, 32, 48, 2);    
     
   }
 

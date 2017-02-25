@@ -184,7 +184,7 @@ public class KeyHandler {
    */
   public static void getInput()
   {
-
+    
     for (int i=0; i < Keyboard.KEYBOARD_SIZE; i++)
     {
       buffer[i] = false;
@@ -439,21 +439,18 @@ public class KeyHandler {
       case LBUTTON:
         if (keyClick(mouseKey) && sinceL > 0)
         {
-          sinceL = 0;
           return true;
         }
         return false;
       case RBUTTON:
         if (keyClick(mouseKey) && sinceR > 0)
         {
-          sinceR = 0;
           return true;
         }
         return false;
       case MBUTTON:
         if (keyClick(mouseKey) && sinceS > 0)
         {
-          sinceS = 0;
           return true;
         }
         return false;

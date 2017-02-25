@@ -68,9 +68,10 @@ public class ExpandArrow {
   
   public void click() {};
   
-  public void push(float num)
+  public void setLocation(int x, int y)
   {
-    y-=num;
+    this.x = x;
+    this.y = y;
     area.setLocation((int) x, (int) y);
   }
   

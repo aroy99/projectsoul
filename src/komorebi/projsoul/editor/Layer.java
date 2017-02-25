@@ -7,6 +7,8 @@ import javax.swing.JOptionPane;
 
 import komorebi.projsoul.editor.controls.ExpandArrow;
 import komorebi.projsoul.editor.controls.RadioButton;
+import komorebi.projsoul.editor.history.AddSublayerRevision;
+import komorebi.projsoul.editor.history.MergeRevision;
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.editor.modes.TileMode;
 import komorebi.projsoul.engine.Draw;
@@ -129,7 +131,7 @@ public class Layer {
       @Override
       public void click()
       {
-        
+                
         Layer[] layers = Editor.getMap().getLayerControl().getLayers();
         boolean found = false;
         
@@ -143,7 +145,7 @@ public class Layer {
               push = -push;
             }
             
-            layers[i].push(push*16);
+            //layers[i].push(push*16);
           }
           
           if (this == layers[i].getExpandArrow())
@@ -157,14 +159,15 @@ public class Layer {
     sublayers.add(new Sublayer((header-(sublayers.size()+1)*2)*16, type));
     sublayers.add(new Sublayer((header-(sublayers.size()+1)*2)*16, type));
     
-    text.write(type.toString(), 32, header*16, new EarthboundFont(2));
+    icon = new Rectangle(8, header*16, 16, 16);
+    
+    text.write(type.toString(), 32, icon.y, new EarthboundFont(2));
     plus = new Rectangle(105, header*16 - getSectionalHeight()*16-16, 
         26, 26);
     merge = new Rectangle(131, header*16 - getSectionalHeight()*16-16, 
         26, 26);
     flatten = new Rectangle(157, header*16 - getSectionalHeight()*16-16, 
         26, 26);
-    icon = new Rectangle(8, header*16, 16, 16);
   }
   
   public void render()
@@ -246,8 +249,8 @@ public class Layer {
         
         int dist = subs.indexOf(drag) - subs.indexOf(sub);
         
-        drag.push(-32*dist);
-        sub.push(32*dist);
+        //drag.push(-32*dist);
+        //sub.push(32*dist);
         
         subs.set(subs.indexOf(sub), drag);
         subs.set(index, sub);
@@ -275,30 +278,17 @@ public class Layer {
             merging = false;
             for (Sublayer s: sublayers) {
               s.setMerging(false);
+              s.getCheckBox().setChecked(false);
             }
+            
           } else
           {
-            sublayers.add(new Sublayer(plus.y + 16, type));
+            Sublayer newSub;
             
-            boolean push = false;
+            sublayers.add((newSub = new Sublayer(plus.y + 16, type)));
             
-            for (int i = Editor.getMap().getLayerControl().getLayers().length - 1; i >=0; i--)
-            {
-              if (push)
-              {
-                Editor.getMap().getLayerControl().getLayers()[i].push(32);
-              }
-              
-              if (this == Editor.getMap().getLayerControl().getLayers()[i])
-              {
-                push = true;
-                plus.y-=32;
-                merge.y-=32;
-                flatten.y-=32;
-
-              }
-            }
-            
+            Editor.getMap().addRevision(new AddSublayerRevision(newSub, sublayers));
+                        
             KeyHandler.tempDisable(Key.LBUTTON);
           }
         } else if (merge.contains(Mode.getFloatMouseX(), Mode.getFloatMouseY()))
@@ -314,28 +304,14 @@ public class Layer {
             for (Sublayer remove: removees)
             {
               sublayers.remove(remove);
+              remove.setMerging(false);
             }
+            
+            Editor.getMap().addRevision(new MergeRevision(this, 
+                removees, merge));
             
             sublayers.add(merge);
             merge.getTextField().setText("Merged");
-            
-            boolean layPush = false;
-
-            for (Layer l: Editor.getMap().getLayerControl().getLayers())
-            {
-              if (l.getSubs().contains(merge))
-              {
-                l.alignSublayers();
-                
-                layPush = true;
-                l.pushButtons(-32*(removees.length-1));
-              }
-
-              if (!layPush)
-              {
-                l.push(-32*(removees.length-1));
-              }
-            } 
             
             merging = false;
             for (Sublayer s: sublayers) {
@@ -372,12 +348,11 @@ public class Layer {
               l.alignSublayers();
               
               layPush = true;
-              l.pushButtons(-32*(arrSize-1));
             }
 
             if (!layPush)
             {
-              l.push(-32*(arrSize-1));
+              //l.push(-32*(arrSize-1));
             }
           }
         }
@@ -404,13 +379,14 @@ public class Layer {
   {
     if (expand.pointsDown())
     {
-      return 24;
+      return 32;
     } else
     {
       return sublayers.size()*32+2*32;
     }
   }
   
+  /*
   public void push(int num)
   {
     visible.push(num);
@@ -424,7 +400,7 @@ public class Layer {
     
     pushButtons(num);
     icon.y-=num;
-  }
+  }*/
   
   
   
@@ -494,6 +470,18 @@ public class Layer {
   public boolean hasSublayers()
   {
     return !sublayers.isEmpty();
+  }
+  
+  public void setY(int y)
+  {
+    icon.y = y;
+    expand.setLocation(135, y);
+    visible.setLocation(164, y);
+    
+    text.clear();
+    text.write(type.toString(), 32, icon.y, new EarthboundFont(2));
+    
+    alignSublayers();
   }
   
 }

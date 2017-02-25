@@ -1458,6 +1458,5 @@ public class EditorMap implements Playable, Serializable{
   {
     return moveMode;
   }
-
 }
 

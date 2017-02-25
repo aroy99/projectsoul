@@ -2,7 +2,10 @@ package komorebi.projsoul.editor.history;
 
 import java.awt.Rectangle;
 
+import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.script.TextHandler;
 
 public abstract class Revision {
@@ -50,5 +53,12 @@ public abstract class Revision {
   public void setY(int y)
   {
     clickableArea.y = y;
+  }
+  
+  public boolean isDoubleClicked()
+  { 
+    return KeyHandler.doubleClick(Key.LBUTTON)
+        && clickableArea.contains(Mode.getFloatMouseX(), 
+            Mode.getFloatMouseY());
   }
 }

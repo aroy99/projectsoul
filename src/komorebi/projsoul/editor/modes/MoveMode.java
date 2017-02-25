@@ -5,6 +5,7 @@ package komorebi.projsoul.editor.modes;
 
 import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.editor.controls.RadioButton;
+import komorebi.projsoul.editor.history.MovementPermissionRevision;
 import komorebi.projsoul.editor.history.PermissionArrangement;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Draw;
@@ -96,7 +97,6 @@ public class MoveMode extends Mode{
     }
   }
 
-  private Permission[][][] collision;
   private RadioButton[] buttons;
 
   private Permission perm;
@@ -108,7 +108,9 @@ public class MoveMode extends Mode{
 
   private TextHandler text;
   
-  private static PermissionArrangement[] prevStates;
+  private static PermissionArrangement[] prevPermissions;
+  private static PermissionArrangement[] currPermissions;
+
   private static int minx, maxx, miny, maxy;
   private static boolean changed;
 
@@ -117,7 +119,17 @@ public class MoveMode extends Mode{
    */
   public MoveMode(Permission[][][] col) {
     
-    prevStates = new PermissionArrangement[3];
+    prevPermissions = new PermissionArrangement[3];
+    currPermissions = new PermissionArrangement[3];
+    
+    for (int layer = 0; layer < currPermissions.length; layer++)
+    {
+      prevPermissions[layer] = new PermissionArrangement(col[layer],
+          0, 0, layer);
+      currPermissions[layer] = new PermissionArrangement(col[layer],
+          0, 0, layer);
+    }
+
     
     selection = new Animation(8, 8, 16, 16, 2, false, 2);
     for(int i=3; i >= 0; i--){
@@ -128,15 +140,9 @@ public class MoveMode extends Mode{
     selX = LEFT_BOUND;
     selY = UP_BOUND-1;
 
-    collision = col;
+    
 
     buttons = new RadioButton[3];
-    
-    for (int i = 0; i < prevStates.length; i++)
-    {
-      prevStates[i] = new PermissionArrangement(col[i], 0, 0,
-          i);
-    }
     
     changed = false;
 
@@ -189,22 +195,36 @@ public class MoveMode extends Mode{
       miny = maxy = my;
     }
     
-    
-
     if(lButtonIsDown && checkMapBounds() && (!mouseSame || 
         !lButtonWasDown)) {
+      
+      if (mx < minx)
+        minx = mx;
+      if (mx > maxx)
+        maxx = mx;
+      if (my < miny)
+        miny = my;
+      if (my > maxy)
+        maxy = my;
+      
+      changed = true;
       
       if (applyAll)
       {
         for (int l = 0; l < MoveMode.NUM_MOVEMENT_LAYERS; l++)
         {
-          collision[l][my][mx] = perm;
+          currPermissions[l].setPermissionAt(perm, mx, my); 
         }
       } else
       {
-        collision[currLayer][my][mx] = perm;
+        currPermissions[currLayer].setPermissionAt(perm, mx, my); 
       }
       EditorMap.setUnsaved();
+    }
+    
+    if (KeyHandler.keyRelease(Key.LBUTTON) && changed)
+    {
+      createRevision();
     }
 
     if (KeyHandler.keyClick(Key.LBUTTON))
@@ -234,6 +254,8 @@ public class MoveMode extends Mode{
       {
         flood(mx, my, perm, currLayer);
       }
+      
+      createRevision();
       EditorMap.setUnsaved();
     }
 
@@ -270,8 +292,8 @@ public class MoveMode extends Mode{
     float x = EditorMap.getX();
     float y = EditorMap.getY();
 
-    for (int i = 0; i < collision[0].length; i++) {
-      for (int j = 0; j < collision[0][i].length; j++) {
+    for (int i = 0; i < currPermissions[0].getHeight(); i++) {
+      for (int j = 0; j < currPermissions[0].getWidth(); j++) {
         if(EditorMap.checkTileInBounds(x+j*SIZE, y+i*SIZE)){
           /*
           if(collision[i][j]){
@@ -284,11 +306,12 @@ public class MoveMode extends Mode{
                 Editor.zoom(), EditorMap.getX(), EditorMap.getY());
           }*/
 
-          Draw.rectZoom(x+j*SIZE, y+i*SIZE, SIZE, SIZE, collision[currLayer][i][j].getTexX(), 
-              collision[currLayer][i][j].getTexY(), 
-              collision[currLayer][i][j].getTexX()+SIZE, collision[currLayer][i][j].getTexY()+SIZE, 2,
-              Editor.zoom(), EditorMap.getX(),
-              EditorMap.getY());
+          Draw.rectZoom(x+j*SIZE, y+i*SIZE, SIZE, SIZE, 
+              currPermissions[currLayer].getPermissionAt(j, i).getTexX(), 
+              currPermissions[currLayer].getPermissionAt(j, i).getTexY(), 
+              currPermissions[currLayer].getPermissionAt(j, i).getTexX()+SIZE, 
+              currPermissions[currLayer].getPermissionAt(j, i).getTexY()+SIZE, 
+              2, Editor.zoom(), EditorMap.getX(), EditorMap.getY());
         }
 
 
@@ -342,7 +365,7 @@ public class MoveMode extends Mode{
 
     for(int i = firstY; i <= lastY; i++){
       for(int j = firstX; j <= lastX; j++){
-        collision[currLayer][i][j] = type;
+        currPermissions[currLayer].setPermissionAt(type, j, i);
       }
     }
   }
@@ -361,8 +384,9 @@ public class MoveMode extends Mode{
     {
       for (int j = 0; j < arrangement.getWidth(); j++)
       {
-        collision[layer][i][j] = arrangement.getPermissionAt(tx + j, 
-            ty + i);
+        currPermissions[layer].setPermissionAt(
+            arrangement.getPermissionAt(j, i), 
+            j + tx, i + ty);
       }
     }
   }
@@ -375,15 +399,24 @@ public class MoveMode extends Mode{
    * @param type tile to search and destroy
    */
   private void flood(int mouseX, int mouseY, Permission type, int layer) {
-    if (mouseX < 0 || mouseX >= collision[0][0].length ||
-        mouseY < 0 || mouseY >= collision[0].length){
+    if (mouseX < 0 || mouseX >= currPermissions[0].getWidth() ||
+        mouseY < 0 || mouseY >= currPermissions[0].getHeight()){
       return;
     }
-    if(collision[layer][mouseY][mouseX] == type){
+    if(currPermissions[layer].getPermissionAt(mouseX, mouseY) == type){
       return;
     }
+    
+    if (mouseX < minx)
+      minx = mouseX;
+    if (mouseX > maxx)
+      maxx = mouseX;
+    if (mouseY < miny)
+      miny = mouseY;
+    if (mouseY > maxy)
+      maxy = mouseY;
 
-    collision[layer][mouseY][mouseX] = type;
+    currPermissions[layer].setPermissionAt(type, mouseX, mouseY);
     flood(mouseX-1, mouseY,   type, layer);
     flood(mouseX+1, mouseY,   type, layer);
     flood(mouseX,   mouseY+1, type, layer);
@@ -397,6 +430,78 @@ public class MoveMode extends Mode{
         !(getLiteralTileX() > RIGHT_BOUND_IF_TOP_ROW && 
             (getLiteralTileY() == TOP_ROW_1 || getLiteralTileY() == 
             TOP_ROW_2));
+  }
+  
+
+  private void createRevision()
+  {    
+    PermissionArrangement[] prePerms;
+    PermissionArrangement[] postPerms;
+    
+    if (!applyAll)
+    {
+      PermissionArrangement pre = new PermissionArrangement(
+          new Permission[maxy-miny+1][maxx-minx+1], minx, miny, currLayer);
+      PermissionArrangement post = new PermissionArrangement(
+          new Permission[maxy-miny+1][maxx-minx+1], minx, miny, currLayer);
+      
+      for (int i = miny; i <= maxy; i++)
+      {
+        for (int j = minx; j <= maxx; j++)
+        {
+          pre.setPermissionAt(prevPermissions[currLayer].getPermissionAt(j, i), 
+              j-minx, i-miny);
+          post.setPermissionAt(currPermissions[currLayer].getPermissionAt(j, i), 
+              j-minx, i-miny);                 
+        }
+      }
+      
+      prePerms = new PermissionArrangement[1];
+      postPerms = new PermissionArrangement[1];
+      
+      prePerms[0] = pre;
+      postPerms[0] = post;
+    } else
+    {
+      prePerms = new PermissionArrangement[3];
+      postPerms = new PermissionArrangement[3];
+      
+      for (int layer = 0; layer < prePerms.length; layer++)
+      {
+        prePerms[layer] = new PermissionArrangement(
+            new Permission[maxy-miny+1][maxx-minx+1], minx, miny, layer);
+        postPerms[layer] = new PermissionArrangement(
+            new Permission[maxy-miny+1][maxx-minx+1], minx, miny, layer);
+        
+        for (int i = miny; i <= maxy; i++)
+        {
+          for (int j = minx; j <= maxx; j++)
+          {
+            prePerms[layer].setPermissionAt(prevPermissions[layer].getPermissionAt(j, i), 
+                j-minx, i-miny);
+            postPerms[layer].setPermissionAt(currPermissions[layer].getPermissionAt(j, i), 
+                j-minx, i-miny);
+            
+            
+          }
+        }
+      }
+    }
+    
+    copyFromCurrentToPrevious();
+    
+    Editor.getMap().addRevision(
+        new MovementPermissionRevision(prePerms, postPerms));
+    changed = false;
+  }
+   
+  
+  private void copyFromCurrentToPrevious()
+  {
+    for (int layer = 0; layer < prevPermissions.length; layer++)
+    {
+      prevPermissions[layer] = currPermissions[layer].duplicate();
+    }
   }
 
 }
