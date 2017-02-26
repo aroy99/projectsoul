@@ -377,6 +377,12 @@ public class MoveMode extends Mode{
    */
   public void applyPermissions(PermissionArrangement arrangement)
   {
+    applyPermissionsToCurrent(arrangement);
+    applyPermissionsToPrevious(arrangement);
+  }
+  
+  private void applyPermissionsToCurrent(PermissionArrangement arrangement)
+  {
     int layer = arrangement.getLayer();
     int tx = arrangement.getTileX(), ty = arrangement.getTileY();
     
@@ -385,6 +391,22 @@ public class MoveMode extends Mode{
       for (int j = 0; j < arrangement.getWidth(); j++)
       {
         currPermissions[layer].setPermissionAt(
+            arrangement.getPermissionAt(j, i), 
+            j + tx, i + ty);
+      }
+    }
+  }
+  
+  private void applyPermissionsToPrevious(PermissionArrangement arrangement)
+  {
+    int layer = arrangement.getLayer();
+    int tx = arrangement.getTileX(), ty = arrangement.getTileY();
+    
+    for (int i = 0; i < arrangement.getHeight(); i++)
+    {
+      for (int j = 0; j < arrangement.getWidth(); j++)
+      {
+        prevPermissions[layer].setPermissionAt( 
             arrangement.getPermissionAt(j, i), 
             j + tx, i + ty);
       }
@@ -488,20 +510,15 @@ public class MoveMode extends Mode{
       }
     }
     
-    copyFromCurrentToPrevious();
+    for (PermissionArrangement arr: postPerms)
+    {
+      applyPermissionsToPrevious(arr);
+    }
     
     Editor.getMap().addRevision(
         new MovementPermissionRevision(prePerms, postPerms));
     changed = false;
   }
-   
   
-  private void copyFromCurrentToPrevious()
-  {
-    for (int layer = 0; layer < prevPermissions.length; layer++)
-    {
-      prevPermissions[layer] = currPermissions[layer].duplicate();
-    }
-  }
 
 }

@@ -5,7 +5,6 @@ import java.awt.Rectangle;
 
 import javax.swing.JOptionPane;
 
-import komorebi.projsoul.editor.Layer.LayerType;
 import komorebi.projsoul.editor.controls.CheckBox;
 import komorebi.projsoul.editor.controls.RadioButton;
 import komorebi.projsoul.editor.controls.TextField;
@@ -17,15 +16,14 @@ import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.EditorMap;
 
 public class Sublayer {
-  
+
   private Rectangle pencil, minus, draggable;
   private int y;
-  private String name;
 
   private RadioButton visible;
   private CheckBox checkbox;
   private TextField text;
-  
+
   private LayerType type;
 
   private boolean merge;
@@ -34,18 +32,13 @@ public class Sublayer {
 
   private boolean queueForRemoval;
 
-  public Sublayer(int headerLoc, LayerType type)
+
+  public Sublayer(LayerType type)
   {
-    this(headerLoc,type,false);
+    this(type, LayerType.generateName(type));
   }
   
-  public Sublayer(int y, LayerType type, String customName)
-  {
-    this(y, type, true);
-    text.setText(customName);
-  }
-  
-  public Sublayer(int y, LayerType type, boolean customName)
+  public Sublayer(LayerType type, String name)
   {
     pencil = new Rectangle(110, y, 26, 26);
     minus = new Rectangle(136, y, 26, 26);
@@ -53,20 +46,17 @@ public class Sublayer {
     visible = new RadioButton(164, y+5);
     checkbox = new CheckBox(136, y);
     text = new TextField(20, y);
-    
-    if (!customName)
-    {
-      text.setText(LayerType.generateName(type));
-    } else
-    {
-      text.setText("Temp");
-    }
 
     this.type = type;
+    text.setText(name);
 
     tiles = new int[EditorMap.getHeight()][EditorMap.getWidth()];
   }
-  
+
+  /**
+   * Sets the y location of the sublayer's textbox and buttons
+   * @param y
+   */
   public void setLocation(int y)
   {
     pencil.setBounds(110, y, 26, 26);
@@ -76,12 +66,12 @@ public class Sublayer {
     checkbox.setLocation(136, y);
     text.setLocation(20,y);
   }
-  
+
   public LayerType getType()
   {
     return type;
   }
-  
+
   public void setTiles(int[][] tiles)
   {
     this.tiles = tiles;
@@ -93,67 +83,7 @@ public class Sublayer {
     {      
       if (!merge)
       {
-        if (pencil.contains(Mode.getFloatMouseX(), Mode.getFloatMouseY()))
-        {
-          text.setFocused(!text.isFocused());
-
-          if (text.isFocused())
-          {    
-            for (Layer l: Editor.getMap().getLayerControl().getLayers())
-            {
-              for (Sublayer sub: l.getSubs())
-              {
-                if (sub.getTextField()!=text)
-                {
-                  sub.getTextField().setFocused(false);
-                }
-              }
-            }
-          } else if (text.wasChanged())
-          {
-            createRevision();
-            text.setUnchanged();
-          }
-
-          KeyHandler.tempDisable(Key.LBUTTON);
-        } else if (minus.contains(Mode.getFloatMouseX(), 
-            Mode.getFloatMouseY()) && confirmDelete())
-        {
-          queueForRemoval = true;
-          KeyHandler.tempDisable(Key.LBUTTON);
-
-          boolean layPush = false;
-
-          for (Layer l: Editor.getMap().getLayerControl().getLayers())
-          {
-            if (l.getSubs().contains(this))
-            {
-              boolean push = false;
-
-              for (Sublayer s: l.getSubs())
-              {
-                if (push)
-                {
-                 // s.push(-32);
-                }
-
-                if (s == this)
-                {
-                  push = true;
-                }
-              }
-
-              layPush = true;
-              l.pushButtons(-32);
-            }
-
-            if (!layPush)
-            {
-              //l.push(-32);
-            }
-
-          } 
-        }
+        updateWhenNotMerging();
       }
     }
 
@@ -170,23 +100,53 @@ public class Sublayer {
     {
       text.update();
     }
-    
-    if (text.wasChanged())
+
+  }
+  
+  private void updateWhenNotMerging()
+  {
+    if (pencil.contains(Mode.getFloatMouseX(), Mode.getFloatMouseY()))
     {
-      
+      switchIsEditingName();
+    } else if (minus.contains(Mode.getFloatMouseX(), 
+        Mode.getFloatMouseY()) && confirmDelete())
+    {
+      queueForRemoval = true;
+      KeyHandler.tempDisable(Key.LBUTTON);
+
+      boolean layPush = false;
+
+      for (Layer l: Editor.getMap().getLayerControl().getLayers())
+      {
+        if (l.getSubs().contains(this))
+        {
+          boolean push = false;
+
+          for (Sublayer s: l.getSubs())
+          {
+            if (push)
+            {
+              // s.push(-32);
+            }
+
+            if (s == this)
+            {
+              push = true;
+            }
+          }
+
+          layPush = true;
+          l.pushButtons(-32);
+        }
+
+        if (!layPush)
+        {
+          //l.push(-32);
+        }
+
+      } 
     }
   }
-
- /* public void push(float dy)
-  {
-    pencil.y -= dy;
-    minus.y -= dy;
-    draggable.y -= dy;
-    
-    visible.push(dy);
-    checkbox.push(dy);
-    text.push(dy);
-  }*/
 
   public void setMerging(boolean b)
   {
@@ -244,12 +204,12 @@ public class Sublayer {
   {
     return queueForRemoval; 
   }
-  
+
   public void kill()
   {
     queueForRemoval = false;
   }
- 
+
 
   public int[][] getTiles()
   {
@@ -265,18 +225,18 @@ public class Sublayer {
   {
     return draggable.contains(new Point((int) mx, (int) my)); 
   }
-  
+
   public CheckBox getCheckBox()
   {
     return checkbox;
   }
-  
+
   public static Sublayer merge(Sublayer[] merge)
   {
-    Sublayer ret = new Sublayer(0, merge[0].getType(), true);
-    
+    Sublayer ret = new Sublayer(merge[0].getType());
+
     int[][] tiles;
-    
+
     try 
     {
       tiles = new int[merge[0].getTiles().length]
@@ -285,7 +245,7 @@ public class Sublayer {
     {
       return null;
     }
-    
+
     for (Sublayer sub: merge)
     {
       for (int i = 0; i < sub.getTiles().length; i++)
@@ -299,24 +259,54 @@ public class Sublayer {
         }
       }
     }
-    
+
     ret.setTiles(tiles);
     return ret;
-    
+
   }
-  
+
   private static boolean confirmDelete()
   {
     int returnee = JOptionPane.showConfirmDialog(null, 
         "Are you sure you want to delete this sublayer?");
-    
+
     return (returnee == JOptionPane.YES_OPTION);
-  
+
   }
-  
-  private void createRevision()
+
+  private void createRenamedRevision()
   {
     Editor.getMap().addRevision(new SublayerNameChangedRevision(
         text.getPreviousText(), text.getText(), this));
+  }
+ 
+  private void unfocusAllTextBoxesExcept(TextField text)
+  {
+    for (Layer l: Editor.getMap().getLayerControl().getLayers())
+    {
+      for (Sublayer sub: l.getSubs())
+      {
+        if (sub.getTextField()!=text)
+        {
+          sub.getTextField().setFocused(false);
+        }
+      }
+    }
+  }
+  
+  private void switchIsEditingName()
+  {
+    text.setFocused(!text.isFocused());
+
+    if (text.isFocused())
+    {    
+      unfocusAllTextBoxesExcept(text);
+    } else if (text.wasChanged())
+    {
+      createRenamedRevision();
+      text.setUnchanged();
+    }
+
+    KeyHandler.tempDisable(Key.LBUTTON);
   }
 }

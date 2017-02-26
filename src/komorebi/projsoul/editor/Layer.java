@@ -19,86 +19,11 @@ import komorebi.projsoul.script.TextHandler;
 
 public class Layer {
   
-  public static enum LayerType {
-    COVERAGE("Coverage", 89, 82),
-    L3("Layer 3", 73, 82),
-    STRUCTURES("Structures", 57, 82),
-    TERRAIN("Terrain", 41, 82);
-    
-    int notSelectedX, notSelectedY;
-    String str;
-    
-    static int[] subNums = new int[4];
-    
-    public static String generateName(LayerType t)
-    {
-      String ret = t.toString().substring(0, 3) + subNums[numOf(t)];
-      subNums[numOf(t)]++;
-      return ret;
-    }
-    
-    public String toString()
-    {
-      return str;
-    }
-    
-    public int getTexX()
-    {
-      return notSelectedX;
-    }
-    
-    public int getTexY()
-    {
-      return notSelectedY;
-    }
-    
-    private LayerType(String str, int texx, int texy)
-    {
-      this.str = str;
-      this.notSelectedX = texx;
-      this.notSelectedY = texy;
-    }
-    
-    public static int numOf(LayerType t)
-    {
-      switch (t)
-      {
-        case TERRAIN:
-          return 0;
-        case STRUCTURES:
-          return 1;
-        case L3:
-          return 2;
-        case COVERAGE:
-          return 3;
-        default:
-          return -1;
-      }
-    }
-    
-    public static LayerType layerNumber(int num)
-    {
-      switch (num)
-      {
-        case 0:
-          return TERRAIN;
-        case 1:
-          return STRUCTURES;
-        case 2:
-          return L3;
-        case 3:
-          return COVERAGE;
-        default:
-          return null;
-      }
-    }
-  }
-  
-  private RadioButton visible;
-  private ExpandArrow expand;
+  private RadioButton visibilityRadioButton;
+  private ExpandArrow expandArrow;
   private LayerType type;
   
-  private Rectangle plus, merge, flatten, icon;
+  private Rectangle plusButton, mergeButton, flattenButton, cancelButton, icon;
   
   private TextHandler text;
   private ArrayList<Sublayer> sublayers;
@@ -116,7 +41,7 @@ public class Layer {
   public Layer(LayerType type, int header)
   {    
     this.type = type;
-    visible = new RadioButton(164, header*16) {
+    visibilityRadioButton = new RadioButton(164, header*16) {
       
       @Override
       public void click()
@@ -127,7 +52,7 @@ public class Layer {
         }
       }
     };
-    expand = new ExpandArrow(135, header*16) {
+    expandArrow = new ExpandArrow(135, header*16) {
       @Override
       public void click()
       {
@@ -156,17 +81,17 @@ public class Layer {
     };
     text = new TextHandler(Draw.LAYER_MANAGER);
     sublayers = new ArrayList<Sublayer>();
-    sublayers.add(new Sublayer((header-(sublayers.size()+1)*2)*16, type));
-    sublayers.add(new Sublayer((header-(sublayers.size()+1)*2)*16, type));
+    sublayers.add(new Sublayer(type));
+    sublayers.add(new Sublayer(type));
     
     icon = new Rectangle(8, header*16, 16, 16);
     
     text.write(type.toString(), 32, icon.y, new EarthboundFont(2));
-    plus = new Rectangle(105, header*16 - getSectionalHeight()*16-16, 
+    plusButton = cancelButton = new Rectangle(105, header*16 - getSectionalHeight()*16-16, 
         26, 26);
-    merge = new Rectangle(131, header*16 - getSectionalHeight()*16-16, 
+    mergeButton = new Rectangle(131, header*16 - getSectionalHeight()*16-16, 
         26, 26);
-    flatten = new Rectangle(157, header*16 - getSectionalHeight()*16-16, 
+    flattenButton = new Rectangle(157, header*16 - getSectionalHeight()*16-16, 
         26, 26);
   }
   
@@ -175,38 +100,38 @@ public class Layer {
     Draw.drawIfInBounds(Draw.LAYER_MANAGER, icon.x, icon.y, icon.width, icon.height, 
         type.getTexX(), type.getTexY(), type.getTexX()+16, type.getTexY()+16, 2);
     
-    if (visible.isVisible())
+    if (visibilityRadioButton.isVisible())
     {
-      visible.render();
+      visibilityRadioButton.render();
     }
-    if (expand.isVisible())
+    if (expandArrow.isVisible())
     {
-      expand.render();
+      expandArrow.render();
     }
     
     text.render();
     
-    if (!expand.pointsDown())
+    if (!expandArrow.pointsDown())
     {
       if (!merging)
       {
-        Draw.drawIfInBounds(Draw.LAYER_MANAGER, plus.x, plus.y, plus.width + merge.width + flatten.width, 
-            plus.height,
+        Draw.drawIfInBounds(Draw.LAYER_MANAGER, plusButton.x, plusButton.y, plusButton.width + mergeButton.width + flattenButton.width, 
+            plusButton.height,
             0, 92, 39, 105, 2);
       } else
       {
-        Draw.drawIfInBounds(Draw.LAYER_MANAGER, plus.x, plus.y, 
-            plus.width, plus.height, 66, 104, 79, 117, 2);
-        Draw.drawIfInBounds(Draw.LAYER_MANAGER, flatten.x, flatten.y, 
-            flatten.width, flatten.height, 26, 92, 39, 105, 2);
+        Draw.drawIfInBounds(Draw.LAYER_MANAGER, plusButton.x, plusButton.y, 
+            plusButton.width, plusButton.height, 66, 104, 79, 117, 2);
+        Draw.drawIfInBounds(Draw.LAYER_MANAGER, flattenButton.x, flattenButton.y, 
+            flattenButton.width, flattenButton.height, 26, 92, 39, 105, 2);
         if (checkBoxesChecked() <= 1)
         {
-          Draw.drawIfInBounds(Draw.LAYER_MANAGER, merge.x, merge.y, 
-              merge.width, merge.height, 81, 105, 94, 118, 2);
+          Draw.drawIfInBounds(Draw.LAYER_MANAGER, mergeButton.x, mergeButton.y, 
+              mergeButton.width, mergeButton.height, 81, 105, 94, 118, 2);
         } else
         {
-          Draw.drawIfInBounds(Draw.LAYER_MANAGER, merge.x, merge.y, 
-              merge.width, merge.height, 13, 92, 26, 105, 2);
+          Draw.drawIfInBounds(Draw.LAYER_MANAGER, mergeButton.x, mergeButton.y, 
+              mergeButton.width, mergeButton.height, 13, 92, 26, 105, 2);
         }
       }
       
@@ -222,12 +147,12 @@ public class Layer {
     
     for (Sublayer sub: sublayers)
     {
-      if (!expand.pointsDown() && sub.draggableArea(Mode.getFloatMouseX(), 
+      if (!expandArrow.pointsDown() && sub.draggableArea(Mode.getFloatMouseX(), 
           Mode.getFloatMouseY()) && KeyHandler.doubleClick(Key.LBUTTON))
       {
         Editor.getMap().setCurrentSublayer(sub);
         TileMode.updateCurrentSublayer();
-      } else if (!expand.pointsDown() && sub.draggableArea(Mode.getFloatMouseX(), 
+      } else if (!expandArrow.pointsDown() && sub.draggableArea(Mode.getFloatMouseX(), 
           Mode.getFloatMouseY()) && KeyHandler.keyClick(Key.LBUTTON))
       {
         dragging = true;
@@ -257,21 +182,21 @@ public class Layer {
       }
     }
     
-    if (visible.isVisible())
+    if (visibilityRadioButton.isVisible())
     {
-      visible.update();
+      visibilityRadioButton.update();
     }
     
-    if (expand.isVisible())
+    if (expandArrow.isVisible())
     {
-      expand.update();
+      expandArrow.update();
     }
     
-    if (!expand.pointsDown())
+    if (!expandArrow.pointsDown())
     {
       if (KeyHandler.bufferedKeyClick(Key.LBUTTON))
       {
-        if (plus.contains(Mode.getFloatMouseX(), Mode.getFloatMouseY()))
+        if (plusButton.contains(Mode.getFloatMouseX(), Mode.getFloatMouseY()))
         {
           if (merging)
           {
@@ -285,13 +210,13 @@ public class Layer {
           {
             Sublayer newSub;
             
-            sublayers.add((newSub = new Sublayer(plus.y + 16, type)));
+            sublayers.add((newSub = new Sublayer(type)));
             
             Editor.getMap().addRevision(new AddSublayerRevision(newSub, sublayers));
                         
             KeyHandler.tempDisable(Key.LBUTTON);
           }
-        } else if (merge.contains(Mode.getFloatMouseX(), Mode.getFloatMouseY()))
+        } else if (mergeButton.contains(Mode.getFloatMouseX(), Mode.getFloatMouseY()))
         {
           
           if (merging && checkBoxesChecked() > 1 && confirmMerge())
@@ -326,7 +251,7 @@ public class Layer {
             }
           }
           
-        } else if (flatten.contains(Mode.getFloatMouseX(), Mode.getFloatMouseY())
+        } else if (flattenButton.contains(Mode.getFloatMouseX(), Mode.getFloatMouseY())
             && confirmMerge())
         {
           int arrSize = sublayers.size();
@@ -367,7 +292,7 @@ public class Layer {
   
   public ExpandArrow getExpandArrow()
   {
-    return expand;
+    return expandArrow;
   }
   
   public int getSectionalHeight()
@@ -377,7 +302,7 @@ public class Layer {
   
   public int getVisibleHeight()
   {
-    if (expand.pointsDown())
+    if (expandArrow.pointsDown())
     {
       return 32;
     } else
@@ -406,9 +331,9 @@ public class Layer {
   
   public void pushButtons(int num)
   {
-    plus.y-=num;
-    merge.y-=num;
-    flatten.y-=num;
+    plusButton.y-=num;
+    mergeButton.y-=num;
+    flattenButton.y-=num;
   }
   
   public LayerType getLayerType()
@@ -463,7 +388,7 @@ public class Layer {
       sublayers.get(i).setLocation(icon.y - 32*(i+1));
     }
     
-    plus.y = merge.y = flatten.y = icon.y - 32*(sublayers.size()+1) - 16;
+    plusButton.y = mergeButton.y = flattenButton.y = icon.y - 32*(sublayers.size()+1) - 16;
     
   }
   
@@ -475,8 +400,8 @@ public class Layer {
   public void setY(int y)
   {
     icon.y = y;
-    expand.setLocation(135, y);
-    visible.setLocation(164, y);
+    expandArrow.setLocation(135, y);
+    visibilityRadioButton.setLocation(164, y);
     
     text.clear();
     text.write(type.toString(), 32, icon.y, new EarthboundFont(2));

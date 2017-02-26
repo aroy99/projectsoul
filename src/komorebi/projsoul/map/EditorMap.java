@@ -14,10 +14,8 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -41,8 +39,8 @@ import komorebi.projsoul.audio.AudioHandler;
 import komorebi.projsoul.audio.Song;
 import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.editor.Layer;
-import komorebi.projsoul.editor.Layer.LayerType;
 import komorebi.projsoul.editor.LayerControl;
+import komorebi.projsoul.editor.LayerType;
 import komorebi.projsoul.editor.Sublayer;
 import komorebi.projsoul.editor.World;
 import komorebi.projsoul.editor.controls.TabControl;
@@ -283,7 +281,7 @@ public class EditorMap implements Playable, Serializable{
           layerNum++;
         else if (read.startsWith("~"))
         {
-          edit = new Sublayer(0, LayerType.layerNumber(layerNum), 
+          edit = new Sublayer(LayerType.layerNumber(layerNum), 
               read.replace("~", ""));
           edit.setTiles(new int[height][width]);
           layers.getLayers()[layerNum].getSubs().add(edit);

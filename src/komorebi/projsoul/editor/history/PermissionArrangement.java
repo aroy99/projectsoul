@@ -74,6 +74,19 @@ public class PermissionArrangement {
     return new PermissionArrangement(arrangement, tx, ty, layer);
   }
   
+  public void applyAllPermissionsOf(PermissionArrangement apply)
+  {
+    
+    for (int i = apply.getTileY(); i < apply.getTileY() + apply.getHeight(); i++)
+    {
+      for (int j = apply.getTileX(); j < apply.getTileX() + apply.getWidth(); j++)
+      {
+        arrangement[i - ty][j - tx] = apply.getPermissionAt(i - apply.getTileY(), 
+            j - apply.getTileX());
+      }
+    }
+  }
+  
   public Permission[][] getPermissions()
   {
     return arrangement;
