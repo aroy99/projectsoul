@@ -39,7 +39,7 @@ public class SquareGrid {
     }
     
     public int hashCode(){
-      return x + y;
+      return 31*x+y;
     }
     
     public String toString(){

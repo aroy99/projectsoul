@@ -43,12 +43,14 @@ The Forest
 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
-enemy 16 16 SMILIN_SATURN shooter 10
-enemy 3 16 SMILIN_SATURN shooter 10
-enemy 16 3 SMILIN_SATURN shooter 10
-enemy 3 3 SMILIN_SATURN shooter 10
+/enemy 16 16 SMILIN_SATURN shooter 10
+/enemy 3 16 SMILIN_SATURN shooter 10
+/enemy 16 3 SMILIN_SATURN shooter 10
+/enemy 3 3 SMILIN_SATURN shooter 10
 
-enemy 5 15 SATURN smart 6
-enemy 13 6 SATURN smart 8
+enemy 5 15 SATURN smart 10
+enemy 13 6 SATURN smart 10
+enemy 6 6 SATURN smart 10
+enemy 13 13 SATURN smart 10
 
 sign 2 18 This is a forest

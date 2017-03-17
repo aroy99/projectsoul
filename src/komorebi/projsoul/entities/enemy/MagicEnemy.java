@@ -14,17 +14,6 @@ public abstract class MagicEnemy extends Enemy {
   protected int magicAttack;
   
   /**
-   * @return The base magic of this enemy
-   */
-  public abstract int baseMagic();
-  
-  /**
-   * @return The base magic attack of this enemy
-   */
-  public abstract int baseMagicAttack();
-
-
-  /**
    * Creates a standard enemy
    * 
    * @param x The x location (in the map) of the enemy
@@ -34,9 +23,22 @@ public abstract class MagicEnemy extends Enemy {
    */
   public MagicEnemy(float x, float y, EnemyType type, int level) {
     super(x, y, type, level);
-
+  
     magic = baseMagic() + level;
     magicAttack = baseMagicAttack() + level;
   }
 
+  /**
+   * @return The base magic of this enemy
+   */
+  public abstract int baseMagic();
+  
+  /**
+   * @return The base magic attack of this enemy
+   */
+  public abstract int baseMagicAttack();
+
+  public int getMagic() {
+    return magic;
+  }
 }

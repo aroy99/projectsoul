@@ -4,6 +4,7 @@
 package komorebi.projsoul.attack;
 
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.player.Characters;
@@ -107,7 +108,9 @@ public class WaterBarrier implements SingleInstance {
   public void play(){
     ani.playCam(x, y);
     //DEBUG Hitbox visual
-//    Draw.circCam(ox, oy, currRadius, 0, 255, 255, 128);
+    if(Map.isHitBox){
+      Draw.circCam(ox, oy, radius, 0, 255, 255, 128);
+    }
   }
   
   public float getX() {

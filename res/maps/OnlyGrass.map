@@ -48,10 +48,10 @@ Robbers!
 /enemy 3 16 SMILIN_SATURN shooter 10
 /enemy 3 16 SMILIN_SATURN none
 /enemy 16 3 SMILIN_SATURN shooter 10
-/enemy 3 3 SMILIN_SATURN shooter 10
-enemy 16 16 BLUE_DETRAL tackler 10
-/
+/enemy 3 3 SMILIN_SATURN chaser 5
+enemy 16 16 BLUE_DETRAL smart 10
+
 /enemy 5 15 EVIL_SATURN smart 6
-/enemy 13 6 SATURN smart 8
+/enemy 13 13 BLUE_DETRAL tackler 8
 sign 2 18 This is a forest
 connect Bigger_Town up 0 20

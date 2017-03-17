@@ -9,11 +9,11 @@ import komorebi.projsoul.attack.WaterSword;
 import komorebi.projsoul.attack.projectile.ProjectileAttack;
 import komorebi.projsoul.attack.projectile.WaterKunai;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.KeyHandler.Control;
-import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.gameplay.HUD;
+import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.gameplay.MagicBar;
-import komorebi.projsoul.states.Game;
 
 import java.awt.Rectangle;
 
@@ -62,7 +62,8 @@ public class Caspian extends Player {
 
     character = Characters.CASPIAN;
 
-    upAni =    new Animation(6, 8, 11);
+    //TODO Check animations against game and fix if necessary
+    upAni =    new Animation(6, 30, 11);
     downAni =  new Animation(6, 8, 11);
     rightAni = new Animation(6, 8, 11);
 
@@ -71,28 +72,28 @@ public class Caspian extends Player {
     hurtRightAni = new Animation(2,8,14,33,11);
     hurtLeftAni =  new Animation(2,8,14,33,11);
 
+    downAni.add(71,162,16,34);
+    downAni.add(91,164,17,32, -1, 0);
+    downAni.add(112,161,18,35, -2, 0);
     downAni.add(8,162,16,34);
     downAni.add(28,164,17,32);
     downAni.add(49,161,18,35);
-    downAni.add(71,162,16,34);
-    downAni.add(91,164,17,32);
-    downAni.add(112,161,18,35);
-    
+
     downAni.setPausedFrame(166, 162, 16, 35);
 
+    upAni.add(113,206,18,33, -3, 0);
     upAni.add(8,204,16,35);
-    upAni.add(28,207,18,32);
-    upAni.add(50,206,18,33);
-    upAni.add(71,204,16,35);
-    upAni.add(91,207,18,32);
-    upAni.add(113,206,18,33);
+    upAni.add(28,207,18,32,  -1, 0);
+    upAni.add(50,206,18,33,  -2, 0);
+    upAni.add(71,204,16,35,  -2, 0);
+    upAni.add(91,207,18,32, -3, 0);
     
     upAni.setPausedFrame(166, 207, 16, 33);
-
-    rightAni.add(3,247,21,32);
+    
+    rightAni.add(3,247,21,32, -4, 0);
     rightAni.add(30,246,14,33);
     rightAni.add(52,245,14,34);
-    rightAni.add(72,247,22,32);
+    rightAni.add(72,247,22,32, -5, 0);
     rightAni.add(99,246,14,33);
     rightAni.add(120,245,15,34);
 
@@ -142,7 +143,7 @@ public class Caspian extends Player {
   public void update()
   {
     super.update();
-
+    
     if (isAttacking)
     {
       if (attack1 == melee)
@@ -195,9 +196,6 @@ public class Caspian extends Player {
         attack1.newAttack(x,y,aDx,aDy,dir,attack);
       } else if (attack1 == proj)
       {        
-        //TODO Refactor/Move to WaterKunai, since this is ugly
-        float sideX = 0.5f*PROJ_SPEED, sideY = 0.87f*PROJ_SPEED;
-        
         switch (dir)
         {
           case DOWN:  aDy = -PROJ_SPEED; break;
@@ -207,34 +205,13 @@ public class Caspian extends Player {
           default:
         }
         
-        int sign;
-        
-        switch (dir){
-          case DOWN: case UP:
-            sideX = 0.5f*PROJ_SPEED;
-            sideY = 0.87f*PROJ_SPEED;
-            sign  = Integer.signum(aDy);
-                
-            attack1.newAttack(x,y,-sideX, sign*sideY,dir,attack);
-            attack1.newAttack(x,y, sideX, sign*sideY,dir,attack);
-            break;
-          case LEFT: case RIGHT:
-            sideX = 0.87f*PROJ_SPEED;
-            sideY = 0.5f*PROJ_SPEED; 
-            sign  = Integer.signum(aDx);
-            
-            attack1.newAttack(x,y,sign*sideX, -sideY,dir,attack);
-            attack1.newAttack(x,y,sign*sideX,  sideY,dir,attack);
-            break;
-          default:
-            break;
-        }
         index = dir.getFaceNum();
         castAni[index].resume();
         
         magic.changeMagicBy(PROJ_COST);
         
-        attack1.newAttack(x,y,aDx,aDy,dir,attack);
+        attack1.newAttack(x,y + castAni[index].getCurrSY()/2+
+            castAni[index].getCurrOffY(),aDx,aDy,dir,attack);
       } else if(attack1 == support){
         dx = 0;
         dy = 0;

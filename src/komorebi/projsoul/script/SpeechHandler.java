@@ -140,7 +140,10 @@ public class SpeechHandler extends TextHandler {
 
     int horiz = word.getX();
     int vert = word.getY();
-    int size = word.getFont().getFontPoint()*word.getFont().getScale();
+    
+    Font font = word.getFont();
+    
+    int size = font.getFontPoint()*font.getScale();
     char[] letters = word.currentParagraph();
 
     int ohor = horiz;
@@ -158,15 +161,15 @@ public class SpeechHandler extends TextHandler {
     {
 
       //Escape sequence \n
-      if (letters[i]=='\\')
+      if (letters[i] == '\\')
       {
-        if (letters[i+1]=='n')
+        if (letters[i+1] == 'n')
         {
           vert-=size*2;
           horiz = ohor;
           i++;
           continue; 
-        } else if (letters[i+1]=='d')
+        } else if (letters[i+1] == 'd')
         {
           i++;
           continue;
@@ -174,7 +177,7 @@ public class SpeechHandler extends TextHandler {
       }
 
       //Escape sequence \d
-      if (letters[scroll-1]=='\\' && letters[scroll]=='d')
+      if (letters[scroll-1] == '\\' && letters[scroll] == 'd')
       {
         if (!delayed)
         {
@@ -182,29 +185,34 @@ public class SpeechHandler extends TextHandler {
           delayIndex = 10;
         }
       }
-
+      
       int under = 0, texUnder = 0;
 
-      if (letters[i]=='g' || letters[i] == 'j' || letters[i] == 'p' ||
-          letters[i] == 'q' || letters[i] == 'y')
-      {   
-        under = size;
-        texUnder = word.getFont().getFontPoint();
+      under = font.getTexUnder(letters[i])*font.getScale();
+      if(under != 0){
+        texUnder = font.getTexUnder(letters[i]);
       }
 
 
-      Draw.rect(horiz, vert-under, size, size+under, 
-          word.getFont().getTexX(letters[i]), word.getFont().getTexY(letters[i]), 
-          word.getFont().getTexX(letters[i])+word.getFont().getFontPoint(), 
-          word.getFont().getTexY(letters[i]) + word.getFont().getFontPoint()+texUnder, 
-          word.getFont().getTexture());
-      horiz+=(word.getFont().getLength(letters[i])+1);
+
+      Draw.rect(horiz, vert-under, 
+          font.getLength(letters[i]), size+under, 
+          font.getTexX(letters[i]), font.getTexY(letters[i]), 
+          font.getTexX(letters[i])+font.getLength(letters[i]), 
+          font.getTexY(letters[i]) + font.getFontPoint()+texUnder, 
+          font.getTexture());
+      
+      if(i+1 >= scroll || horiz == ohor){
+        horiz+=font.getLength(letters[i]);
+      }else{
+        horiz+=font.getLength(letters[i])+font.getKerning(letters[i], letters[i+1]);
+      }
     }
     
     /* Signifies that the scrolling is done, so if the user clicks "C",
      * it will go to the next paragraph
      */
-    if (scrollIndex==word.currentParagraph().length)
+    if (scrollIndex == word.currentParagraph().length)
     {
       alreadyAsked = true;
       if (word.hasNext())
@@ -215,10 +223,10 @@ public class SpeechHandler extends TextHandler {
 
     if (!dots && !delayed) //Increments the scroll index
     {
-      if (scrollIndex<letters.length)
+      if (scrollIndex < letters.length)
       {
         buffer++;
-        if (buffer>=speed)
+        if (buffer >= speed)
         {
           scrollIndex++;
           buffer=0;
@@ -231,11 +239,11 @@ public class SpeechHandler extends TextHandler {
     {
       delayIndex--;
 
-      if (delayIndex<=0)
+      if (delayIndex <= 0)
       {
         delayed=false;
         buffer++;
-        if (buffer>=speed)
+        if (buffer >= speed)
         {
           scrollIndex++;
           buffer=0;

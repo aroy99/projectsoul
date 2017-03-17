@@ -58,6 +58,9 @@ public abstract class Player extends Entity implements Playable{
 
   private int framesToGo;
   private boolean hasInstructions;
+  
+  private static final int ANI_SPEED = 8;
+  int aniSpeed = ANI_SPEED;
 
   public Animation upAni;
   public Animation downAni;
@@ -116,7 +119,6 @@ public abstract class Player extends Entity implements Playable{
 
   }
 
-  public abstract void levelUp();
 
   /**
    * @see komorebi.projsoul.engine.Playable#update()
@@ -144,8 +146,6 @@ public abstract class Player extends Entity implements Playable{
    */
   @Override
   public void update() {
-
-    int aniSpeed = 8;
 
     if (canMove) {
 
@@ -200,7 +200,9 @@ public abstract class Player extends Entity implements Playable{
         if(run){
           dx *=2;
           dy *=2;
-          aniSpeed /=2;
+          aniSpeed = ANI_SPEED/2;
+        }else{
+          aniSpeed = ANI_SPEED;
         }
       }
 
@@ -292,7 +294,7 @@ public abstract class Player extends Entity implements Playable{
         }
       }
 
-      //TODO Debug
+      //DEBUG God Mode
       if(!KeyHandler.keyDown(Key.G)){
         Game.getMap().guidePlayer(x, y, dx, dy);
         boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
@@ -307,6 +309,7 @@ public abstract class Player extends Entity implements Playable{
         }
       }
 
+      //DEBUG Reset location R
       if(KeyHandler.keyClick(Key.R)){
         x = 100;
         y = 100;
@@ -343,7 +346,7 @@ public abstract class Player extends Entity implements Playable{
       }
     }
 
-    //TODO Debug
+    //DEBUG Print Location L
     if(KeyHandler.keyClick(Key.L)){
       System.out.println("x: "+x+", y: "+y);
     }
@@ -383,25 +386,16 @@ public abstract class Player extends Entity implements Playable{
       barr.update();
     }
 
-    //TODO: Auto-level up
+    //DEBUG: Manual-level up
     if (KeyHandler.controlDown() && KeyHandler.keyClick(Key.PLUS))
     {
       levelUp();
     }
 
-    //TODO Stat Dump
+    //DEBUG Stat Dump
     if (KeyHandler.controlDown() && KeyHandler.keyClick(Key.S))
     {
-      for (Characters c: Characters.values())
-      {
-        System.out.println(c + ": ");
-        System.out.println("Att: " + Player.getAttack(c) + 
-                         "\tDef: " + Player.getDefense(c));
-        System.out.println("Mag: " + Player.getMaxMagic(c)+ 
-                         "\tHth: " + Player.getMaxHealth(c));
-        System.out.println("XP: " + Player.getXP(c) + " / " + 
-            Player.getXPToNextLevel(c) + "\tLevel " + Player.getLevel(c) + "\n");
-      }
+      dumpStats();
     }
 
     if (KeyHandler.keyClick(Key.A))
@@ -415,6 +409,21 @@ public abstract class Player extends Entity implements Playable{
     }
 
 
+  }
+  
+  //TODO Use inheritance with this, since doing this with static variables is a drag
+  public abstract void levelUp();
+
+  private void dumpStats() {
+    for (Characters c: Characters.values()){
+      System.out.println(c + ": ");
+      System.out.println("Att: " + Player.getAttack(c) + 
+                       "\tDef: " + Player.getDefense(c));
+      System.out.println("Mag: " + Player.getMaxMagic(c)+ 
+                       "\tHth: " + Player.getMaxHealth(c));
+      System.out.println("XP: " + Player.getXP(c) + " / " + 
+          Player.getXPToNextLevel(c) + "\tLevel " + Player.getLevel(c) + "\n");
+    }
   }
 
   /**
@@ -834,8 +843,8 @@ public abstract class Player extends Entity implements Playable{
     System.out.println("Damage = " + attack + " - " + 
         getDefense(character) + "/2");
     
-    //DEBUG WHAT WAS PASSED INTO HEREEEE
-    System.out.println(dx + ", " + dy);
+    //DEBUG Velocity
+    System.out.format("Velocity = %f, %f\n", dx, dy);
 
     if (attack - getDefense(character)/2 > 0)
     {

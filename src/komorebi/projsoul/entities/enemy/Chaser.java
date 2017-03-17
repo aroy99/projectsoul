@@ -1,27 +1,42 @@
 package komorebi.projsoul.entities.enemy;
 
+import komorebi.projsoul.ai.node.composite.MemSequence;
+import komorebi.projsoul.ai.node.composite.Priority;
+import komorebi.projsoul.ai.node.composite.Sequence;
+import komorebi.projsoul.ai.node.leaf.IdleBehavior;
+import komorebi.projsoul.ai.node.leaf.MoveToTarget;
+import komorebi.projsoul.ai.node.leaf.SetTargetToPlayer;
+import komorebi.projsoul.ai.node.leaf.WalkBehavior;
+import komorebi.projsoul.ai.node.leaf.conditions.IsPlayerInRange;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.map.EditorMap;
+import komorebi.projsoul.map.EditorMap.Modes;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.states.Death;
-import komorebi.projsoul.map.EditorMap.Modes;
-import komorebi.projsoul.states.Game;
 
-public class Chaser extends Enemy {
+/**
+ * An enemy that chases the player
+ *
+ * @author Aaron Roy
+ */
+public class Chaser extends Enemy{
 
-  float targetX, targetY; //Location of the player
   float dist;             //Calculated distance between this enemy and the player
 
-  protected static final float speed = .25f;
+  protected static final float SPEED = 1.5f;
+  
+  private static final int MAX_IDLE = 60;
+  private static final int MAX_WALK = 120;
 
   protected int maxPlayDist;
 
   protected int red, green, blue;
 
-
   public static final int baseAttack = 50;
   public static final int baseDefense = 50;
   public static final int baseHealth = 100;
+  
+  private Priority root;
 
   /**
    * Creates an enemy that will chase the player within a certain range
@@ -40,11 +55,21 @@ public class Chaser extends Enemy {
 
     maxPlayDist = 16*distanceFromPlay;
 
-    regAni.setSpeed((int)(6/speed));
+    regAni.setSpeed((int)(6/(SPEED/2)));
     
-    red = (int)(Math.random()*255);
-    green = (int)(Math.random()*255);
-    blue = (int)(Math.random()*255);  
+    generateHitboxColors();
+    
+    root = new Priority(
+        new Sequence(
+            new IsPlayerInRange(this, maxPlayDist),
+            new SetTargetToPlayer(this),
+            new MoveToTarget(this, SPEED, 32)
+            ),
+        new MemSequence(                             //Walk around
+            new IdleBehavior(this, MAX_IDLE),
+            new WalkBehavior(this, MAX_WALK, SPEED/2)
+            )
+        );
   }
 
   /**
@@ -52,42 +77,12 @@ public class Chaser extends Enemy {
    */
   public void update()
   {   
-    targetX = Map.getPlayer().getX();
-    targetY = Map.getPlayer().getY();
     if(Death.playable)
     {
-
-      dist = Map.distanceBetween(x,y,targetX,targetY);
+      dx = 0;
+      dy = 0;
       
-      if (dist > maxPlayDist && (dx!=0 || dy!=0))
-      {
-        dx = 0;
-        dy = 0;
-        regAni.stop();
-      }
-
-      if (!hurt && dist <= maxPlayDist)
-      {
-        float triX = Math.abs(targetX-x);
-        float triY = Math.abs(targetY-y);
-        float theta = (float)Math.atan(triY/triX);
-
-        if (targetX > x && triX > 12)
-        {
-          dx = speed*(float)Math.cos(theta);
-        } else if (targetX < x)
-        {
-          dx = -speed*(float)Math.cos(theta);
-        }
-
-        if (targetY > y && triY > 12)
-        {
-          dy = speed*(float)Math.sin(theta);
-        } else if (targetY < y)
-        {
-          dy = -speed*(float)Math.sin(theta);
-        }
-      }
+      root.update();
     }
     
     super.update();
@@ -115,11 +110,8 @@ public class Chaser extends Enemy {
   @Override
   public int baseHealth() {
     return baseHealth;
-
   }
-
-
-
+  
   @Override
   public void render() {
     //TODO Better implementation
@@ -140,6 +132,12 @@ public class Chaser extends Enemy {
 
   public int getOriginalRadius(){
     return maxPlayDist/16;
+  }
+
+  private void generateHitboxColors() {
+    red = (int)(Math.random()*255);
+    green = (int)(Math.random()*255);
+    blue = (int)(Math.random()*255);
   }
 
 }

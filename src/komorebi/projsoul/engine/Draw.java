@@ -54,7 +54,7 @@ public class Draw {
   private static final int SPREADSHEET_ROW = 16;
   
   /** Holds all of the textures for this class.*/
-  private static Texture[] tex = new Texture[14];
+  private static Texture[] tex = new Texture[15];
   
   private static ArrayList<Texture> sheets = new ArrayList<Texture>();
 
@@ -82,6 +82,7 @@ public class Draw {
    *    11: Fillers for Project Soul<br>
    *    12: Other Filler Characters<br>
    *    13: You Ded Screen
+   *    14: Menu Font
    */
   public static void loadTextures() {
     try {
@@ -114,6 +115,8 @@ public class Draw {
           new File("res/Shadow.png")));
       tex[13] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/Death.png")));
+      tex[14] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/MenuFont.png")));
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -209,6 +212,20 @@ public class Draw {
 
   }
   
+  /**
+   * Draws a sprite on the screen from the specified image, with rotation.
+   * 
+   * @param x the X position on the screen, starting from the left           
+   * @param y the Y position on the screen, starting from the <i>bottom</i>  
+   * @param sx the width                                                     
+   * @param sy the height                                                    
+   * @param texx X position on the picture, starting from the left           
+   * @param texy Y position on the picture, starting from the <i>top</i>     
+   * @param texsx end X position on the picture, starting from the left      
+   * @param texsy end Y position on the picture, starting from the <i>top</i>
+   * @param angle the rotation of the tile / 90 degrees
+   * @param texture Some custom texture
+   */
   public static void rect(float x, float y, float sx, float sy, int texx, 
       int texy, int texsx, int texsy, int angle, Texture texture) {
     glPushMatrix();
@@ -311,7 +328,7 @@ public class Draw {
     rectCam(x, y, sx, sy, texx, texy, texsx, texsy, 0, texID);
   }
   
-  public static void addTexture(int png) throws IOException
+  public static void addSpreadsheetTexture(int png) throws IOException
   {
     try
     {
@@ -327,7 +344,6 @@ public class Draw {
   public static void tile(int x, int y, int texX, int texY, int texID)
   {
     Draw.rectCam(x, y, 16, 16, texX, texY, texX+16, texY+16, sheets.get(texID));
-   
   }
   
   public static int getTexX(int id)

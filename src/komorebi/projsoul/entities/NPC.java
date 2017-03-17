@@ -5,12 +5,13 @@
 package komorebi.projsoul.entities;
 
 import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.Execution;
+import komorebi.projsoul.script.Font;
 import komorebi.projsoul.script.Lock;
+import komorebi.projsoul.script.MenuFont;
 import komorebi.projsoul.script.SpeechHandler;
 import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.WalkingScript;
@@ -69,6 +70,8 @@ public class NPC extends Entity {
   private Lock prevLock;
 
   boolean hangOn;
+  
+  private static Font font = new MenuFont(1);
   
 
   /**
@@ -284,12 +287,7 @@ public class NPC extends Entity {
           break;
       }
 
-      text.render();
-
-				//DEBUG This
-//      Draw.rectCam(area.x, area.y, area.width, area.height, 
-//          220, 0, 221, 1, 6);
-      
+      text.render();      
     }
 
   }
@@ -594,11 +592,26 @@ public class NPC extends Entity {
    */
   public String ask(String[] args, Execution ex, Lock lock)
   {
-    text.write(args[0], 20, 58, new EarthboundFont(1));
-    if (args.length>1) text.write(args[1], 30, 40, new EarthboundFont(1));
-    if (args.length>2) text.write(args[2], 100, 40, new EarthboundFont(1));
-    if (args.length>3) text.write(args[3], 30, 22, new EarthboundFont(1));
-    if (args.length>4) text.write(args[4], 100, 22, new EarthboundFont(1));
+    text.write(args[0], 20, 58, font);
+    /*
+    if (args.length > 1){
+      text.write(args[1], 30, 40, font);
+    }
+    if (args.length > 2){
+      text.write(args[2], 100, 40,font);
+    }
+    if (args.length > 3){
+      text.write(args[3], 30, 22, font);
+    }
+    if (args.length > 4){
+      text.write(args[4], 100, 22,font);
+    }
+    */
+    for(int i = 1; i < 5; i++){
+      if (args.length > i) {
+        text.write(args[i], 100, 22,font);
+      }
+    }
 
     this.instructor = ex;
     this.lock = lock;
@@ -923,7 +936,7 @@ public class NPC extends Entity {
   
    public void say(String s, Lock lock)
   {
-    text.write(s, 20, 58, new EarthboundFont(1));
+    text.write(s, 20, 58, font);
     Main.getGame().setSpeaker(text);
     text.setAndLock(lock);
   }

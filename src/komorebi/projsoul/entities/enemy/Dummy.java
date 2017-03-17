@@ -3,6 +3,8 @@
  */
 package komorebi.projsoul.entities.enemy;
 
+import komorebi.projsoul.ai.node.leaf.BehaviorStates;
+
 /**
  * An enemy that does nothing
  *
@@ -30,7 +32,7 @@ public class Dummy extends Enemy {
       dy *= 0.9;
     }
   }
-
+  
   @Override
   public int xpPerLevel() {
     return 10000;

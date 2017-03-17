@@ -1,7 +1,7 @@
 /**
  * BehaviorStates.java    Jan 25, 2017, 9:35:51 AM
  */
-package komorebi.projsoul.ai.behavior;
+package komorebi.projsoul.ai.node.leaf;
 
 /**
  * All of the behaviors in the game
@@ -13,12 +13,18 @@ public enum BehaviorStates {
   IDLE, 
   /** The enemy walks in some direction*/
   WALK, 
+  /** The enemy runs away from the player*/
+  RUN,
   /** The enemy tries to line up with the player*/
   LINE_UP, 
   /** The enemy charges at the player*/
   TACKLE, 
+  /** The enemy shoots at the player*/
+  SHOOT,
   /** The enemy is stunned and can't do anything*/
   STUN, 
   /** The enemy waits before attacking again*/
-  WAIT;
+  WAIT,
+  /** The enemy, tired, walks slowly towards the player*/
+  TIRED;
 }

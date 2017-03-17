@@ -38,7 +38,9 @@ public class AudioHandler {
   public static void play(Song song, boolean loop)
   {
     currentSong = song;
-    song.play(loop);
+    if(currentSong != Song.NONE){
+      currentSong.play(loop);
+    }
   }
   
   /**

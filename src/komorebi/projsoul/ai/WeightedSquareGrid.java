@@ -18,6 +18,8 @@ public class WeightedSquareGrid extends SquareGrid {
   
   private HashSet<Location> obstacles = new HashSet<Location>();
   
+  private static final float ROOT_2 = (float)Math.sqrt(2);
+  
   /**
    * Represents a Location with priority for the queue
    *
@@ -81,7 +83,7 @@ public class WeightedSquareGrid extends SquareGrid {
     double cost = 1;
     
     if(from.x != to.x && from.y != to.y){
-      cost *= (99/70.0-0.000073f);
+      cost *= ROOT_2;
       if(obstacles.contains(new Location(to.x-1, to.y)) ||
           obstacles.contains(new Location(to.x+1, to.y)) ||
           obstacles.contains(new Location(to.x, to.y-1)) ||
@@ -118,7 +120,6 @@ public class WeightedSquareGrid extends SquareGrid {
       Location current = frontier.remove();
             
       if(current.equals(goal)){
-        System.out.println("Done");
         break;
       }
       
@@ -155,7 +156,7 @@ public class WeightedSquareGrid extends SquareGrid {
     
     double cross = Math.abs(dx1*dy2 - dx2*dy1);
     
-    return (dx + dy) + (99/70.0-2)*Math.min(dx, dy) + cross;
+    return (dx + dy) + (ROOT_2-2)*Math.min(dx, dy) + cross;
   }
   
   /**

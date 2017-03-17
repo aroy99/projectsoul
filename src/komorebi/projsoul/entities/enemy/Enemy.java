@@ -1,5 +1,7 @@
 package komorebi.projsoul.entities.enemy;
 
+import komorebi.projsoul.ai.node.leaf.Behavior;
+import komorebi.projsoul.ai.node.leaf.BehaviorStates;
 import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.engine.Animation;
@@ -11,6 +13,7 @@ import komorebi.projsoul.map.Map;
 import komorebi.projsoul.states.Game;
 
 import java.awt.Rectangle;
+import java.util.HashMap;
 
 /**
  * Represents an Enemy in the game
@@ -24,7 +27,9 @@ public abstract class Enemy extends Entity {
   protected int health;
   protected int level;
   
-  protected boolean hitWall, hitPlayer;
+  protected float targetX, targetY; //Location of the player
+  
+  protected boolean hittingWall, hittingPlayer;
   
   public Rectangle hitBox;
 
@@ -48,9 +53,13 @@ public abstract class Enemy extends Entity {
   
   //Does something
   private Face hitDirection;
+  
+  protected Face direction = Face.DOWN;
 
   //Sprite of this enemy
   private EnemyType type;
+  
+  protected HashMap<BehaviorStates, Behavior> behaviors;
 
 
   /**
@@ -72,7 +81,7 @@ public abstract class Enemy extends Entity {
    * @return The base health of this enemy
    */
   public abstract int baseHealth();
-
+  
   /**
    * Creates a standard enemy
    * 
@@ -106,7 +115,7 @@ public abstract class Enemy extends Entity {
     health = baseHealth() + level;
     defense = baseDefense() + level;
 
-    regAni = EnemyType.getAni(type);
+    regAni = EnemyType.getRegularAnimation(type);
     
     hitAni = new Animation(2,8,16,21,11);
     hitAni.add(0, 0);
@@ -148,8 +157,8 @@ public abstract class Enemy extends Entity {
       invincible = false;
     }
 
-    hitWall = false;
-    hitPlayer = false;
+    hittingWall = false;
+    hittingPlayer = false;
     
     //Stops the enemy from moving places it shouldn't
     overrideImproperMovements();
@@ -323,24 +332,24 @@ public abstract class Enemy extends Entity {
     {
       x = 0;
       dx = 0;
-      hitWall = true;
+      hittingWall = true;
     } else if (x+dx > Game.getMap().getWidth()*16 - sx)
     {
       dx = 0;
       x = Game.getMap().getHeight() * 16 - sx;
-      hitWall = true;
+      hittingWall = true;
     }
 
     if (y+dy < 0)
     {
       dy = 0;
       y = 0;
-      hitWall = true;
+      hittingWall = true;
     } else if (y+dy > Game.getMap().getHeight()*16 - sy)
     {
       dy = 0;
       y = Game.getMap().getHeight() * 16 - sy;
-      hitWall = true;
+      hittingWall = true;
     }
 
     Rectangle hypothetical = new Rectangle((int) (x+dx), (int) (y+dy),
@@ -356,13 +365,13 @@ public abstract class Enemy extends Entity {
         Map.getPlayer().inflictPain(attack, 
             DEFAULT_KNOCK*Math.signum(dx)*(float)Math.sqrt(Math.abs(dx)), 
             DEFAULT_KNOCK*Math.signum(dy)*(float)Math.sqrt(Math.abs(dy)));
-        hitPlayer = true;
+        hittingPlayer = true;
         
       }
 
       dx = 0;
       dy = 0;
-      hitPlayer = true;
+      hittingPlayer = true;
     }
 
     boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
@@ -370,18 +379,65 @@ public abstract class Enemy extends Entity {
     if(!col[0] || !col[2]){
       dy=0;
       dx*=.75f;
-      hitWall = true;
+      hittingWall = true;
     }
     if(!col[1] || !col[3]){
       dx=0;
       dy*=.75f;
-      hitWall = true;
+      hittingWall = true;
     }
     
   }
 
-  public boolean invincible()
-  {    
-    return hurt;
+  public boolean isHittingWall() {
+    return hittingWall;
+  }
+
+  public boolean isHittingPlayer() {
+    return hittingPlayer;
+  }
+  
+  public boolean isHittingSomething() {
+    return hittingPlayer || hittingWall;
+  }
+
+
+  public boolean invincible() {
+    return invincible;
+  }
+  
+  public void setInvincible(boolean value){
+    invincible = value;
+  }
+  
+  public void randomizeDirection(){
+    direction = Face.random();
+  }
+
+  public Face getDirection() {
+    return direction;
+  }
+  
+  public float getTargetX() {
+    return targetX;
+  }
+
+  public float getTargetY() {
+    return targetY;
+  }
+
+  public void setTarget(float targetX, float targetY) {
+    this.targetX = targetX;
+    this.targetY = targetY;
+  }
+
+  
+  public void move(float dx, float dy){
+    this.dx = dx;
+    this.dy = dy;
+  }
+  
+  public void switchDirection(Face newDir){
+    direction = newDir;
   }
 }

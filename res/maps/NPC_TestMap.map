@@ -1,5 +1,8 @@
 20
 20
+Test
+None
+1
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 1 1 172 173 174 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
@@ -43,6 +46,6 @@
 npc ashe 2 7 POKEMON walk_left_and_right hohoho
 npc ness 11 7 NESS walk_up_and_down pk_fire
 npc jogger_joe 18 10 POKEMON jog_no_sleep cant_talk
-npc mess 8 12 NESS walk_around pk_fire
+npc mess 8 12 NESS walk_around quick
 enemy 17 17 SATURN chaser 5
 sign 7 15 This is a test message.

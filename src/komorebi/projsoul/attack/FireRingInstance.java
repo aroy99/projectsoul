@@ -83,33 +83,27 @@ public class FireRingInstance implements AttackInstance {
     return false;
   }
 
-  //TODO Refactor awayyyyyyyyyyy
+  //TODO Refactor awayyyyyyyyyyy http://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
   public boolean intersectsCirc(Rectangle r) {
-    double norY = r.getY() + r.getHeight();
-    double sthY = r.getY();
+    float[][] ptsToCheck = new float[2][2];
+    ptsToCheck[0][0] = (float)(r.getY() + r.getHeight()); //North
+    ptsToCheck[0][1] = (float) r.getY();                 //South
+    
+    ptsToCheck[1][0] = (float) r.getX();                 //West
+    ptsToCheck[1][1] = (float)(r.getX() + r.getWidth()); //East
 
-    double wstX = r.getX();
-    double eastX = r.getX() + r.getHeight();
-
-    double dist = Map.distanceBetween((float) wstX, (float) sthY, x, y);
-    if (dist > 36 && dist < 48) {
-      return true;
+    double dist;
+    
+    //Loops though: west, north; west, south; east, north; east, south
+    for(int i = 0; i < 2; i++){
+      for(int j = 0; j < 2; j++){
+        dist = Map.distanceBetween(ptsToCheck[1][i], ptsToCheck[0][j], x, y);
+        if (dist > 36 && dist < 48) {
+          return true;
+        }
+      }
     }
-
-    dist = Map.distanceBetween((float) wstX, (float) norY, x, y);
-
-    if (dist > 36 && dist < 48) {
-      return true;
-    }
-    dist = Map.distanceBetween((float) eastX, (float) sthY, x, y);
-    if (dist > 36 && dist < 48) {
-      return true;
-    }
-    dist = Map.distanceBetween((float) eastX, (float) norY, x, y);
-    if (dist > 36 && dist < 48) {
-      return true;
-    }
-
+    
     return false;
   }
 
@@ -121,21 +115,25 @@ public class FireRingInstance implements AttackInstance {
     double eastX = r.getX() + r.getHeight();
 
     double dist = Map.distanceBetween((float) wstX, (float) sthY, x, y);
-    if (dist < 36)
+    if (dist < 36) {
       return true;
+    }
 
     dist = Map.distanceBetween((float) wstX, (float) norY, x, y);
 
-    if (dist < 36)
+    if (dist < 36) {
       return true;
+    }
 
     dist = Map.distanceBetween((float) eastX, (float) sthY, x, y);
-    if (dist < 36)
+    if (dist < 36) {
       return true;
+    }
 
     dist = Map.distanceBetween((float) eastX, (float) norY, x, y);
-    if (dist < 36)
+    if (dist < 36) {
       return true;
+    }
 
     return false;
   }

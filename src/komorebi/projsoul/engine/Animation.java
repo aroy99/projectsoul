@@ -30,9 +30,9 @@ public class Animation {
   private int texID;
   private boolean playing = true;
   private boolean onlyOnce = false;  
-  
+
   private boolean hasCustomFrame;
-  
+
   /**
    * Creates a playable animation
    * 
@@ -168,7 +168,7 @@ public class Animation {
   {
     add(tx, ty, sx, sy, offX, offY, 0, false);
   }
-  
+
   public void add(int tx, int ty, float sx, float sy, int offX, int offY, 
       int rot, boolean flip)
   {
@@ -176,7 +176,7 @@ public class Animation {
     this.sy[cAddFrame] = sy;
     this.offX[cAddFrame] = offX;
     this.offY[cAddFrame] = offY;
-    
+
     texx[cAddFrame] = tx;
     texy[cAddFrame] = ty;
     this.rot[cAddFrame] = rot;
@@ -447,7 +447,7 @@ public class Animation {
       currFrame = 0;
     }
   }
- 
+
 
   /**
    * Resumes the animation
@@ -478,9 +478,9 @@ public class Animation {
   {
     return (currFrame+1 == frames);
   }
-  
+
   public void setStopFrame(){
-    
+
   }
 
   public void reset()
@@ -502,7 +502,7 @@ public class Animation {
   {
     return sy[currFrame];
   }
-  
+
   public float getCurrOffX()
   {
     return offX[currFrame];
@@ -512,7 +512,7 @@ public class Animation {
   {
     return offY[currFrame];
   }
-  
+
   public void setPausedFrame(int tx, int ty){
     setPausedFrame(tx, ty, 0, false);
   }
@@ -557,7 +557,7 @@ public class Animation {
     texy[frames] = ty;
     this.rot[frames] = rot;
     flipped[frames] = flip;
-    
+
     hasCustomFrame = true;
   }
 
@@ -659,7 +659,7 @@ public class Animation {
    * @param flip Whether the image is flipped or not
    */
   public void setPausedFrame(int tx, int ty, float sx, float sy, int offX, 
-                                               int offY, int rot, boolean flip){
+      int offY, int rot, boolean flip){
     this.sx[frames] = sx;
     this.sy[frames] = sy;
     this.offX[frames] = offX;
@@ -669,10 +669,10 @@ public class Animation {
     texy[frames] = ty;
     this.rot[frames] = rot;
     flipped[frames] = flip;
-    
+
     hasCustomFrame = true;
   }
-  
+
   /**
    * Creates a new animation that is the flipped version of the input
    * 
@@ -680,16 +680,25 @@ public class Animation {
    */
   public Animation getFlipped(){
     Animation returnee = new Animation(frames, time, texID, !onlyOnce);
-    
-    for(int j = 0; j < frames; j++){
-      returnee.add(texx[j], texy[j], sx[j], sy[j], 
-          offX[j], offY[j], rot[j], !flipped[j]);
-    }
-    
-    if(hasCustomFrame){
-      returnee.setPausedFrame(texx[frames], texy[frames], sx[frames], sy[frames], 
-          offX[frames], offY[frames], !flipped[frames]);
 
+    for(int j = 0; j < frames; j++){
+      if(offX[j] != 0){
+        returnee.add(texx[j], texy[j], sx[j], sy[j], 
+            offX[j]+2, offY[j], rot[j], !flipped[j]);
+      }else{
+        returnee.add(texx[j], texy[j], sx[j], sy[j], 
+            offX[j], offY[j], rot[j], !flipped[j]);
+      }
+    }
+
+    if(hasCustomFrame){
+      if(offX[frames] != 0){
+        returnee.setPausedFrame(texx[frames], texy[frames], sx[frames], sy[frames], 
+            offX[frames]+2, offY[frames], !flipped[frames]);
+      }else{
+        returnee.setPausedFrame(texx[frames], texy[frames], sx[frames], sy[frames], 
+            offX[frames], offY[frames], !flipped[frames]);
+      }
       returnee.setPausedFrame(texx[frames], texy[frames], 
           rot[frames], !flipped[frames]);
     }

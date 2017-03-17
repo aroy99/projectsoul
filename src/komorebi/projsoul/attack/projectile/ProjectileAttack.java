@@ -15,9 +15,7 @@ import java.util.Iterator;
 public class ProjectileAttack<T extends Projectile> extends Attack<T> {
   
   private static ArrayList<Projectile> projs = new ArrayList<Projectile>();
-  
-  private boolean playing;
- 
+   
   public ProjectileAttack(T factory)
   {
     super(factory);
@@ -29,12 +27,7 @@ public class ProjectileAttack<T extends Projectile> extends Attack<T> {
       proj.play();
     }
   }
-  
-  public boolean isActive()
-  {
-    return playing;
-  }
-  
+    
   public static void update()
   {
     for (Projectile proj: projs)
@@ -63,10 +56,9 @@ public class ProjectileAttack<T extends Projectile> extends Attack<T> {
     return ins;
   }
   
-  public void newAttack(T add)
+  public static <T extends Projectile> void newAttack(T add)
   { 
     projs.add(add);
-    playing = true;
   }
   
   

@@ -1,12 +1,12 @@
 /**
- * Word.java		Aug 21, 2016, 4:28:33 PM
+ * Word.java    Aug 21, 2016, 4:28:33 PM
  */
 package komorebi.projsoul.script;
 
 /**
+ * Represents a word in a sentence
  * 
- * @author Aaron Roy
- * @version 
+ * @author Andrew Faulkenberry
  */
 public class Word {
   

@@ -1,4 +1,4 @@
 lock
-say Yoyoyo, what's poppin?\nI need more dialogue, since this is trash!
+say Yoyoyo, what's poppin?\nI need more dialogue, [since this is trash]!
 unlock
 end

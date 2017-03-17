@@ -1,0 +1,1 @@
+say the quick brown fox\njumped over the lazy dog.\pTHE QUICK BROWN FOX\nJUMPED OVER THE LAZY DOG

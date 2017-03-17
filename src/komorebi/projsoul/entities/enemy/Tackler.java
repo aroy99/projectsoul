@@ -3,17 +3,31 @@
  */
 package komorebi.projsoul.entities.enemy;
 
+import komorebi.projsoul.ai.node.composite.MemSequence;
+import komorebi.projsoul.ai.node.composite.Priority;
+import komorebi.projsoul.ai.node.composite.Sequence;
+import komorebi.projsoul.ai.node.decorator.Invincible;
+import komorebi.projsoul.ai.node.leaf.Behavior;
+import komorebi.projsoul.ai.node.leaf.BehaviorStates;
+import komorebi.projsoul.ai.node.leaf.IdleBehavior;
+import komorebi.projsoul.ai.node.leaf.LineUpBehavior;
+import komorebi.projsoul.ai.node.leaf.ShakeCamera;
+import komorebi.projsoul.ai.node.leaf.TackleBehavior;
+import komorebi.projsoul.ai.node.leaf.WalkBehavior;
+import komorebi.projsoul.ai.node.leaf.conditions.IsHittingPlayer;
+import komorebi.projsoul.ai.node.leaf.conditions.IsHittingWall;
+import komorebi.projsoul.ai.node.leaf.conditions.IsPlayerInRange;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.Face;
-import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.EditorMap.Modes;
 import komorebi.projsoul.map.Map;
 
+import java.util.HashMap;
 import java.util.Random;
 
 /**
- * 
+ * An enemy that lines up and tries to charge at the player
  *
  * @author Aaron Roy
  */
@@ -22,16 +36,8 @@ public class Tackler extends Enemy {
   float targetX, targetY; //Location of the player
   float currDist;         //Calculated distance between this enemy and the player
   
-  /**
-   * The different states a tackler can be in
-   *
-   * @author Aaron Roy
-   */
-  public enum TackleStates{
-    IDLE, WALK, LINE_UP, TACKLE, STUN, WAIT;
-  }
   
-  private TackleStates currState = TackleStates.IDLE;
+  private BehaviorStates currState = BehaviorStates.IDLE;
   
   protected final int distance;
   
@@ -51,14 +57,17 @@ public class Tackler extends Enemy {
   private int waitCount = MAX_WAIT;
 
   private static final Random GEN = new Random();
-  
+    
   //DEBUG radius
   protected int red, green, blue;
   
   private Face direction = Face.DOWN;
   
+  private Priority root;
+  
   //Stats
-  public static final int baseAttack = 25, baseDefense = 50, baseHealth = 250;
+  public static final int baseAttack = 37, baseDefense = 50, baseHealth = 250;
+  private static final int TOLERANCE = 12;
 
   /**
    * Creates an enemy that tries to run away from the player and shoot at a distance
@@ -90,7 +99,52 @@ public class Tackler extends Enemy {
     
     red = (int)(Math.random()*255);
     green = (int)(Math.random()*255);
-    blue = (int)(Math.random()*255);  
+    blue = (int)(Math.random()*255);
+    
+    Behavior[] behaviors = new Behavior[]{
+        new IdleBehavior(this, MAX_IDLE),
+        new WalkBehavior(this, MAX_WALK, WALK_SPEED),
+        new LineUpBehavior(this, RUN_SPEED, TOLERANCE),
+    };
+    this.behaviors = new HashMap<>();
+    for(Behavior currBehavior: behaviors){
+      this.behaviors.put(currBehavior.getState(), currBehavior);
+    }
+    
+    
+    //Just see 
+    //https://drive.google.com/open?id=1RM_jia5cyQiPZ4u_SoY9sr2EkXuvCJXd_rGmrUFrUkg
+    root = new Priority(
+        new Sequence(
+            new IsPlayerInRange(this, distance),
+            new MemSequence(                       //Line up and Tackle
+                new LineUpBehavior(this, RUN_SPEED, TOLERANCE),
+                new Invincible(this, 
+                    new TackleBehavior(this, TACKLE_SPEED)
+                    ),
+                new Priority(
+                    new MemSequence(     //Wait for the player to get knockback
+                        new IsHittingPlayer(this),
+                        new Invincible(this, 
+                            new IdleBehavior(this, MAX_WAIT)
+                            )
+                        ),
+                    new MemSequence(                  //Hit a wall, get stunned
+                        new Sequence(
+                            new IsHittingWall(this),
+                            new ShakeCamera(8, 2, 1)
+                            ),
+                        new IdleBehavior(this, MAX_STUN)
+                        )
+                    )
+                )
+            ), 
+        new MemSequence(                             //Walk around
+            new IdleBehavior(this, MAX_IDLE),
+            new WalkBehavior(this, MAX_WALK, WALK_SPEED)
+            )
+        );
+
   }
   
   @Override
@@ -104,21 +158,25 @@ public class Tackler extends Enemy {
 
       currDist = Map.distanceBetween(x,y,targetX,targetY);
 
-      if(currState != TackleStates.STUN && currState != TackleStates.WAIT){
-        if (currState != TackleStates.IDLE && currState != TackleStates.WALK && 
+      root.update();
+      
+      /**
+      
+      if(currState != BehaviorStates.STUN && currState != BehaviorStates.WAIT){
+        if (currState != BehaviorStates.IDLE && currState != BehaviorStates.WALK && 
             currDist > distance){
           regAni.stop();
-          currState = TackleStates.IDLE;
+          currState = BehaviorStates.IDLE;
         }
 
-        if(currState != TackleStates.TACKLE && 
-            currState != TackleStates.LINE_UP && currDist <= distance){
+        if(currState != BehaviorStates.TACKLE && 
+            currState != BehaviorStates.LINE_UP && currDist <= distance){
           regAni.resume();
           regAni.setSpeed((int)(6/RUN_SPEED));
 
           //DEBUG Labels
           System.out.println("Switch to Line UP");
-          currState = TackleStates.LINE_UP;
+          currState = BehaviorStates.LINE_UP;
         }
       }
 
@@ -129,7 +187,7 @@ public class Tackler extends Enemy {
 
           if(idleCount <= 0){
             idleCount = GEN.nextInt(30)+30;
-            currState = TackleStates.WALK;
+            currState = BehaviorStates.WALK;
             regAni.resume();
             regAni.setSpeed((int)(6/WALK_SPEED));
           }
@@ -140,7 +198,7 @@ public class Tackler extends Enemy {
           if(walkCount <= 0){
             walkCount = GEN.nextInt(60)+60;
             direction = Face.random();
-            currState = TackleStates.IDLE;
+            currState = BehaviorStates.IDLE;
             regAni.stop();
           }
 
@@ -159,15 +217,7 @@ public class Tackler extends Enemy {
           float delX = targetX-x;
           float delY = targetY-y;
 
-          if(Math.abs(delX) < 8 || Math.abs(delY) < 8){
-            //DEBUG Labels
-            System.out.println("Switch to TackLe");
-            regAni.setSpeed((int)(6/TACKLE_SPEED));
-            invincible = true;
-            currState = TackleStates.TACKLE;
-          }
-
-          else if(Math.abs(delX) < Math.abs(delY)){
+          if(Math.abs(delX) < Math.abs(delY)){
             if(delX < 0){
               dx = -RUN_SPEED;
             }
@@ -198,6 +248,16 @@ public class Tackler extends Enemy {
               direction = Face.RIGHT;
             }
           }
+          
+          if(Math.abs(delX) < 4 || Math.abs(delY) < 4){
+            //DEBUG Labels
+            System.out.println("Switch to TackLe");
+            regAni.setSpeed((int)(6/TACKLE_SPEED));
+            invincible = true;
+            currState = BehaviorStates.TACKLE;
+          }
+          
+          System.out.format("%s, %s\n", dx, dy);
 
           break;
         case TACKLE:
@@ -214,21 +274,21 @@ public class Tackler extends Enemy {
             invincible = false;
             regAni.resume();
             regAni.setSpeed((int)(6/RUN_SPEED));
-            currState = TackleStates.LINE_UP;
+            currState = BehaviorStates.LINE_UP;
           }
                     
-          if(hitWall){
+          if(hittingWall){
             invincible = false;
             stunCount = MAX_STUN;
             Camera.shake(8, 2, 1);
             regAni.hStop();
-            currState = TackleStates.STUN;
+            currState = BehaviorStates.STUN;
           }
           
-          if(hitPlayer){
+          if(hittingPlayer){
             waitCount = MAX_WAIT;
             regAni.hStop();
-            currState = TackleStates.WAIT;
+            currState = BehaviorStates.WAIT;
           }
           
           switch (direction)
@@ -254,7 +314,7 @@ public class Tackler extends Enemy {
           if(stunCount <= 0){
             regAni.resume();
             regAni.setSpeed((int)(6/RUN_SPEED));
-            currState = TackleStates.LINE_UP;
+            currState = BehaviorStates.LINE_UP;
           }
           break;
         case WAIT:
@@ -263,14 +323,16 @@ public class Tackler extends Enemy {
             invincible = false;
             regAni.resume();
             regAni.setSpeed((int)(6/RUN_SPEED));
-            currState = TackleStates.LINE_UP;
           }
           break;
         default:
           break;
 
       }
+      
+      */
     }
+    
 
     super.update();
 
@@ -314,5 +376,4 @@ public class Tackler extends Enemy {
   public String getBehavior(){
     return "tackler";
   }
-
 }

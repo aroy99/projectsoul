@@ -17,7 +17,7 @@ public class TextHandler{
   public static final int SCALE = 16;
 
   public ArrayList<Word> words;
-  private static EarthboundFont defFont = new EarthboundFont(1);
+  private static MenuFont defFont = new MenuFont(1);
 
   /**
    * Creates a text handler object which will render words
@@ -61,7 +61,10 @@ public class TextHandler{
   {
     int horiz = word.getX();
     int vert = word.getY();
-    int size = word.getFont().getFontPoint()*word.getFont().getScale();
+    
+    Font font = word.getFont();
+    
+    int size = font.getFontPoint()*font.getScale();
     char[] letters = word.currentParagraph();
     
     for (int i=0; i < letters.length; i++)
@@ -69,21 +72,19 @@ public class TextHandler{
 
       int under = 0, texUnder = 0;
 
-      if (letters[i]=='g' || letters[i] == 'j' || letters[i] == 'p' ||
-          letters[i] == 'q' || letters[i] == 'y')
-      {   
-        under = size;
-        texUnder = word.getFont().getFontPoint();
-      } 
+      under = font.getTexUnder(letters[i])*font.getScale();
+      if(under != 0){
+        texUnder = font.getTexUnder(letters[i]);
+      }
 
 
       Draw.rect(horiz, vert-under, size, size+under, 
-          word.getFont().getTexX(letters[i]), word.getFont().getTexY(letters[i]), 
-          word.getFont().getTexX(letters[i])+word.getFont().getFontPoint(), 
-          word.getFont().getTexY(letters[i]) + word.getFont().getFontPoint()+texUnder, 
-          word.getFont().getTexture());
-      horiz+=(word.getFont().getLength(letters[i])+
-          size/(word.getFont().getFontPoint()/word.getFont().getScale()));
+          font.getTexX(letters[i]), font.getTexY(letters[i]), 
+          font.getTexX(letters[i])+font.getFontPoint(), 
+          font.getTexY(letters[i]) + font.getFontPoint()+texUnder, 
+          font.getTexture());
+      horiz+=(font.getLength(letters[i])+
+          size/(font.getFontPoint()/font.getScale()));
     }
   }
 

@@ -48,7 +48,7 @@ public enum EnemyType {
    * @param type The enemy you want the animation for
    * @return An animation for the enemy
    */
-  public static Animation getAni(EnemyType type){
+  public static Animation getRegularAnimation(EnemyType type){
     Animation ani;
     int tx, ty;
     

@@ -101,14 +101,11 @@ public class Game extends State{
 
   }
 
-  /* (non-Javadoc)
-   * @see komorebi.clyde.states.State#getInput()
-   */
-@Override
+  @Override
   public void getInput() {    
     if (KeyHandler.keyClick(Key.C))
     {
-      if (speaker!=null)
+      if (speaker != null)
       {
         if (speaker.isWaitingOnParagraph())
         {
@@ -148,7 +145,7 @@ public class Game extends State{
              
 
 
-    //TODO Remove map debug features
+    //DEBUG Map debug features
     map.getInput();
   
 
