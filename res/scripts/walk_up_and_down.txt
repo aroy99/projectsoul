@@ -1,4 +1,5 @@
-walk right
-pause 50
-walk left
-pause 50
+branch main
+jog right right
+pause 75
+jog left left
+pause 75

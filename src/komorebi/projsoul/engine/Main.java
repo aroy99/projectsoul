@@ -35,6 +35,8 @@ import static org.lwjgl.opengl.GL11.glOrtho;
 import org.newdawn.slick.openal.SoundStore;
 
 import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.script.utils.ScriptDatabase;
+import komorebi.projsoul.script.utils.ScriptUtils;
 import komorebi.projsoul.states.Game;
 
 
@@ -118,8 +120,24 @@ public class Main {
    *  @see AudioHandler
    */
   private void initGame(){
+    
+    initScripts();
+
     gamehandler = new GameHandler();
     AudioHandler.init();
+  }
+  
+  private void initScripts()
+  {
+    try
+    {
+      ScriptUtils.loadTaskConstructors();
+    } catch (Exception e)
+    {
+      e.printStackTrace();
+      System.exit(1);
+    }
+    ScriptDatabase.loadScripts();
   }
 
 
@@ -153,7 +171,7 @@ public class Main {
       getInput();
       update();
       render();
-      SoundStore.get().poll(0);
+      //SoundStore.get().poll(0);
 
       if (!Keyboard.isCreated())
       {

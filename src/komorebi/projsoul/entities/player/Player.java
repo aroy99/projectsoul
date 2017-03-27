@@ -13,27 +13,28 @@ import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.ProjectileAttack;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.entities.Entity;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.NPC;
-import komorebi.projsoul.entities.Entity.Entities;
+import komorebi.projsoul.entities.Person;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.gameplay.MagicBar;
 import komorebi.projsoul.map.Map;
-import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
+import komorebi.projsoul.script.execute.Execution;
 import komorebi.projsoul.states.Game;
 
 /**
  * @author Aaron Roy
  * @author Andrew Faulkenberry
  */
-public abstract class Player extends Entity implements Playable{
+public abstract class Player extends Person implements Playable{
 
   private boolean up;
   private boolean down;
@@ -79,7 +80,6 @@ public abstract class Player extends Entity implements Playable{
   private static final float SPEED = 1;
 
   public Face dir = Face.DOWN;    
-  private Execution ex;
 
   private Lock lock;
 
@@ -103,7 +103,7 @@ public abstract class Player extends Entity implements Playable{
     restoreMvmtX = true;
     restoreMvmtY = true;
 
-    area = new Rectangle((int) x, (int) y, 16, 24);
+    area = new Rectangle((int) this.x, (int) this.y, 16, 24);
     future = new Rectangle((int) x, (int) y, 16, 24);
 
     deathAni = new Animation(4,8,16,21,11,false);
@@ -111,6 +111,8 @@ public abstract class Player extends Entity implements Playable{
     deathAni.add(0, 82);
     deathAni.add(0, 103);
     deathAni.add(0, 124);
+    
+    currentAni = downAni;
 
   }
 
@@ -326,7 +328,7 @@ public abstract class Player extends Entity implements Playable{
 
     area.x += dx;
     area.y += dy;
-
+    
     if (hasInstructions)
     {
       if (dx!=0) 
@@ -485,12 +487,6 @@ public abstract class Player extends Entity implements Playable{
 
   }
 
-  public void walk(Face dir, int tiles, Execution ex)
-  {
-    walk(dir, tiles);
-    this.ex = ex;
-    this.ex.getLock().pauseThread();    
-  }
 
   public void walk(Face dir, int tiles, Lock lock)
   {
@@ -809,8 +805,6 @@ public abstract class Player extends Entity implements Playable{
 
     }
 
-    System.out.println("Damage = " + attack + " - " + 
-        getDefense(character) + "/2");
 
     if (attack - getDefense(character)/2 > 0)
     {
@@ -1017,6 +1011,13 @@ public abstract class Player extends Entity implements Playable{
   public int getHealth()
   {
     return health.getHealth();
+  }
+  
+  public boolean canMove(float dx, float dy)
+  {
+    Rectangle future = new Rectangle((int) (x + dx), (int) (y + dy), 
+        sx, sy);
+    return Game.getMap().willIntersectNPCs(future);
   }
 
 

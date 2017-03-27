@@ -22,8 +22,8 @@ import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glOrtho;
 
 import komorebi.projsoul.editor.Editor;
-import komorebi.projsoul.script.EarthboundFont;
-import komorebi.projsoul.script.TextHandler;
+import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.TextHandler;
 import komorebi.projsoul.states.Game;
 
 import org.lwjgl.LWJGLException;

@@ -1,9 +1,9 @@
+branch main
 lock
 align
 ask "What should we do?" "Go away" "Go" "Garden" "Unblock"
 flag 0
 unlock
-end
 
 branch Go away
 @goto 8 8

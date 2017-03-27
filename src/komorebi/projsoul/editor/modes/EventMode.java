@@ -24,10 +24,10 @@ import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.enemy.EnemyType;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.EditorMap;
-import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.WalkingScript;
 import komorebi.projsoul.script.WarpScript;
+import komorebi.projsoul.script.utils.AreaScript;
 
 import org.lwjgl.input.Mouse;
 

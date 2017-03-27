@@ -19,6 +19,7 @@ public class KeyHandler {
 
   private static boolean[] isKeyDown = new boolean[Keyboard.KEYBOARD_SIZE + 3];
   private static boolean[] wasKeyDown = new boolean[Keyboard.KEYBOARD_SIZE + 3];
+  private static boolean[] keyChecked = new boolean[Keyboard.KEYBOARD_SIZE + 3];
     
   /**
    * All of the possible controls that can be used in-game
@@ -48,13 +49,14 @@ public class KeyHandler {
     {
       wasKeyDown[i]=isKeyDown[i];
       isKeyDown[i]=Keyboard.isKeyDown(i);
+      keyChecked[i] = false;
 
     }
     for (int i=Keyboard.KEYBOARD_SIZE; i < Keyboard.KEYBOARD_SIZE+3; i++)
     {
       wasKeyDown[i]=isKeyDown[i];
       isKeyDown[i]=Mouse.isButtonDown(i-Keyboard.KEYBOARD_SIZE);
-
+      keyChecked[i] = false;
     }
 
     
@@ -69,6 +71,7 @@ public class KeyHandler {
   {
     if (isKeyDown[k.getGLKey()] && !wasKeyDown[k.getGLKey()])
     {
+      keyChecked[k.getGLKey()] = true;
       return true;
     }
     return false;
@@ -158,6 +161,16 @@ public class KeyHandler {
   public static boolean shiftDown()
   {
     return (isKeyDown[Keyboard.KEY_LSHIFT]) || (isKeyDown[Keyboard.KEY_RSHIFT]);
+  }
+  
+  public static boolean firstKeyClick(Key key)
+  {
+    return !taken(key) && keyClick(key);
+  }
+  
+  private static boolean taken(Key key)
+  {
+    return keyChecked[key.getGLKey()];
   }
   
   /**

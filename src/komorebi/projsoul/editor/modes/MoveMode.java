@@ -5,9 +5,6 @@ package komorebi.projsoul.editor.modes;
 
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.map.EditorMap;
-import komorebi.projsoul.map.EditorMap.Modes;
-
-import org.lwjgl.opengl.Display;
 
 /**
  * Movement Permissions Editor

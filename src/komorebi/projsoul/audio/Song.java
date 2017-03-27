@@ -3,12 +3,13 @@
  */
 package komorebi.projsoul.audio;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.NoSuchElementException;
+
 import org.newdawn.slick.openal.Audio;
 import org.newdawn.slick.openal.AudioLoader;
 import org.newdawn.slick.util.ResourceLoader;
-
-import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * Enum for all songs in the game
@@ -83,7 +84,7 @@ public enum Song {
    * @param s The file path ("****.ogg") of the song
    * @return The specified song, or null
    */
-  public static Song get(String s)
+  public static Song get(String s) throws NoSuchElementException
   {
     for (Song song: Song.values())
     {
@@ -93,7 +94,7 @@ public enum Song {
       }
     }
 
-    return null;
+    throw new NoSuchElementException();
   }
   
   /**

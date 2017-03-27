@@ -1,3 +1,4 @@
+branch main
 lock
 align
 say Let's go.
@@ -5,4 +6,3 @@ fadeout
 freeze 100
 fadein
 unlock
-end

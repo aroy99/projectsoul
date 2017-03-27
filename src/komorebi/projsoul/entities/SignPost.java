@@ -2,10 +2,10 @@ package komorebi.projsoul.entities;
 
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Main;
-import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.EditorMap.Modes;
-import komorebi.projsoul.script.SignHandler;
+import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.SignHandler;
 
 import java.awt.Rectangle;
 

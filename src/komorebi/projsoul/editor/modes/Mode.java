@@ -13,8 +13,8 @@ import komorebi.projsoul.engine.Renderable;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.TileList;
-import komorebi.projsoul.script.EarthboundFont;
-import komorebi.projsoul.script.TextHandler;
+import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.TextHandler;
 
 import org.lwjgl.input.Mouse;
 import org.omg.CORBA.PRIVATE_MEMBER;

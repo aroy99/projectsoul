@@ -6,33 +6,6 @@ package komorebi.projsoul.map;
 
 import static komorebi.projsoul.engine.KeyHandler.button;
 
-import komorebi.projsoul.audio.AudioHandler;
-import komorebi.projsoul.audio.Song;
-import komorebi.projsoul.editor.modes.ConnectMode;
-import komorebi.projsoul.editor.modes.EventMode;
-import komorebi.projsoul.editor.modes.Mode;
-import komorebi.projsoul.editor.modes.MoveMode;
-import komorebi.projsoul.editor.modes.TileMode;
-import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.KeyHandler.Control;
-import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.entities.NPC;
-import komorebi.projsoul.entities.NPCType;
-import komorebi.projsoul.entities.SignPost;
-import komorebi.projsoul.entities.enemy.Chaser;
-import komorebi.projsoul.entities.enemy.Dummy;
-import komorebi.projsoul.entities.enemy.Enemy;
-import komorebi.projsoul.entities.enemy.EnemyType;
-import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.map.ConnectMap.Side;
-import komorebi.projsoul.script.AreaScript;
-import komorebi.projsoul.script.TalkingScript;
-import komorebi.projsoul.script.WalkingScript;
-import komorebi.projsoul.script.WarpScript;
-
-import org.lwjgl.opengl.Display;
-
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -60,6 +33,30 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.lwjgl.opengl.Display;
+
+import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.audio.Song;
+import komorebi.projsoul.editor.modes.ConnectMode;
+import komorebi.projsoul.editor.modes.EventMode;
+import komorebi.projsoul.editor.modes.Mode;
+import komorebi.projsoul.editor.modes.MoveMode;
+import komorebi.projsoul.editor.modes.TileMode;
+import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.entities.NPC;
+import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.SignPost;
+import komorebi.projsoul.entities.enemy.Chaser;
+import komorebi.projsoul.entities.enemy.Dummy;
+import komorebi.projsoul.entities.enemy.Enemy;
+import komorebi.projsoul.entities.enemy.EnemyType;
+import komorebi.projsoul.gameplay.Key;
+import komorebi.projsoul.map.ConnectMap.Side;
+import komorebi.projsoul.script.utils.AreaScript;
 
 /**
  * Represents a map of tiles for use by the Editor
@@ -255,13 +252,11 @@ public class EditorMap implements Playable, Serializable{
           int arg0 = Integer.parseInt(split[1]);
           int arg1 = Integer.parseInt(split[2]);
 
-          NPC addee = new NPC(split[0], x+arg0*16, y+arg1*16, NPCType.toEnum(split[3]));
+          NPC addee = new NPC(split[0], x+arg0*16, y+arg1*16, 
+              NPCType.toEnum(split[3]));
 
-
-          addee.setWalkingScript(
-              new WalkingScript(split[4], addee));
-          addee.setTalkingScript(
-              new TalkingScript(split[5], addee));
+          addee.setWalkingScript(split[4]);
+          addee.setTalkingScript(split[5]);
 
           npcs.add(addee);
 
@@ -273,8 +268,11 @@ public class EditorMap implements Playable, Serializable{
           int arg0 = Integer.parseInt(split[1]);
           int arg1 = Integer.parseInt(split[2]);
 
-          scripts.add(new AreaScript(split[0], x+arg0*16, y+arg1*16, 
-              false, findNPC(split[3])));
+          AreaScript areaScript = new AreaScript(split[0], 
+              arg0, arg1);
+          areaScript.executeUpon(findNPC(split[3]));
+          
+          scripts.add(areaScript);
 
         } else if (s.startsWith("warp"))
         {
@@ -284,8 +282,11 @@ public class EditorMap implements Playable, Serializable{
           int arg0 = Integer.parseInt(split[1]);
           int arg1 = Integer.parseInt(split[2]);
 
-          scripts.add(new WarpScript(split[0], x+arg0*16, y+arg1*16, false));
-        } else if (s.startsWith("enemy")){
+          AreaScript areaScript = new AreaScript(split[0], 
+              arg0, arg1);
+          
+          scripts.add(areaScript);        
+         } else if (s.startsWith("enemy")){
           s = s.replace("enemy ", "");
           String[] split = s.split(" ");
 
@@ -550,7 +551,8 @@ public class EditorMap implements Playable, Serializable{
       for(NPC npc: npcs){
         writer.println("npc " + npc.getName() + " " + npc.getOrigTX() + 
             " " + npc.getOrigTY() + " " + npc.getType() + " " + 
-            npc.getWalkingScript().getScript() + " " + npc.getTalkingScript().getScript());
+            npc.getWalkingScript() + " " + 
+            npc.getTalkingScript());
       }
       
       //The Scripts and Warps
@@ -910,9 +912,10 @@ public class EditorMap implements Playable, Serializable{
       npc.update();
     }
 
+    /*
     for(AreaScript script:scripts){
-      script.setPixLocation((int)(script.getX()+dx),(int)(script.getY()+dy));
-    }
+      script.setLocation((int)(script.getX()+dx),(int)(script.getY()+dy));
+    }*/
     
     for (Enemy enemy:enemies) {
       enemy.setPixLocation((int)(enemy.getX()+dx),(int)(enemy.getY()+dy));

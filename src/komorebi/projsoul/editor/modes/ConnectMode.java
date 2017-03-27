@@ -17,7 +17,7 @@ import komorebi.projsoul.engine.MainE;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.ConnectMap;
 import komorebi.projsoul.map.ConnectMap.Side;
-import komorebi.projsoul.script.EarthboundFont;
+import komorebi.projsoul.script.text.EarthboundFont;
 import komorebi.projsoul.map.EditorMap;
 
 import org.lwjgl.input.Mouse;
