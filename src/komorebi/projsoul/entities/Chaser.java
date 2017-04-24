@@ -1,6 +1,7 @@
 package komorebi.projsoul.entities;
 
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
@@ -17,7 +18,6 @@ public class Chaser extends Enemy {
   public static final int baseAttack = 40;
   public static final int baseDefense = 50;
   public static final int baseHealth = 50;
-
   
   /**
    * Creates an enemy that will chase the player within a certain range

@@ -158,7 +158,6 @@ public class Draw {
         texLoaded = true;
       }
 
-      //Change Death png that has to be 256 by 256 (DONE)
       int imgX = tex[texID].getImageWidth();
       int imgY = tex[texID].getImageHeight();
 

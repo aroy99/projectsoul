@@ -8,7 +8,6 @@ import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MagicBar;
 
 public class Flannery extends Player {
 
@@ -118,8 +117,7 @@ public class Flannery extends Player {
     
 	characterDeathAni.add(101,6,15,32,1,false);
     
-    magic = new MagicBar(maxMagic);
-    health = new HUD(maxHealth, money);
+    health = new HUD(maxHealth, money, maxMagic);
 
     projectile = new ProjectileAttack<FireBall>(new FireBall());
     ring = new RingOfFire(new FireRingInstance());
@@ -142,7 +140,7 @@ public class Flannery extends Player {
       currentAnimation = null;
     }
 
-    if (KeyHandler.keyClick(Key.X) && !isAttacking && magic.hasEnoughMagic(
+    if (KeyHandler.keyClick(Key.X) && !isAttacking && health.hasEnoughMagic(
         10))
     {              
       if (attack1 == projectile)
@@ -179,7 +177,7 @@ public class Flannery extends Player {
         }
 
         currentAnimation.resume();
-        magic.changeMagicBy(-10);
+        health.changeMagicBy(-10);
         
         attack1.newAttack(x,y,aDx,aDy,dir,attack);
       }
@@ -190,7 +188,7 @@ public class Flannery extends Player {
       }
     }
     
-    if (KeyHandler.keyDown(Key.X) && !isAttacking && magic.hasEnoughMagic(
+    if (KeyHandler.keyDown(Key.X) && !isAttacking && health.hasEnoughMagic(
         10) && attack1 == ring)
     {
       canMove = false;
@@ -200,12 +198,12 @@ public class Flannery extends Player {
       
       ring.getInput();
       ring.update();
-    } else if (KeyHandler.keyRelease(Key.X) && !isAttacking && magic.hasEnoughMagic(
+    } else if (KeyHandler.keyRelease(Key.X) && !isAttacking && health.hasEnoughMagic(
         10) && attack1 == ring)
     {
       ring.newAttack(0, 0, 0, 0, dir, attack);
       canMove = true;
-      magic.changeMagicBy(-10);
+      health.changeMagicBy(-10);
     }
     }
 
@@ -250,7 +248,7 @@ public class Flannery extends Player {
     maxMagic += nMag;
     maxHealth += nHth;
 
-    magic.addToMaxMagic(nMag);
+    health.addToMaxMagic(nMag);
     health.addToMaxHealth(nHth);
 
   }
@@ -262,6 +260,16 @@ public class Flannery extends Player {
     {
       levelUp();
     }
+  }
+  
+  public static void addDefense(int def)
+  {
+	  defense+=def;
+  }
+  
+  public static void subDefense(int def)
+  {
+	  defense-=def;
   }
 
 }

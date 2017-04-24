@@ -10,23 +10,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Scanner;
 
-import komorebi.projsoul.engine.Bank;
 import komorebi.projsoul.engine.GameHandler;
-import komorebi.projsoul.engine.HUD;
-import komorebi.projsoul.engine.Item;
-import komorebi.projsoul.engine.Item.Items;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MagicBar;
-import komorebi.projsoul.engine.ThreadHandler;
-import komorebi.projsoul.entities.Chaser;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
-import komorebi.projsoul.entities.Player;
-import komorebi.projsoul.entities.SignPost;
+import komorebi.projsoul.items.Item;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.Execution;
@@ -61,10 +51,6 @@ public class Game extends State{
   private SpeechHandler speaker;
 
   private BufferedReader read;
-  
-  private int confidence;
-  private static int money;
-  
   public int framesToGo;
   public boolean isPaused;
   public Lock lock;
@@ -72,6 +58,7 @@ public class Game extends State{
   public static String testLoc;
   
   public Death death;
+  
   
   public class Int {
     private int val;
@@ -107,14 +94,9 @@ public class Game extends State{
     scripts = new ArrayList<AreaScript>();
 
     booleans = new boolean[256];
-
-    confidence = 0;
-    money = 0;
     
     death = new Death();
-    
-
-
+  
   }
 
   /* (non-Javadoc)
@@ -210,6 +192,14 @@ public class Game extends State{
     else if(KeyHandler.keyClick(Key.Y))
     {
     	GameHandler.switchState(States.BANKSTATE);
+    }
+    else if(KeyHandler.keyClick(Key.V))
+    {
+    	GameHandler.switchState(States.SHOPSTATE);
+    }
+    else if(KeyHandler.keyClick(Key.I))
+    {
+    	GameHandler.switchState(States.INVENTORYSTATE);
     }
 
   }
@@ -382,39 +372,9 @@ public class Game extends State{
 
   }
 
-  public void receiveItem(Items item)
-  {
-    items.add(new Item(item));
-  }
-
   public ArrayList<Item> getItems()
   {
     return items;
-  }
-  
-  public int getMoney()
-  {
-    return money;
-  }
-  
-  public int getConfidence()
-  {
-    return confidence;
-  }
-  
-  public static void giveMoney(int add)
-  {
-    money += add;
-  }
-  
-  public void takeMoney(int subtract)
-  {
-    money -= subtract;
-  }
-  
-  public void giveConfidence(int add)
-  {
-    confidence += add;
   }
   
   public void setFlag(int index, boolean b)

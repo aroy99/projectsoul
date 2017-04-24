@@ -20,7 +20,7 @@ public class BankState extends State
 	private int index = 0;
 	boolean deposit, withdraw = false;
 	boolean wrongNums;
-	public Bank bank = new Bank(10000);
+	public Bank bank = new Bank(1000);
 	EarthboundFont font = new EarthboundFont(1);
 	private int[] nums = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 

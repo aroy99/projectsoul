@@ -10,7 +10,6 @@ import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MagicBar;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.states.Game;
 
@@ -115,10 +114,8 @@ public class Caspian extends Player {
   
     melee = new MeleeAttack<WaterSword>(new WaterSword());
     proj = new ProjectileAttack<WaterKunai>(new WaterKunai());
-
-    magic = new MagicBar(maxMagic);
-    //Is this object the key to my problems?
-    health = new HUD(maxHealth, money);
+    
+    health = new HUD(maxHealth, money, maxMagic);
 
     attack1 = melee;
     attack2 = proj;
@@ -160,7 +157,7 @@ public class Caspian extends Player {
     }
     
    
-    if (KeyHandler.keyClick(Key.X) && !isAttacking && magic.hasEnoughMagic(
+    if (KeyHandler.keyClick(Key.X) && !isAttacking && health.hasEnoughMagic(
         10))
     {        
 
@@ -175,7 +172,7 @@ public class Caspian extends Player {
         leftAni.hStop();
         rightAni.hStop();
 
-        magic.changeMagicBy(-10);
+        health.changeMagicBy(-10);
       } else if (attack1 == proj)
       {        
         switch (dir)
@@ -202,7 +199,7 @@ public class Caspian extends Player {
 
         currentAnimation.resume();
         
-        magic.changeMagicBy(-10);
+        health.changeMagicBy(-10);
       }
 
       if (attack1 != null)
@@ -249,11 +246,11 @@ public class Caspian extends Player {
     maxMagic += nMag;
     maxHealth += nHth;
 
-    magic.addToMaxMagic(nMag);
+    health.addToMaxMagic(nMag);
     health.addToMaxHealth(nHth);
   }
 
-  @Override
+  
   public void giveXP(int xp) {
     Caspian.xp += xp;
 
@@ -261,6 +258,16 @@ public class Caspian extends Player {
     {
       levelUp();
     }
+  }
+  
+  public static void addDefense(int def)
+  {
+	  defense+=def;
+  }
+  
+  public static void subDefense(int def)
+  {
+	  defense-=def;
   }
 
 

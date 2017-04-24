@@ -32,6 +32,7 @@ public class Bank
 	
 	public void withdraw(int amount)
 	{
+		//Perhaps a limit on the wallet?
 	    {
 	    	character = Map.currentPlayer();
 	    	Map.getPlayer().getCharacterHUD(character).giveMoney(amount);

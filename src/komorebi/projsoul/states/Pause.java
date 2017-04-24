@@ -5,10 +5,10 @@ package komorebi.projsoul.states;
 
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
-import komorebi.projsoul.engine.Item;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Main;
+import komorebi.projsoul.items.Item;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.Font;
 import komorebi.projsoul.script.SpeechHandler;
@@ -59,16 +59,7 @@ public class Pause extends State {
           Draw.rect(5, 5, 200, 200, 0, 60, 200, 260, 6);
           int x=10, y=180;
           
-          for (Item item: Main.getGame().getItems())
-          {
-            item.render(x, y);
-            text.write(item.type().getIDString().replace(
-                item.type().getIDString().substring(0, 1), 
-                item.type().getIDString().substring(0, 1).toUpperCase()), 
-                x, y-12, new EarthboundFont(1));
-            text.write(item.type().getNiftyTidbit(), x+44, y, new EarthboundFont(1));
-            y-=40;
-          }
+          
           break;
         case OPTIONS:
           Draw.rect(5, 5, 200, 200, 0, 60, 200, 260, 6);
@@ -165,12 +156,10 @@ public class Pause extends State {
     text.write("Save", 188, 155, new EarthboundFont(1));
     text.write("Cancel", 188, 140, new EarthboundFont(1));
     
-    text.write(Main.getGame().getMoney() + " Cs", 6, 195, new EarthboundFont(1));
-    text.write(Main.getGame().getConfidence() + " conf", 6, 205, new EarthboundFont(1));
+    //Removed old money and confidence crap
     pickIndex = 1;
     
-    prevMon = Main.getGame().getMoney();
-    prevConf = Main.getGame().getConfidence();
+  
     
     pop = PopUp.NONE;
   }
@@ -309,13 +298,7 @@ public class Pause extends State {
   
   public void reload()
   {
-    text.replace(prevMon + " Cs", 
-        Main.getGame().getMoney() + " Cs");
-    text.replace(prevConf + " conf", 
-        Main.getGame().getConfidence() + " conf");
-    
-    prevMon = Main.getGame().getMoney();
-    prevConf = Main.getGame().getConfidence();
+  //Removed old money and confidence crap
   }
 
 }

@@ -7,8 +7,10 @@ package komorebi.projsoul.engine;
 import komorebi.projsoul.states.BankState;
 import komorebi.projsoul.states.Death;
 import komorebi.projsoul.states.Game;
+import komorebi.projsoul.states.InventoryState;
 import komorebi.projsoul.states.Menu;
 import komorebi.projsoul.states.Pause;
+import komorebi.projsoul.states.ShopState;
 import komorebi.projsoul.states.State.States;
 
 /**
@@ -27,6 +29,8 @@ public class GameHandler implements Playable{
   private static Pause pause;
   public static Death death;
   public static BankState bank;
+  public static ShopState shop;
+  public static InventoryState inventory;
 
   /**
    * Creates the GameHandler
@@ -38,6 +42,8 @@ public class GameHandler implements Playable{
     pause = new Pause();
     death = new Death();
     bank = new BankState();
+    shop = new ShopState();
+    inventory = new InventoryState();
   }
 
   /**
@@ -60,6 +66,12 @@ public class GameHandler implements Playable{
       case BANKSTATE:
     	bank.getInput();
     	break;
+      case SHOPSTATE:
+    	shop.getInput();
+    	break;
+      case INVENTORYSTATE:
+      	inventory.getInput();
+      	break;
       default:
         break;
     }
@@ -87,6 +99,14 @@ public class GameHandler implements Playable{
     	game.update();
     	bank.update();
     	break;
+      case SHOPSTATE:
+      	game.update();
+      	shop.update();
+      	break;
+      case INVENTORYSTATE:
+      	game.update();
+    	inventory.update();
+      	break;
       default:
         break;
     }
@@ -114,6 +134,14 @@ public class GameHandler implements Playable{
     	game.render();
     	bank.render();
     	break;
+      case SHOPSTATE:
+      	game.render();
+      	shop.render();
+      	break;
+      case INVENTORYSTATE:
+      	game.render();
+      	inventory.render();
+      	break;
       default:
         break;
     }

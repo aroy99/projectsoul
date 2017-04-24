@@ -5,7 +5,6 @@ package komorebi.projsoul.script;
 
 import komorebi.projsoul.audio.AudioHandler;
 import komorebi.projsoul.audio.Song;
-import komorebi.projsoul.engine.Item.Items;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.engine.ThreadHandler.NewThread;
@@ -364,19 +363,16 @@ public class Execution implements Runnable {
         AudioHandler.stop();
         break;
       case GIVE_ITEM:
-        Items item;
+    	  //Removed old item crap
         taskStr = (TaskWithString) task;
-
-        Main.getGame().receiveItem(item = Items.getItem(taskStr.getString()));
-        npc.say("You received " + item.getPrintString() + "!", lock);
         break;
       case PAY_MONEY:
         taskNum = (TaskWithNumber) task;
-        Main.getGame().giveMoney(taskNum.getNumber());
+        //Removed old money crap
         break;
       case PAY_CONFIDENCE:
         taskNum = (TaskWithNumber) task;
-        Main.getGame().giveConfidence(taskNum.getNumber());
+        //Removed old confidence crap
         break;
       case END:
         if (npc != null)
@@ -392,13 +388,13 @@ public class Execution implements Runnable {
         taskTask = (TaskWithTask) task;
         nextTask = getNextTask(task);
 
-        run = Main.getGame().getMoney() > taskTask.getPredicate();
+        //Removed old money crap
         if (taskTask.isReversed()) 
         {
-          run = !run;
+          
         }
 
-        if (run)
+        
         {
           execute(taskTask.getTask());
 
@@ -417,13 +413,13 @@ public class Execution implements Runnable {
 
         nextTask = getNextTask(task);
 
-        run = Main.getGame().getConfidence() > taskTask.getPredicate();
+        //Removed old confidence crap
         if (taskTask.isReversed())
         {
-          run = !run;
+          
         }
 
-        if (run)
+       
         {
           execute(taskTask.getTask());
 

@@ -20,7 +20,6 @@ import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MagicBar;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.Execution;
@@ -87,8 +86,7 @@ public abstract class Player extends Entity implements Playable{
 	private Lock lock;
 
 	public Rectangle future;
-
-	public MagicBar magic;
+	
 	public HUD health;
 
 	protected boolean noContact;
@@ -368,7 +366,7 @@ public abstract class Player extends Entity implements Playable{
 
 		guiding = false;
 
-		magic.update();
+		health.update();
 		if(!deathStuff)
 		{
 			ProjectileAttack.update();
@@ -832,11 +830,6 @@ public abstract class Player extends Entity implements Playable{
 		return invincible;
 	}
 
-	public MagicBar magicBar()
-	{
-		return magic;
-	}
-
 	public Characters getCharacter()
 	{
 		return character;
@@ -850,7 +843,6 @@ public abstract class Player extends Entity implements Playable{
 
 	public void renderHUD()
 	{
-		magic.render();
 		health.render();
 	}
 

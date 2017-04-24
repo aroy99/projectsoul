@@ -6,7 +6,6 @@ import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MagicBar;
 
 public class Bruno extends Player {
 
@@ -95,8 +94,8 @@ public class Bruno extends Player {
 	characterDeathAni.add(195,654,32,32,1,false);
 	characterDeathAni.add(165,654,25,32,1,false);
     
-    magic = new MagicBar(maxMagic);
-    health = new HUD(maxHealth, money);
+    
+    health = new HUD(maxHealth, money, maxMagic);
 
     attack1 = melee;
 
@@ -158,7 +157,7 @@ public class Bruno extends Player {
         attack1.newAttack(x, y, aDx, aDy, dir, attack);
         isAttacking = true;
         
-        magic.changeMagicBy(-10);
+        health.changeMagicBy(-10);
       }
       
     }
@@ -183,7 +182,7 @@ public class Bruno extends Player {
     maxMagic += nMag;
     maxHealth += nHth;
 
-    magic.addToMaxMagic(nMag);
+    health.addToMaxMagic(nMag);
     health.addToMaxHealth(nHth);
   }
 
@@ -196,8 +195,20 @@ public class Bruno extends Player {
     }
   }
   
+  public static void addDefense(int def)
+  {
+	  defense+=def;
+  }
+  
+  public static void subDefense(int def)
+  {
+	  defense-=def;
+  }
+  
   public boolean isCharging()
   {
     return noContact && isAttacking;
   }
+  
 }
+

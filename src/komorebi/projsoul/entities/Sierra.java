@@ -2,7 +2,6 @@ package komorebi.projsoul.entities;
 
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.HUD;
-import komorebi.projsoul.engine.MagicBar;
 
 public class Sierra extends Player {
 
@@ -69,9 +68,8 @@ public class Sierra extends Player {
     
     characterDeathAni.add(582,615,20,24,0,false);
     characterDeathAni.add(807,529,42,14,0,false);
-
-    magic = new MagicBar(maxMagic);
-    health = new HUD(maxHealth, money);
+    
+    health = new HUD(maxHealth, money, maxMagic);
   }
 
   @Override
@@ -99,7 +97,7 @@ public class Sierra extends Player {
     maxMagic += nMag;
     maxHealth += nHth;
 
-    magic.addToMaxMagic(nMag);
+    health.addToMaxMagic(nMag);
     health.addToMaxHealth(nHth);
 
   }
@@ -111,5 +109,15 @@ public class Sierra extends Player {
     {
       levelUp();
     }
+  }
+  
+  public static void addDefense(int def)
+  {
+	  defense+=def;
+  }
+  
+  public static void subDefense(int def)
+  {
+	  defense-=def;
   }
 }
