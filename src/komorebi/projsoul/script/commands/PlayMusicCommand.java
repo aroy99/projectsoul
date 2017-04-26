@@ -5,25 +5,22 @@ import java.util.NoSuchElementException;
 import komorebi.projsoul.audio.AudioHandler;
 import komorebi.projsoul.audio.Song;
 import komorebi.projsoul.script.commands.abstracts.CommandNoSubject;
-import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxException;
+import komorebi.projsoul.script.commands.keywords.Keyword;
+import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
+import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
 
 public class PlayMusicCommand extends CommandNoSubject {
 
   private Song song;
-  
-  public static String keyword()
-  {
-    return "play";
-  }
-  
+
   @Override
-  public void interpret(String data) throws InvalidScriptSyntaxException
+  public void interpret(String data, int line) throws InvalidScriptSyntaxExceptionWithLine
   {
     try {
       song = Song.get(data);
     } catch (NoSuchElementException e) {
-      throw new InvalidScriptSyntaxException("There is no such song as "
-          + data);
+      throw new InvalidScriptSyntaxExceptionWithLine("There is no such song as "
+          + data, line);
     }
   }
 

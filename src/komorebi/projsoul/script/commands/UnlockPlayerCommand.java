@@ -3,20 +3,15 @@ package komorebi.projsoul.script.commands;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.player.Player;
 import komorebi.projsoul.script.commands.abstracts.CommandOnNPCAndPlayer;
-import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxException;
+import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
 
 public class UnlockPlayerCommand extends CommandOnNPCAndPlayer {
 
-  public static String keyword()
-  {
-    return "unlock";
-  }
-  
   @Override
-  public void interpret(String data) throws InvalidScriptSyntaxException {
+  public void interpret(String data, int line) throws InvalidScriptSyntaxExceptionWithLine {
     if (!data.isEmpty())
-      throw new InvalidScriptSyntaxException("The unlock command "
-          + "takes no arguments");
+      throw new InvalidScriptSyntaxExceptionWithLine("The unlock command "
+          + "takes no arguments", line);
     
   }
 

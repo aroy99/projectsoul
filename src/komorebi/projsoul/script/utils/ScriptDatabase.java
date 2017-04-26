@@ -21,6 +21,8 @@ public class ScriptDatabase {
     
     for (File txtFile: files)
     {
+      System.out.println("Loading " + txtFile.getName());
+      
       Script script = new Script(txtFile);
       ScriptDatabase.addScript(script);
     }
@@ -50,7 +52,8 @@ public class ScriptDatabase {
         return script;
     }
     
-    throw new RuntimeException("HANDLE THIS: No such script as " + name);
+    throw new RuntimeException("HANDLE THIS: No such script as " 
+        + name);
   }
   
   public static Execution newExecution(String name)

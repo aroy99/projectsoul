@@ -30,7 +30,7 @@ public class ToDoList {
   {    
     sort();
     collectGarbage();
-    
+        
   }
   
   private void collectGarbage()

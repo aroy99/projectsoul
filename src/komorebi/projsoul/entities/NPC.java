@@ -10,7 +10,6 @@ import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.map.Map;
-import komorebi.projsoul.script.Lock;
 import komorebi.projsoul.script.tasks.Task.Precedence;
 import komorebi.projsoul.script.text.EarthboundFont;
 import komorebi.projsoul.script.text.SpeechHandler;
@@ -56,7 +55,7 @@ public class NPC extends Person {
 
     this.name = name;
 
-    setAttributes(type);
+    setNPCType(type);
 
     text = new SpeechHandler();
     SpeechHandler.setSpeed(3);
@@ -72,8 +71,8 @@ public class NPC extends Person {
     names[1] = "Right";
     names[2] = "Bottom";
     names[3] = "Left";
-    
-    currentAni = downAni;
+  
+    sprites.turn(Face.DOWN);
   }
 
 
@@ -115,88 +114,12 @@ public class NPC extends Person {
 
     super.render();
 
-    text.render();
-
   }
 
   public void setNPCType(NPCType type)
   {
-    setAttributes(type);
-  }
-
-  /**
-   * Creates all of the required objects for the specified NPC type
-   * 
-   * @param type The NPC type to set the attributes
-   */
-  private void setAttributes(NPCType type)
-  {
     this.type = type;
-    switch (type){
-      case POKEMON:
-        leftAni = new Animation(3,8,16,24,3);
-        rightAni = new Animation(3,8,16,24,3);
-        upAni = new Animation(3,8,16,24,3);
-        downAni = new Animation(3,8,16,24,3);
-
-        downAni.add(1, 0);
-        downAni.add(18, 0);
-        downAni.add(35, 0);
-
-        leftAni.add(51, 0);
-        leftAni.add(67, 0);
-        leftAni.add(83, 0);
-
-        rightAni.add(51, 0, true);
-        rightAni.add(67, 0, true);
-        rightAni.add(83, 0, true);
-
-        upAni.add(100, 0);
-        upAni.add(117, 0);
-        upAni.add(134, 0);
-        break;
-      case NESS:
-        leftAni = new Animation(2,8,16,24,4);
-        rightAni = new Animation(2,8,16,24,4);
-        upAni = new Animation(2,8,16,24,4);
-        downAni = new Animation(2,8,16,24,4);
-
-        downAni.add(0, 0);
-        downAni.add(17, 0);
-
-        upAni.add(34, 0);
-        upAni.add(34, 0, true);
-
-        leftAni.add(51, 0);
-        leftAni.add(68, 0);
-
-        rightAni.add(51, 0, true);
-        rightAni.add(68, 0, true);
-        break;
-      default:
-        leftAni = new Animation(3,8,16,24,3);
-        rightAni = new Animation(3,8,16,24,3);
-        upAni = new Animation(3,8,16,24,3);
-        downAni = new Animation(3,8,16,24,3);
-
-        downAni.add(1, 0);
-        downAni.add(18, 0);
-        downAni.add(35, 0);
-
-        leftAni.add(51, 0);
-        leftAni.add(67, 0);
-        leftAni.add(83, 0);
-
-        rightAni.add(51, 0, true);
-        rightAni.add(67, 0, true);
-        rightAni.add(83, 0, true);
-
-        upAni.add(100, 0);
-        upAni.add(117, 0);
-        upAni.add(134, 0);
-        break;
-
-    }
+    this.sprites = type.getNewSpriteSet();
   }
 
   /**
@@ -221,8 +144,9 @@ public class NPC extends Person {
    * @param args The options to write
    * @param lock The new thread to run the command
    */
-  public String ask(String[] args, Lock lock)
+  public String ask(String[] args)
   {
+    text.clear();
     text.write(args[0], 20, 58, new EarthboundFont(1));
     if (args.length>1) text.write(args[1], 30, 40, new EarthboundFont(1));
     if (args.length>2) text.write(args[2], 100, 40, new EarthboundFont(1));
@@ -231,13 +155,10 @@ public class NPC extends Person {
 
     //options = args;
     text.setOptions(args);
-    text.drawPicker(1);
-
-    Main.getGame().setMaxOptions(args.length-1);
+    
     Main.getGame().setAsker(text);
 
-    text.setLockAndPause(lock);
-    return text.getAnswer();
+   return text.getAnswer();
   }
 
   public int getTileX()
@@ -248,11 +169,6 @@ public class NPC extends Person {
   public int getTileY()
   {
     return ((int) y)/16;
-  }
-
-  public void setPickerIndex(int i)
-  {
-    text.setPickerIndex(i);
   }
 
   public NPCType getType()
@@ -397,28 +313,27 @@ public class NPC extends Person {
    * @param tx The tile to move to
    * @param lock Lock to wait on
    */
-  public void goTo(boolean horizontal, int tx, Precedence precedence, 
-      Lock lock)
+  public void goTo(boolean horizontal, int tx, Precedence precedence)
   {
     if (horizontal)
     {
       if (x>tx*16)
       {
         for (int i = 0; i < getTileX()-tx; i++)
-          walk(Face.LEFT, lock);
+          walk(Face.LEFT);
       } else if (x<tx*16)
       { for (int i = 0; i < getTileX()-tx; i++)
-        walk(Face.RIGHT, lock);
+        walk(Face.RIGHT);
       }
     } else
     {
       if (y>ty*16)
       {for (int i = 0; i < getTileX()-tx; i++)
-        walk(Face.DOWN, lock);
+        walk(Face.DOWN);
       } else if (y<ty*16)
       {
         for (int i = 0; i < ty-getTileY(); i++)
-          walk(Face.UP, lock);
+          walk(Face.UP);
       }
     }
 
@@ -458,12 +373,12 @@ public class NPC extends Person {
    * @param clydeY
    * @return
    */
-  public boolean isApproached(Rectangle clyde, Face direction)
+  public boolean isApproached(Rectangle player, Face direction)
   {    
-    return ((surround[0].intersects(clyde) && direction == Face.DOWN) ||
-        (surround[1].intersects(clyde) && direction == Face.LEFT) ||
-        (surround[2].intersects(clyde) && direction == Face.UP) ||
-        (surround[3].intersects(clyde) && direction == Face.RIGHT)) && 
+    return ((surround[0].intersects(player) && direction == Face.DOWN) ||
+        (surround[1].intersects(player) && direction == Face.LEFT) ||
+        (surround[2].intersects(player) && direction == Face.UP) ||
+        (surround[3].intersects(player) && direction == Face.RIGHT)) && 
         !isTalking;
   }
 

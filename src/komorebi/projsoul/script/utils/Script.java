@@ -6,14 +6,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
-import komorebi.projsoul.entities.NPC;
-import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.commands.abstracts.Command;
-import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxException;
-import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
-import komorebi.projsoul.script.exceptions.UndefinedKeywordException;
+import komorebi.projsoul.script.commands.keywords.Keywords;
+import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
 import komorebi.projsoul.script.read.Branch;
+import komorebi.projsoul.script.read.CodeBlock;
 import komorebi.projsoul.script.read.CommandRequest;
+import komorebi.projsoul.script.read.ErrorLog;
 import komorebi.projsoul.script.read.Request;
 import komorebi.projsoul.script.read.StringReader;
 
@@ -21,11 +20,13 @@ public class Script {
   private Branch main;
   private String name;
 
-  private HashMap<String, String[]> commands;
+  private HashMap<String, CodeBlock[]> commands;
+  private ErrorLog errorLog;
   
-  protected Script(File scriptLocation)
+  public Script(File scriptLocation)
   {
     main = new Branch("main");
+    errorLog = new ErrorLog();
     
     try {
       BufferedReader read = new BufferedReader(
@@ -34,16 +35,16 @@ public class Script {
       String wholeScript = readEntireFile(read);
       
       if (!wholeScript.startsWith("branch"))
-        throw new InvalidScriptSyntaxException("Every command "
-            + "must be contained within a branch");
+        errorLog.addError(new InvalidScriptSyntaxExceptionWithLine("Every command "
+            + "must be contained within a branch", 1));
             
       commands = splitIntoBranches(wholeScript);
       
       if (!definesMain())
-        throw new InvalidScriptSyntaxException("Script " + 
-            scriptLocation.getName() + " must define a main branch");
+        errorLog.addError(new InvalidScriptSyntaxExceptionWithLine("Script " + 
+            scriptLocation.getName() + " must define a main branch", 1));
       
-      String[] mainBranch = commands.get("main");
+      CodeBlock[] mainBranch = commands.get("main");
       readInto(main, mainBranch);
       
       read.close();
@@ -60,7 +61,7 @@ public class Script {
     return name;
   }
   
-  private HashMap<String, String[]> splitIntoBranches(String script)
+  private HashMap<String, CodeBlock[]> splitIntoBranches(String script)
   {    
     StringReader reader = new StringReader(script);
     reader.read();
@@ -90,38 +91,48 @@ public class Script {
     }
   }
 
-  public void readInto(Branch branch, String[] commands)
-  {    
-    for (String command: commands)
+  public void readInto(Branch branch, CodeBlock[] commands)
+  {        
+    for (CodeBlock command: commands)
     {
-      readCommand(branch, command);
+      try {
+        readCommand(branch, command);
+      } catch (InvalidScriptSyntaxExceptionWithLine e) {
+        errorLog.addError(e);
+      }
     }
   }
 
-  private void readCommand(Branch branch, String command)
+  private void readCommand(Branch branch, CodeBlock block) throws InvalidScriptSyntaxExceptionWithLine
   {
+    String command = block.getCode();
+    
     boolean instructionAppliesToPlayer = appliesToPlayer(command);
     if (instructionAppliesToPlayer)
       command = removeFirstCharOf(command);
 
-    if (ScriptUtils.keywordExists(firstWordOf(command))) {
+    if (Keywords.keywordExists(firstWordOf(command))) {
       
       String keyword = firstWordOf(command);
       
       Command task = 
-          ScriptUtils.createNewInstanceWithKeyword(keyword);
+          Keywords.createNewInstanceWithKeyword(keyword);
       
       command = removeKeyword(command);
       
-      task.interpret(command);
-      task.setApplicableToPlayer(instructionAppliesToPlayer);
-      
-      handleRequests(task.askForRequests());
-      branch.addTask(task);
+      try {        
+        task.interpret(command, block.getStartingLine());
+        task.setApplicableToPlayer(instructionAppliesToPlayer);
+        
+        handleRequests(task.askForRequests());
+        branch.addTask(task);
+      } catch (InvalidScriptSyntaxExceptionWithLine e) {
+        errorLog.addError(e);
+      }
       
     } else {
-      throw new InvalidScriptSyntaxException("No such keyword as " + 
-          firstWordOf(command));
+      throw new InvalidScriptSyntaxExceptionWithLine("No such keyword as " + 
+          firstWordOf(command), block.getStartingLine());
     }
   }
 
@@ -160,12 +171,22 @@ public class Script {
     for (Request request: requests)
     {
       if (CommandRequest.isInstance(request))
-        handleCommandRequests((CommandRequest) request);
+        try {
+          handleCommandRequests((CommandRequest) request);
+        } catch (InvalidScriptSyntaxExceptionWithLine e) {
+          errorLog.addError(e);
+        }
     }
   }
   
   private void handleCommandRequests(CommandRequest request)
+    throws InvalidScriptSyntaxExceptionWithLine
   {
+    if (!commands.containsKey(request.getBranchName()))
+      throw new InvalidScriptSyntaxExceptionWithLine("The ask option " +  
+          request.getBranchName() + " does not define a corresponding "
+              + "branch.", request.getLine());
+    
     readInto(request.getBranchReference(), 
         commands.get(request.getBranchName()));  
   }
@@ -178,5 +199,10 @@ public class Script {
   public Branch main()
   {
     return main;
+  }
+  
+  public String getErrors()
+  {
+    return errorLog.getErrors();
   }
 }

@@ -76,10 +76,6 @@ public class Map implements Playable{
   public static boolean isHitBox;
   public static boolean isGrid;
 
-
-  private int debugCount;
-
-
   /**
    * Creates a new Map of the dimensions col x row <br>
    * Really shouldn't be used anymore
@@ -260,11 +256,11 @@ public class Map implements Playable{
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
     }
-    
+
     startNPCs();
 
   }
-  
+
   private void startNPCs()
   {
     for (NPC npc: npcs)
@@ -298,26 +294,26 @@ public class Map implements Playable{
    */
   @Override
   public void update() {
-
     play.update();
-
+    
     for (Enemy enemy: enemies)
     { 
       enemy.update();
     }
 
     for (NPC npc: npcs) {
-      if (npc != null) 
-      {
-        npc.update();
 
-        if (npc.isApproached(play.getArea(), play.getDirection())
-            && KeyHandler.firstKeyClick(Key.C))
-        {
-          npc.turn(play.getDirection().opposite());
-          npc.approach();
-        }
+      npc.update();
+      
+      if (npc.isApproached(play.getArea(), play.getDirection())
+          && KeyHandler.firstKeyClick(Key.C))
+      {        
+        System.out.println("Hi");
+        
+        npc.turn(play.getDirection().opposite());
+        npc.approach();
       }
+
     }
 
     for (AreaScript script: scripts)
@@ -859,13 +855,13 @@ public class Map implements Playable{
   public String getTitle(){
     return title;
   }
-  
+
   public boolean willIntersectNPCs(Rectangle future)
   {
     for (NPC npc: npcs)
       if (future.intersects(npc.getArea()))
         return true;
-    
+
     return false;
   }
 

@@ -2,15 +2,14 @@ package komorebi.projsoul.script.tasks;
 
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.Person.ActionState;
-import komorebi.projsoul.script.Lock;
 
 public class MovementTask extends TimedTask {
 
   private float dx, dy;
   
   public MovementTask(ActionState action, Precedence precedence, int frames,
-      Face direction, Lock lock) {
-    super(action, precedence, frames, lock);
+      Face direction) {
+    super(action, precedence, frames);
     
     decrement = action == ActionState.JOGGING? 2: 1;
     determineSpeeds(direction, decrement);

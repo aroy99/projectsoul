@@ -2,26 +2,23 @@ package komorebi.projsoul.script.commands;
 
 import komorebi.projsoul.script.Fader;
 import komorebi.projsoul.script.commands.abstracts.CommandNoSubject;
-import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxException;
+import komorebi.projsoul.script.commands.keywords.Keyword;
+import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
+import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
 
 public class FadeInCommand extends CommandNoSubject {
-
-  public static String keyword()
-  {
-    return "fadein";
-  }
   
   @Override
-  public void interpret(String data) throws InvalidScriptSyntaxException {
+  public void interpret(String data, int line) throws InvalidScriptSyntaxExceptionWithLine {
     if (!data.isEmpty())
-      throw new InvalidScriptSyntaxException("The fadein command "
-          + "takes no arguments");
+      throw new InvalidScriptSyntaxExceptionWithLine("The fadein command "
+          + "takes no arguments", line);
     
   }
 
   @Override
   public void execute() {
-    Fader.fadeIn(lock);
+    Fader.fadeIn();
     
   }
 

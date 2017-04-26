@@ -6,21 +6,22 @@ package komorebi.projsoul.states;
 
 import java.io.BufferedReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Main;
-import komorebi.projsoul.entities.NPC;
+import komorebi.projsoul.engine.ThreadHandler;
+import komorebi.projsoul.engine.ThreadHandler.TrackableThread;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Item;
 import komorebi.projsoul.gameplay.Item.Items;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.Fader;
-import komorebi.projsoul.script.Lock;
+import komorebi.projsoul.script.text.DialogueBox;
 import komorebi.projsoul.script.text.EarthboundFont;
-import komorebi.projsoul.script.text.SignHandler;
 import komorebi.projsoul.script.text.SpeechHandler;
 import komorebi.projsoul.script.text.TextHandler;
 import komorebi.projsoul.script.text.Word;
@@ -34,14 +35,8 @@ import komorebi.projsoul.script.text.Word;
 public class Game extends State{
 
   public ArrayList<Item> items = new ArrayList<Item>();
-
-  public boolean[] booleans;
-
-  private boolean hasText, hasChoice;
-  private int pickIndex;
-  private int maxOpt;
-
-  private SpeechHandler speaker;
+  
+  private DialogueBox dialogue;
 
   private TextHandler currMap;
 
@@ -54,7 +49,7 @@ public class Game extends State{
 
   public int framesToGo;
   public boolean isPaused;
-  public Lock lock;
+  public TrackableThread waiting;
 
   public static String testLoc;
 
@@ -70,15 +65,13 @@ public class Game extends State{
     currMap = new TextHandler();
     currMap.write(map.getTitle(), 5, Main.HEIGHT-13);
 
-    booleans = new boolean[256];
-
     confidence = 0;
     money = 15;
 
     hud = new HUD(confidence); //TODO WHY KEVIN
     death = new Death();
 
-
+    dialogue = new DialogueBox();
 
   }
 
@@ -88,74 +81,24 @@ public class Game extends State{
    * @see komorebi.clyde.states.State#getInput()
    */
   @Override
-  public void getInput() {    
-    if (speaker != null && KeyHandler.keyClick(Key.C))
+  public void getInput() {      
+    
+    if (dialogue.hasDialogue() && KeyHandler.firstKeyClick(Key.C))
     {
-      if (speaker.isWaitingOnParagraph())
-      {
-        speaker.nextParagraph();
-      } else {
-        if (!speaker.alreadyAsked())
-        {
-          speaker.skipScroll();
-        } else
-        {
-          if (hasText)
-          {
-            speaker.clear();
-
-            if (hasChoice) {
-
-              speaker.branch(pickIndex);
-            }
-
-            hasChoice=false;
-            hasText=false;
-
-            if (speaker instanceof SignHandler)
-            {
-              SignHandler sign = (SignHandler) speaker;
-              sign.disengage();
-            }
-
-            speaker.releaseLocks();
-            speaker = null;
-          }
-        }
-      }
+      dialogue.next();
     } 
-
-
-
-
 
     //TODO Remove map debug features
     map.getInput();
 
-    if (KeyHandler.keyClick(Key.LEFT))
+    if (KeyHandler.keyClick(Key.LEFT) && dialogue.hasQuestion())
     {
-      if (hasChoice && KeyHandler.keyDown(Key.LEFT))
-      {
-        pickIndex--;
-        if (pickIndex < 1) {
-          pickIndex = maxOpt;
-        }
-        speaker.setPickerIndex(pickIndex);
-        //choosesLeft=!choosesLeft;
-
-      }  
+      dialogue.movePickerLeft();
     }
 
-    if (KeyHandler.keyClick(Key.RIGHT))
+    if (KeyHandler.keyClick(Key.RIGHT) && dialogue.hasQuestion())
     {
-      if (hasChoice && KeyHandler.keyDown(Key.RIGHT))
-      {
-        pickIndex++;
-        if (pickIndex > maxOpt) {
-          pickIndex = 1;
-        }
-        speaker.setPickerIndex(pickIndex);
-      }
+      dialogue.movePickerRight();
     } 
 
     if ((KeyHandler.keyDown(Key.LCTRL) || KeyHandler.keyDown(Key.RCTRL)) &&
@@ -188,7 +131,7 @@ public class Game extends State{
       if (framesToGo<=0)
       {
         isPaused = false;
-        lock.resumeThread();
+        waiting.unlock();
       }
     }
 
@@ -213,6 +156,12 @@ public class Game extends State{
         displayY--;
       }
     }
+    
+    if (dialogue.hasDialogue())
+    {
+      dialogue.render();
+    }
+    
     Fader.render();
 
   }
@@ -232,8 +181,7 @@ public class Game extends State{
 
   public void setSpeaker(SpeechHandler talk)
   {
-    this.speaker = talk;
-    this.hasText = true;
+    dialogue.setSpeaker(talk);
   }
 
   /**
@@ -243,13 +191,13 @@ public class Game extends State{
    * @param lock The script execution whose thread will be locked while the game
    *        is paused
    */
-  public void pause(int frames, Lock lock)
+  public void pause(int frames)
   {
     framesToGo = frames;
     isPaused = true;
 
-    this.lock = lock;
-    lock.pauseThread();
+    this.waiting = ThreadHandler.currentThread();
+    ThreadHandler.lockCurrentThread();
 
   }
 
@@ -259,21 +207,8 @@ public class Game extends State{
    */
   public void setAsker(SpeechHandler talk)
   {
-    this.speaker = talk;
-    this.hasText = true;
-    this.hasChoice = true;
-    //this.choosesLeft = true;
-
-    pickIndex = 1;
+    dialogue.setAsker(talk);
   }
-
-  public void setMaxOptions(int i)
-  {
-    maxOpt = i;
-  }
-
- 
-
 
   public void receiveItem(Items item)
   {
@@ -312,11 +247,11 @@ public class Game extends State{
 
   public void setFlag(int index, boolean b)
   {
-    booleans[index] = b;
+    //booleans[index] = b;
   }
 
   public boolean checkFlag(int index)
   {
-    return booleans[index];
+    //return booleans[index];
   }
 }

@@ -1,5 +1,6 @@
 package komorebi.projsoul.script.execute;
 
+import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.script.read.Branch;
 
 public class LoopableExecution extends Execution {
@@ -11,7 +12,7 @@ public class LoopableExecution extends Execution {
   @Override
   public void run()
   {
-    while (true)
+    while (!ThreadHandler.currentThread().isTerminated())
     {
       super.run();
     }

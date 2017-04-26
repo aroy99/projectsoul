@@ -1,14 +1,14 @@
 package komorebi.projsoul.script.exceptions;
 
-public class InvalidScriptSyntaxException extends RuntimeException {
+public class InvalidScriptSyntaxException extends Exception {
 
   /**
    * 
    */
-  private static final long serialVersionUID = -7881015000718915134L;
-
-  public InvalidScriptSyntaxException(String description)
+  private static final long serialVersionUID = 1L;
+  
+  public InvalidScriptSyntaxException(String message)
   {
-    super(description);
+    super(message);
   }
 }

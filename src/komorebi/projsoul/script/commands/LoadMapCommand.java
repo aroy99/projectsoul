@@ -4,25 +4,22 @@ import java.io.File;
 
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.commands.abstracts.CommandNoSubject;
-import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxException;
+import komorebi.projsoul.script.commands.keywords.Keyword;
+import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
+import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
 import komorebi.projsoul.states.Game;
 
 public class LoadMapCommand extends CommandNoSubject {
 
   private String map;
-  
-  public static String keyword()
-  {
-    return "load";
-  }
-  
+
   @Override
-  public void interpret(String data) throws InvalidScriptSyntaxException
+  public void interpret(String data, int line) throws InvalidScriptSyntaxExceptionWithLine
   {
     map = data + ".map";
     
     if (!mapExists(map))
-      throw new InvalidScriptSyntaxException(map + " cannot be found"); 
+      throw new InvalidScriptSyntaxExceptionWithLine(map + " cannot be found", line); 
   }
 
   @Override

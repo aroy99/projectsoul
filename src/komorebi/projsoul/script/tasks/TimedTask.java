@@ -1,15 +1,12 @@
 package komorebi.projsoul.script.tasks;
 
 import komorebi.projsoul.entities.Person.ActionState;
-import komorebi.projsoul.script.Lock;
-import komorebi.projsoul.script.tasks.Task.Precedence;
 
 public class TimedTask extends Task {
     
-  public TimedTask(ActionState action, Precedence precedence, int frames, 
-      Lock lock)
+  public TimedTask(ActionState action, Precedence precedence, int frames)
   {
-    super(action, precedence, lock);
+    super(action, precedence);
     framesRemaining = frames;
   }
   
@@ -27,16 +24,13 @@ public class TimedTask extends Task {
     }
   }
   
+  public int ticksLeft()
+  {
+    return framesRemaining;
+  }
+  
   public ActionState action()
   {
     return action;
-  }
-  
-  public void lock()
-  {
-    lock.pauseThread();
-  }
-  
-
-  
+  } 
 }

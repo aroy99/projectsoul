@@ -3,19 +3,16 @@ package komorebi.projsoul.script.commands;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.Person;
 import komorebi.projsoul.script.commands.abstracts.CommandOnAnyPerson;
-import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxException;
+import komorebi.projsoul.script.commands.keywords.Keyword;
+import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
+import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
 
 public class TurnCommand extends CommandOnAnyPerson {
 
   private Face[] directions;
   
-  public static String keyword()
-  {
-    return "turn";
-  }
-  
   @Override
-  public void interpret(String data) throws InvalidScriptSyntaxException {
+  public void interpret(String data, int line) throws InvalidScriptSyntaxExceptionWithLine {
     
     String[] instructions = data.split(" ");
     directions = new Face[instructions.length];
@@ -26,8 +23,8 @@ public class TurnCommand extends CommandOnAnyPerson {
       {
         directions[i] = Face.valueOf(instructions[i].toUpperCase());
       } else
-        throw new InvalidScriptSyntaxException(instructions[i] + " is "
-            + "not a valid direction");
+        throw new InvalidScriptSyntaxExceptionWithLine(instructions[i] + " is "
+            + "not a valid direction", line);
     }
     
   }

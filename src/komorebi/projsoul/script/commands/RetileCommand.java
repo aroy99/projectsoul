@@ -2,27 +2,24 @@ package komorebi.projsoul.script.commands;
 
 import komorebi.projsoul.map.TileList;
 import komorebi.projsoul.script.commands.abstracts.CommandNoSubject;
-import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxException;
+import komorebi.projsoul.script.commands.keywords.Keyword;
+import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
+import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
 import komorebi.projsoul.states.Game;
 
 public class RetileCommand extends CommandNoSubject {
 
   private int newTile, x, y;
   
-  public static String keyword()
-  {
-    return "retile";
-  }
-  
   @Override
-  public void interpret(String data) throws InvalidScriptSyntaxException {
+  public void interpret(String data, int line) throws InvalidScriptSyntaxExceptionWithLine {
     
     String[] args = data.split(" ");
     
     try {
-      newTile = tryParse(args[0]);
-      x = tryParse(args[1]);
-      y = tryParse(args[2]);
+      newTile = tryParse(args[0], line);
+      x = tryParse(args[1], line);
+      y = tryParse(args[2], line);
     } catch (Exception e)
     {
       throw e;
@@ -36,14 +33,14 @@ public class RetileCommand extends CommandNoSubject {
 
   }
   
-  private int tryParse(String number) throws InvalidScriptSyntaxException
+  private int tryParse(String number, int line) throws InvalidScriptSyntaxExceptionWithLine
   {
     try {
       return Integer.parseInt(number);
     } catch (NumberFormatException e)
     {
-      throw new InvalidScriptSyntaxException(number + " cannot be "
-          + "resolved to an integer");
+      throw new InvalidScriptSyntaxExceptionWithLine(number + " cannot be "
+          + "resolved to an integer", line);
     }
   }
 

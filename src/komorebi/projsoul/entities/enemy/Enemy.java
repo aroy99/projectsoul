@@ -175,7 +175,7 @@ public abstract class Enemy extends Entity {
   private void inflictPain(int attack, float dx, float dy, Characters c)
   {
     health -= attack - (defense/2);
-    hitBy[c.getNumber()] = true;
+    hitBy[c.ordinal()] = true;
     
     //Kills the enemy
     if (health<=0)

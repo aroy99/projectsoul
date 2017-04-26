@@ -3,19 +3,24 @@ package komorebi.projsoul.script.read;
 public class CommandReader {
   
   private String[] lines;
-  private String[] commands;
+  private CodeBlock[] commands;
+  
+  private int startLine;
     
-  public CommandReader(String string)
+  public CommandReader(CodeBlock code)
   {
-    lines = string.split("\n");
+    lines = code.getCode().split("\n");
+    startLine = code.getStartingLine();
   }
   
   public void read()
   { 
-    String[] temp = new String[lines.length];
+    CodeBlock[] temp = new CodeBlock[lines.length];
     
     int commandNo = 0;
-    String prevCommand = "";
+    int lineNo = startLine;
+    
+    CodeBlock prevCommand = new CodeBlock(lineNo);
     
     boolean isNewCommand = false;
     
@@ -23,33 +28,34 @@ public class CommandReader {
     {       
       isNewCommand = !line.startsWith("else");
       
-      if (isNewCommand && prevCommand != "")
+      if (isNewCommand && prevCommand.getCode() != "")
       {
         temp[commandNo] = prevCommand;
         commandNo++;
-        prevCommand = "";
+        prevCommand = new CodeBlock(lineNo);
       } else if (!isNewCommand)
       {
-        prevCommand += "\n";
+        prevCommand.append("\n");
       }
       
-      prevCommand += line;
+      prevCommand.append(line);
+      lineNo++;
     }
     
-    if (prevCommand != "")
+    if (prevCommand.getCode() != "")
         temp[commandNo] = prevCommand;
     
     copyToCommands(temp);
   }
   
-  public String[] getCommands()
+  public CodeBlock[] getCommands()
   {
     return commands;
   }
   
-  private void copyToCommands(String[] temp)
+  private void copyToCommands(CodeBlock[] temp)
   {
-    commands = new String[numberOfCommandsIn(temp)];
+    commands = new CodeBlock[numberOfCommandsIn(temp)];
        
     for (int i = 0; i < commands.length; i++)
     {
@@ -58,12 +64,12 @@ public class CommandReader {
 
   }
   
-  private int numberOfCommandsIn(String[] temp)
+  private int numberOfCommandsIn(CodeBlock[] temp)
   {
     
     for (int i = 0; i < temp.length; i++)
     {
-      if (temp[i] == null || temp[i] == "")
+      if (temp[i] == null || temp[i].getCode() == "")
         return i;
     }
     

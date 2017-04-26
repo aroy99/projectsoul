@@ -1,7 +1,8 @@
 package komorebi.projsoul.script.tasks;
 
+import komorebi.projsoul.engine.ThreadHandler;
+import komorebi.projsoul.engine.ThreadHandler.TrackableThread;
 import komorebi.projsoul.entities.Person.ActionState;
-import komorebi.projsoul.script.Lock;
 
 public class Task {
 
@@ -9,16 +10,17 @@ public class Task {
     BACKGROUND, FOREGROUND;
   }
   
-  public Task(ActionState action, Precedence precedence, Lock lock)
+  public Task(ActionState action, Precedence precedence)
   {
     this.action = action;
     this.precedence = precedence;
-    this.lock = lock;
+    
+    waiting = ThreadHandler.currentThread();
   }
   
-  protected Lock lock;
   protected boolean finished;
-
+  private TrackableThread waiting;
+  
   protected ActionState action;
   protected Precedence precedence;
   
@@ -30,7 +32,7 @@ public class Task {
   protected void finish()
   {
     finished = true;
-    lock.resumeThread();
+    waiting.unlock();
   }
   
   public boolean takesPrecedenceOver(Task task)

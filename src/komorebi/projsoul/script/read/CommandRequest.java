@@ -5,15 +5,23 @@ public class CommandRequest extends Request {
   private Branch branch;
   private String branchName;
   
-  public CommandRequest(Branch branch)
+  private int line;
+  
+  public CommandRequest(Branch branch, int line)
   {    
     this.branch = branch;
     this.branchName = branch.getName();
+    this.line = line;
   }
   
   public Branch getBranchReference()
   {
     return branch;
+  }
+  
+  public int getLine()
+  {
+    return line;
   }
   
   public String getBranchName()

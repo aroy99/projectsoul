@@ -2,17 +2,14 @@ package komorebi.projsoul.script.commands;
 
 import komorebi.projsoul.script.IfThenPair;
 import komorebi.projsoul.script.commands.abstracts.CommandNoSubject;
-import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxException;
+import komorebi.projsoul.script.commands.keywords.Keyword;
+import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
+import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
 
 public class IfElseCommand extends CommandNoSubject {
 
   private IfThenPair[] ifThen;
   
-  public static String keyword()
-  {
-    return "if";
-  }
-
   @Override
   public void execute() {
     
@@ -20,7 +17,7 @@ public class IfElseCommand extends CommandNoSubject {
   }
 
   @Override
-  public void interpret(String data) throws InvalidScriptSyntaxException {
+  public void interpret(String data, int line) throws InvalidScriptSyntaxExceptionWithLine {
     String[] lines = data.split("\n");
     
     

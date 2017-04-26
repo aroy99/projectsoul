@@ -5,7 +5,6 @@ package komorebi.projsoul.script.execute;
 
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.player.Player;
-import komorebi.projsoul.script.Lock;
 import komorebi.projsoul.script.commands.abstracts.Command;
 import komorebi.projsoul.script.commands.abstracts.CommandNoSubject;
 import komorebi.projsoul.script.commands.abstracts.CommandOnAnyPerson;
@@ -51,7 +50,6 @@ public class Execution implements Runnable {
   
   protected NPC npc;
   private Player play;
-  private Lock lock = new Lock();
   private ScriptType scriptType;
   
   /**
@@ -62,7 +60,8 @@ public class Execution implements Runnable {
   public Execution(Branch branch)
   {
     this.branch = branch;
-    scriptType = ScriptType.fromIsWalking(this instanceof LoopableExecution);
+    scriptType = ScriptType.fromIsWalking(this 
+        instanceof LoopableExecution);
   }
   
   public void setOnWhom(NPC npc, Player play)
@@ -78,11 +77,11 @@ public class Execution implements Runnable {
 
   @Override
   public void run() {
-        
+                
     for (Command command: branch)
-    {      
-      command.provideLock(lock);
-            
+    {                              
+      System.out.println("Running " + command.getClass().getSimpleName());
+      
       if (command instanceof CommandNoSubject)
         ((CommandNoSubject) command).execute();
       else if (command instanceof CommandOnAnyPerson)

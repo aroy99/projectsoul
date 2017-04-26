@@ -1,6 +1,6 @@
 package komorebi.projsoul.script.exceptions;
 
-public class UndefinedKeywordException extends Exception {
+public class UndefinedKeywordException extends RuntimeException {
 
   /**
    * 

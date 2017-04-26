@@ -2,20 +2,17 @@ package komorebi.projsoul.script.commands;
 
 import komorebi.projsoul.entities.player.Player;
 import komorebi.projsoul.script.commands.abstracts.CommandOnPlayerOnly;
-import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxException;
+import komorebi.projsoul.script.commands.keywords.Keyword;
+import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
+import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
 
 public class LockPlayerCommand extends CommandOnPlayerOnly {
-
-  public static String keyword()
-  {
-    return "lock";
-  }
   
   @Override
-  public void interpret(String data) throws InvalidScriptSyntaxException {
+  public void interpret(String data, int line) throws InvalidScriptSyntaxExceptionWithLine {
     if (!data.isEmpty())
-      throw new InvalidScriptSyntaxException("The lock command "
-          + "takes no arguments");
+      throw new InvalidScriptSyntaxExceptionWithLine("The lock command "
+          + "takes no arguments", line);
     
   }
 

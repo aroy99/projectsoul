@@ -1,5 +1,7 @@
 branch main
 lock
 align
-say Hello!
+say Let's fadeout.
+fadeout
+fadein
 unlock

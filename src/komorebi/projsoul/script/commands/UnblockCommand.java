@@ -1,26 +1,25 @@
 package komorebi.projsoul.script.commands;
 
 import komorebi.projsoul.script.commands.abstracts.CommandNoSubject;
-import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxException;
+import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
 import komorebi.projsoul.states.Game;
 
 public class UnblockCommand extends CommandNoSubject {
   
   private int x, y;
-  
-  public static String keyword()
-  {
-    return "unblock";
-  }
 
   @Override
-  public void interpret(String data) throws InvalidScriptSyntaxException {
+  public void interpret(String data, int line) throws InvalidScriptSyntaxExceptionWithLine {
     
     String[] nums = data.split(" ");
     
+    if (nums.length != 2)
+      throw new InvalidScriptSyntaxExceptionWithLine("The block command"
+          + " takes only two arguments (an x, y coordinate)", line);
+    
     try {
-      x = tryParse(nums[0]);
-      y = tryParse(nums[1]);
+      x = tryParse(nums[0], line);
+      y = tryParse(nums[1], line);
     } catch (Exception e)
     {
       throw e;
@@ -33,14 +32,14 @@ public class UnblockCommand extends CommandNoSubject {
     
   }
   
-  private int tryParse(String number) throws InvalidScriptSyntaxException
+  private int tryParse(String number, int line) throws InvalidScriptSyntaxExceptionWithLine
   {
     try {
       return Integer.parseInt(number);
     } catch (NumberFormatException e)
     {
-      throw new InvalidScriptSyntaxException(number + " cannot be "
-          + "resolved to an integer");
+      throw new InvalidScriptSyntaxExceptionWithLine(number + " cannot be "
+          + "resolved to an integer", line);
     }
   }
 

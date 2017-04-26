@@ -4,7 +4,6 @@
 package komorebi.projsoul.script.text;
 
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.script.Lock;
 
 /**
  * 
@@ -12,9 +11,8 @@ import komorebi.projsoul.script.Lock;
  */
 public class SpeechHandler extends TextHandler {
 
-  private boolean hasChoice;
-  private int pickerIndex;
   private boolean alreadyAsked;
+  private boolean hasChoice;
   
   private int scrollIndex;
   private int buffer;
@@ -27,9 +25,7 @@ public class SpeechHandler extends TextHandler {
 
   private int dotCount;
   private boolean dots;
-  
-  private Lock lock;
-  
+    
   private String[] options;
   
   private String answerToQuestion;
@@ -63,44 +59,31 @@ public class SpeechHandler extends TextHandler {
     scrolling = b;
   }
 
+  public void setAskMode(boolean askMode)
+  {
+    hasChoice = askMode;
+  }
   /**
    * Renders the text and speech box on screen
    */
   public void render()
   {
-    
     if (!words.isEmpty())
     {
-      //Speech box
       Draw.rect(15, 15, 220, 59, 0, 0, 220, 59, 6);
     }
-
+    
     if (hasChoice)
     {
       if (!alreadyAsked)
       {
         scrollingRender(words.get(0));
-      } else {
-        
+      } else {        
         for (Word word: words)
         {
           super.render(word);
         }
-        
-        int x = 0, y= 0;
-        switch (pickerIndex)
-        {
-          case 1: x = 20; y = 40; break;
-          case 2: x = 90; y = 40; break;
-          case 3: x = 20; y = 22; break;
-          case 4: x = 90; y = 22; break;
-          default: break;
-        }
-
-        Draw.rect(x, y, 8, 8, 0, 0, 8, 8, 7); //Draws the "picker" arrow
       }
-
-
     } else if (!words.isEmpty())
     { 
       scrollingRender(words.get(0));
@@ -246,27 +229,6 @@ public class SpeechHandler extends TextHandler {
 
 
   }
- 
-
-  /**
-   * Draws the arrow pointing to one of two text-based choices
-   * @param option Which option the arrow should correspond to, where 1 represents the left option and 2 represents the right option
-   */
-  public void drawPicker(int option)
-  {
-    pickerIndex = option;
-    hasChoice = true;
-  }
-
-  public int getPickerIndex()
-  {
-    return pickerIndex;
-  }
-
-  public void setPickerIndex(int option)
-  {
-    pickerIndex = option;
-  }
 
   /**
    * Clears all data in the object
@@ -348,36 +310,18 @@ public class SpeechHandler extends TextHandler {
     options = args;
   }
   
-  public void setLockAndPause(Lock lock)
+  public int maxOptionIndex()
   {
-    this.lock = lock;
-    lock.pauseThread();
+    return options.length - 1;
   }
   
   public void branch(int i)
   {
     answerToQuestion = options[i];
-    this.lock.resumeThread();
   }
   
   public String getAnswer()
   {
     return answerToQuestion;
   }
-  
-  public void setAndLock(Lock lock)
-  {    
-   this.lock = lock; 
-   lock.pauseThread();
-  }
-  
-  public void releaseLocks()
-  {
-    if (lock!=null)
-    {
-      lock.resumeThread();
-      lock = null;
-    }
-  }
-
 }

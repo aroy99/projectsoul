@@ -9,6 +9,7 @@ import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.player.Player;
 import komorebi.projsoul.script.execute.Execution;
 import komorebi.projsoul.script.execute.LoopableExecution;
+import komorebi.projsoul.script.execute.SubExecution;
 import komorebi.projsoul.script.read.Branch;
 import komorebi.projsoul.script.tasks.Task.Precedence;
 import komorebi.projsoul.script.utils.ScriptDatabase;
@@ -20,28 +21,107 @@ import komorebi.projsoul.script.utils.ScriptDatabase;
  */
 public class ThreadHandler {
     
-  private static ArrayList<TrackableThread> threads = new
+  private static ArrayList<TrackableThread> background = new
       ArrayList<TrackableThread>();
   
   public static class TrackableThread extends Thread {
     private Precedence precedence;
+    private boolean terminated;
+    
+    private Lock lock;
     
     protected TrackableThread(Execution ex, Precedence prec)
     {
       super(ex);
       precedence = prec;
-      threads.add(this);
+      
+      if (precedence == Precedence.BACKGROUND)
+        background.add(this);
+      
+      this.lock = new Lock();
     }
     
     public Precedence precedence()
     {
       return precedence;
     }
+    
+    public void terminate()
+    {
+      terminated = true;
+    }
+    
+    public boolean isTerminated()
+    {
+      return terminated;
+    }
+    
+    public void lock()
+    {
+      lock.lock(1);
+    }
+    
+    public void multiLock(int keys)
+    {
+      lock.lock(keys);
+    }
+    
+    public void unlock()
+    {
+      lock.unlock();
+    }
+  }
+  
+  private static class Lock {
+    
+    private int keys;
+    
+    /**
+     * Pauses the current thread
+     */
+    public void lock(int keys)
+    {          
+      synchronized (this)
+      {
+        this.keys = keys;
+        
+        try
+        {
+          wait();
+        } catch (InterruptedException e)
+        {
+          e.printStackTrace();
+        }
+      }
+    }
+    
+    /**
+     * Resumes the thread originally paused by this lock
+     */
+    public void unlock()
+    {          
+      synchronized (this)
+      {
+        keys--;
+        
+        if (keys <= 0)
+          notifyAll();
+      }
+    }
+  }
+
+  
+  public static void endBackgroundThreads()
+  {
+    for (TrackableThread thread: background)
+    {
+      thread.terminate();
+    }
   }
   
   public static TrackableThread currentThread()
   {
-    if (threads.contains(Thread.currentThread()))
+    if (Thread.currentThread() instanceof TrackableThread)
       return (TrackableThread) Thread.currentThread();
     
     throw new RuntimeException("Current thread is not a trackable thread");
@@ -54,11 +134,12 @@ public class ThreadHandler {
     run(ex, Precedence.FOREGROUND);    
   }
  
-  public static void newThread(Branch branch, NPC npc,
-      Player player)
+  public static void branchInto(Branch branch, NPC npc,
+      Player player, TrackableThread returnTo)
   {
-    Execution ex = new Execution(branch);
+    SubExecution ex = new SubExecution(branch, returnTo);
     ex.setOnWhom(npc, player);
+    
     run(ex, Precedence.FOREGROUND);
   }
   
@@ -73,5 +154,35 @@ public class ThreadHandler {
   private static void run(Execution ex, Precedence precedence)
   {            
     new TrackableThread(ex, precedence).start();
+  }
+  
+  private static void runOnCurrentThread(Execution ex)
+  {
+    ex.run();
+  }
+  
+  public static void executeOnCurrentThread(Branch branch, NPC npc,
+      Player player)
+  {    
+    Execution ex = new Execution(branch);
+    ex.setOnWhom(npc, player);
+    
+    runOnCurrentThread(ex);
+  }
+  
+  public static void lockCurrentThread(int keys)
+  {
+    try
+    {
+      currentThread().multiLock(keys);
+    } catch (RuntimeException e)
+    {
+      throw new RuntimeException("Cannot pause the main thread");
+    }
+  }
+  
+  public static void lockCurrentThread()
+  {
+    lockCurrentThread(1);
   }
 }

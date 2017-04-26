@@ -4,8 +4,8 @@ import java.util.HashMap;
 
 public class StringReader {
 
-  private HashMap<String, String> branches;
-  private HashMap<String, String[]> commands;
+  private HashMap<String, CodeBlock> branches;
+  private HashMap<String, CodeBlock[]> commands;
   private CommandReader read;
 
   private String[] lines;
@@ -14,9 +14,9 @@ public class StringReader {
 
   public StringReader(String string)
   {
-    branches = new HashMap<String, String>();
-    commands = new HashMap<String, String[]>();
-    
+    branches = new HashMap<String, CodeBlock>();
+    commands = new HashMap<String, CodeBlock[]>();
+
     lines = string.split("\n");
   }
 
@@ -29,42 +29,51 @@ public class StringReader {
 
     readBranches();
   }
-  
+
   private void readBranches()
   {
     for (String branchName: branches.keySet())
     {
       read = new CommandReader(branches.get(branchName));
       read.read();
-      
+
       commands.put(branchName, read.getCommands());
     }
   }
-  
-  public HashMap<String, String[]> getCommands()
+
+  public HashMap<String, CodeBlock[]> getCommands()
   {
     return commands;
   }
 
   private void nextBranch()
-  {    
+  {        
     String declaration = currentLine();
     String branchName = getBranchName(declaration);
-    String commands = "";
-    
+
     next();
-        
+
+    CodeBlock code = new CodeBlock(line + 1);
+
+    boolean first = true;
+
     while (!declaresNewBranch(currentLine()))
-    {
-      commands += currentLine() + "\n";
-                 
+    {       
+      if (!first && !currentLine().trim().isEmpty())
+        code.appendLine("");
+
+      if (!currentLine().trim().isEmpty())
+        code.append(currentLine());
+
       if (!hasNext())
         break;
       else
         next();
-    }
-    
-    branches.put(branchName, commands);
+
+      first = false;
+    }    
+
+    branches.put(branchName, code);
   }
 
   private void next()

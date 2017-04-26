@@ -1,6 +1,6 @@
 package komorebi.projsoul.script.exceptions;
 
-public class UndefinedConstructorException extends Exception {
+public class UndefinedConstructorException extends RuntimeException {
 
   /**
    * 

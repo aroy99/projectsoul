@@ -1,27 +1,29 @@
 package komorebi.projsoul.script.commands;
 
 import komorebi.projsoul.script.commands.abstracts.CommandNoSubject;
-import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxException;
+import komorebi.projsoul.script.commands.keywords.Keyword;
+import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
+import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
 import komorebi.projsoul.states.Game;
 
 public class BlockCommand extends CommandNoSubject {
 
   private int x, y;
   
-  public static String keyword()
-  {
-    return "block";
-  }
-  
   @Override
-  public void interpret(String data) throws InvalidScriptSyntaxException {
+  public void interpret(String data, int line) 
+      throws InvalidScriptSyntaxExceptionWithLine {
     String[] nums = data.split(" ");
+    
+    if (nums.length != 2)
+      throw new InvalidScriptSyntaxExceptionWithLine("The block command"
+          + " takes only two arguments (an x, y coordinate)", line);
     
     try
     {
-      x = tryParse(nums[0]);
-      y = tryParse(nums[1]);
-    } catch (Exception e)
+      x = tryParse(nums[0], line);
+      y = tryParse(nums[1], line);
+    } catch (InvalidScriptSyntaxExceptionWithLine e)
     {
       throw e;
     }
@@ -32,14 +34,14 @@ public class BlockCommand extends CommandNoSubject {
     Game.getMap().setCollision(x, y, false);
   }
   
-  private int tryParse(String number) throws InvalidScriptSyntaxException
+  private int tryParse(String number, int line) throws InvalidScriptSyntaxExceptionWithLine
   {
     try {
       return Integer.parseInt(number);
     } catch (NumberFormatException e)
     {
-      throw new InvalidScriptSyntaxException(number + " cannot be "
-          + "resolved to an integer");
+      throw new InvalidScriptSyntaxExceptionWithLine(number + " cannot be "
+          + "resolved to an integer", line);
     }
   }
 

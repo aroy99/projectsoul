@@ -45,7 +45,8 @@ public class Animation {
    * @param id The Texture ID
    * @param loop Whether the animation should play on loop
    */
-  public Animation(int f, int t, float sx, float sy, int id, boolean loop){
+  public Animation(int f, int t, float sx, float sy, int id, 
+      boolean loop){
 
     onlyOnce = !loop;
 
@@ -67,8 +68,9 @@ public class Animation {
       this.sx[i] = sx;
       this.sy[i] = sy;
     }
-
   }
+  
+  
 
 
 
@@ -624,5 +626,18 @@ public class Animation {
    */
   public void setPausedFrame(int tx, int ty, int sx, int sy){
     setPausedFrame(tx,ty,sx,sy,0,false);
+  }
+  
+  public Animation duplicate()
+  {
+    Animation duplicate = new Animation(frames, time, texID);
+    
+    for (int i = 0; i < frames; i++)
+    {
+      duplicate.add(texx[i], texy[i], sx[i], sy[i], offX[i],
+          offY[i], rot[i], flipped[i]);
+    }
+    
+    return duplicate;
   }
 }
