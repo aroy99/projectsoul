@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.player.Player;
+import komorebi.projsoul.script.commands.abstracts.Command;
 import komorebi.projsoul.script.execute.Execution;
 import komorebi.projsoul.script.execute.LoopableExecution;
 import komorebi.projsoul.script.execute.SubExecution;
@@ -159,6 +160,15 @@ public class ThreadHandler {
   private static void runOnCurrentThread(Execution ex)
   {
     ex.run();
+  }
+  
+  public static void executeOnCurrentThread(Command command, NPC npc,
+      Player player)
+  {
+    Branch branch = new Branch("");
+    branch.addTask(command);
+    
+    executeOnCurrentThread(branch, npc, player);
   }
   
   public static void executeOnCurrentThread(Branch branch, NPC npc,

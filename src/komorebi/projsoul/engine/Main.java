@@ -34,6 +34,7 @@ import org.lwjgl.opengl.DisplayMode;
 
 import komorebi.projsoul.audio.AudioHandler;
 import komorebi.projsoul.script.commands.keywords.Keywords;
+import komorebi.projsoul.script.decision.Flags;
 import komorebi.projsoul.script.utils.ScriptDatabase;
 import komorebi.projsoul.states.Game;
 
@@ -127,6 +128,8 @@ public class Main {
   
   private void initScripts()
   {
+    Flags.loadFlags();
+    
     try
     {
       Keywords.loadKeywords();
@@ -135,6 +138,7 @@ public class Main {
       e.printStackTrace();
       System.exit(1);
     }
+    
     ScriptDatabase.loadScripts();
   }
 

@@ -19,6 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import komorebi.projsoul.script.commands.keywords.Keywords;
+import komorebi.projsoul.script.decision.Flags;
 import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
 import komorebi.projsoul.script.exceptions.UndefinedKeywordException;
 import komorebi.projsoul.script.utils.Script;
@@ -64,6 +65,8 @@ public class ScriptEditor extends JFrame {
     } catch (UndefinedKeywordException | UndefinedConstructorException e) {
       e.printStackTrace();
     }
+    
+    Flags.loadFlags();
     
     File file = new File("res/scripts/debug_script");
     ScriptEditor edit = new ScriptEditor(file);

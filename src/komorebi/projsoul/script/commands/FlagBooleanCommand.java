@@ -1,42 +1,33 @@
 package komorebi.projsoul.script.commands;
 
-import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.script.commands.abstracts.CommandNoSubject;
-import komorebi.projsoul.script.commands.keywords.Keyword;
+import komorebi.projsoul.script.decision.Flag;
+import komorebi.projsoul.script.decision.Flags;
 import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
-import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
 
 public class FlagBooleanCommand extends CommandNoSubject {
 
-  private int flag;
+  private Flag flag;
 
   @Override
   public void interpret(String data, int line) throws 
     InvalidScriptSyntaxExceptionWithLine {
-    try {
-      flag = tryParse(data, line);
-    } catch (Exception e) {
-      throw e;
-    }
+   
+    if (data.contains(" "))
+      throw new InvalidScriptSyntaxExceptionWithLine("The identifier "
+          + "for a flag cannot contain any spaces", line);
     
-    if (flag < 0 || flag > 255)
-      throw new InvalidScriptSyntaxExceptionWithLine("Boolean flag values must be " 
-          + "between 0 and 255 (inclusive)", line);
+    if (!Flags.flagExists(data))
+      throw new InvalidScriptSyntaxExceptionWithLine("No such flag "
+          + "as " + data + " is defined in res/flags/flags.txt", line);
+    
+    flag = Flags.getFlagWithIdentifier(data);
+    
   }
 
   @Override
   public void execute() {
-    Main.getGame().setFlag(flag, true);
+    flag.setValue(true);
   }
   
-  private int tryParse(String number, int line) throws InvalidScriptSyntaxExceptionWithLine
-  {
-    try {
-      return Integer.parseInt(number);
-    } catch (NumberFormatException e)
-    {
-      throw new InvalidScriptSyntaxExceptionWithLine(number + " cannot be "
-          + "resolved to an integer", line);
-    }
-  }
 }

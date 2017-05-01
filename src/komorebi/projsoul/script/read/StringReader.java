@@ -6,7 +6,7 @@ public class StringReader {
 
   private HashMap<String, CodeBlock> branches;
   private HashMap<String, CodeBlock[]> commands;
-  private CommandReader read;
+  private BranchSplitter read;
 
   private String[] lines;
 
@@ -34,7 +34,7 @@ public class StringReader {
   {
     for (String branchName: branches.keySet())
     {
-      read = new CommandReader(branches.get(branchName));
+      read = new BranchSplitter(branches.get(branchName));
       read.read();
 
       commands.put(branchName, read.getCommands());

@@ -12,6 +12,7 @@ import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
 import komorebi.projsoul.script.read.Branch;
 import komorebi.projsoul.script.read.CodeBlock;
 import komorebi.projsoul.script.read.CommandRequest;
+import komorebi.projsoul.script.read.ConsequenceRequest;
 import komorebi.projsoul.script.read.ErrorLog;
 import komorebi.projsoul.script.read.Request;
 import komorebi.projsoul.script.read.StringReader;
@@ -96,17 +97,17 @@ public class Script {
     for (CodeBlock command: commands)
     {
       try {
-        readCommand(branch, command);
+        branch.addTask(readCommand(command.getCode(), 
+            command.getStartingLine()));
       } catch (InvalidScriptSyntaxExceptionWithLine e) {
         errorLog.addError(e);
       }
     }
   }
 
-  private void readCommand(Branch branch, CodeBlock block) throws InvalidScriptSyntaxExceptionWithLine
-  {
-    String command = block.getCode();
-    
+  private Command readCommand(String command, int line) 
+      throws InvalidScriptSyntaxExceptionWithLine
+  {    
     boolean instructionAppliesToPlayer = appliesToPlayer(command);
     if (instructionAppliesToPlayer)
       command = removeFirstCharOf(command);
@@ -121,18 +122,20 @@ public class Script {
       command = removeKeyword(command);
       
       try {        
-        task.interpret(command, block.getStartingLine());
+        task.interpret(command, line);
         task.setApplicableToPlayer(instructionAppliesToPlayer);
         
         handleRequests(task.askForRequests());
-        branch.addTask(task);
+        
       } catch (InvalidScriptSyntaxExceptionWithLine e) {
         errorLog.addError(e);
       }
       
+      return task;
+      
     } else {
       throw new InvalidScriptSyntaxExceptionWithLine("No such keyword as " + 
-          firstWordOf(command), block.getStartingLine());
+          firstWordOf(command), line);
     }
   }
 
@@ -171,11 +174,24 @@ public class Script {
     for (Request request: requests)
     {
       if (CommandRequest.isInstance(request))
+      {
         try {
           handleCommandRequests((CommandRequest) request);
         } catch (InvalidScriptSyntaxExceptionWithLine e) {
           errorLog.addError(e);
         }
+      }
+      
+      if (ConsequenceRequest.isInstance(request))
+      {
+        try {
+          handleConsequenceRequest((ConsequenceRequest) request);
+        } catch (InvalidScriptSyntaxExceptionWithLine e)
+        {
+          errorLog.addError(e);
+        }
+      }
+        
     }
   }
   
@@ -189,6 +205,14 @@ public class Script {
     
     readInto(request.getBranchReference(), 
         commands.get(request.getBranchName()));  
+  }
+  
+  private void handleConsequenceRequest(ConsequenceRequest request)
+    throws InvalidScriptSyntaxExceptionWithLine
+  {
+    Command consequence = readCommand(request.getConsequenceText(),
+        request.getLine());
+    request.setConsequence(consequence);
   }
   
   public String getName()

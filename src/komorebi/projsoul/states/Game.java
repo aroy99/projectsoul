@@ -244,14 +244,4 @@ public class Game extends State{
   {
     confidence += add;
   }
-
-  public void setFlag(int index, boolean b)
-  {
-    //booleans[index] = b;
-  }
-
-  public boolean checkFlag(int index)
-  {
-    //return booleans[index];
-  }
 }

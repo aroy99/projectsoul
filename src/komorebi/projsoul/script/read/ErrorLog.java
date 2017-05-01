@@ -31,6 +31,14 @@ public class ErrorLog {
   {
     errors.add(e);
   }
+  
+  public void addAllErrorsIn(ArrayList<InvalidScriptSyntaxException> add)
+  {
+    for (InvalidScriptSyntaxException e: add)
+    {
+      errors.add(e);
+    }
+  }
 
   public String getErrors()
   {

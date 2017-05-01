@@ -1,7 +1,9 @@
 branch main
 lock
 align
-say Let's fadeout.
-fadeout
-fadein
+if caspian, call talkToCasp
+else, say Hey, @me ... have you seen Caspian? Tell him \nto come see me
 unlock
+
+branch talkToCasp
+say Caspian, I've been looking all over for you! \pWhere the hell have you been?

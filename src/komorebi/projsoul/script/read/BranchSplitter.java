@@ -1,13 +1,13 @@
 package komorebi.projsoul.script.read;
 
-public class CommandReader {
+public class BranchSplitter {
   
   private String[] lines;
   private CodeBlock[] commands;
   
   private int startLine;
     
-  public CommandReader(CodeBlock code)
+  public BranchSplitter(CodeBlock code)
   {
     lines = code.getCode().split("\n");
     startLine = code.getStartingLine();
