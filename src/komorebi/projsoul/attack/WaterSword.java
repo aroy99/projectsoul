@@ -5,7 +5,7 @@ import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.entities.player.Player;
-import komorebi.projsoul.states.Game;
+import komorebi.projsoul.map.MapHandler;
 
 import java.awt.Rectangle;
 
@@ -91,7 +91,7 @@ public class WaterSword extends Melee {
       
     }
     
-    for (Enemy enemy: Game.getMap().getEnemies())
+    for (Enemy enemy: MapHandler.getEnemies())
     {
       if (hitBox.intersects(enemy.getHitBox()) && !enemy.invincible())
       {

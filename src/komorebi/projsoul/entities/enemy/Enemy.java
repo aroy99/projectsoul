@@ -10,6 +10,7 @@ import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.XPObject;
 import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.states.Game;
 
 import java.awt.Rectangle;
@@ -136,7 +137,7 @@ public abstract class Enemy extends Entity {
     if (dying && deathAni.lastFrame())
     {
       dead = true;
-      Game.getMap().addXPObject(new XPObject(x, y, xpPerLevel()*level, hitBy));
+      MapHandler.addXPObject(new XPObject(x, y, xpPerLevel()*level, hitBy));
     } else if (dying)
     {
       dx = 0;
@@ -168,7 +169,7 @@ public abstract class Enemy extends Entity {
       if (ring.intersects(new Rectangle((int) (x+dx),(int) (y+dy),sx,sy)) && !hurt)
       {          
         float[] coords = ring.getCenter();
-        inflictPain(ring.getDamage(), Map.angleOf(x, y, coords[0], coords[1]), 
+        inflictPain(ring.getDamage(), MapHandler.angleOf(x, y, coords[0], coords[1]), 
             Characters.FLANNERY);
       }
     }
@@ -322,47 +323,53 @@ public abstract class Enemy extends Entity {
   {
     return dead;
   }
+  
+  public void kill(){
+    dead = true;
+  }
 
   /**
    * Stops the enemy from moving where it shouldn't 
    */
   public void overrideImproperMovements()
   {
-    if (x+dx < 0)
-    {
-      x = 0;
-      dx = 0;
-      hittingWall = true;
-    } else if (x+dx > Game.getMap().getWidth()*16 - sx)
-    {
-      dx = 0;
-      x = Game.getMap().getHeight() * 16 - sx;
-      hittingWall = true;
-    }
-
-    if (y+dy < 0)
-    {
-      dy = 0;
-      y = 0;
-      hittingWall = true;
-    } else if (y+dy > Game.getMap().getHeight()*16 - sy)
-    {
-      dy = 0;
-      y = Game.getMap().getHeight() * 16 - sy;
-      hittingWall = true;
+    if(!MapHandler.isOutside()){
+      if (x+dx < 0)
+      {
+        x = 0;
+        dx = 0;
+        hittingWall = true;
+      } else if (x+dx > MapHandler.getActiveMap().getTileWidth()*16 - sx)
+      {
+        dx = 0;
+        x = MapHandler.getActiveMap().getTileHeight() * 16 - sx;
+        hittingWall = true;
+      }
+  
+      if (y+dy < 0)
+      {
+        dy = 0;
+        y = 0;
+        hittingWall = true;
+      } else if (y+dy > MapHandler.getActiveMap().getTileHeight()*16 - sy)
+      {
+        dy = 0;
+        y = MapHandler.getActiveMap().getTileHeight() * 16 - sy;
+        hittingWall = true;
+      }
     }
 
     Rectangle hypothetical = new Rectangle((int) (x+dx), (int) (y+dy),
         sx, sy);
 
-    if (hypothetical.intersects(Map.getPlayer().getHitBox()))
+    if (hypothetical.intersects(MapHandler.getPlayer().getHitBox()))
     { 
 
-      if (!Map.getPlayer().invincible())
+      if (!MapHandler.getPlayer().invincible())
       {
         //DEBUG Enemy movements Part II
         System.out.println(dx + ", " + dy);
-        Map.getPlayer().inflictPain(attack, 
+        MapHandler.getPlayer().inflictPain(attack, 
             DEFAULT_KNOCK*Math.signum(dx)*(float)Math.sqrt(Math.abs(dx)), 
             DEFAULT_KNOCK*Math.signum(dy)*(float)Math.sqrt(Math.abs(dy)));
         hittingPlayer = true;
@@ -374,7 +381,7 @@ public abstract class Enemy extends Entity {
       hittingPlayer = true;
     }
 
-    boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
+    boolean[] col = MapHandler.checkCollisions(x,y,dx,dy);
 
     if(!col[0] || !col[2]){
       dy=0;

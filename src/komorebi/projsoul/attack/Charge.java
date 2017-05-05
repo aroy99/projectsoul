@@ -5,6 +5,7 @@ import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.gameplay.Camera;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.states.Game;
 
 import java.awt.Rectangle;
@@ -60,7 +61,7 @@ public class Charge extends Melee {
   @Override
   public void update() {
     
-    boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
+    boolean[] col = MapHandler.getActiveMap().checkCollisions(x,y,dx,dy);
 
     if(!col[0] || !col[2]){
       Camera.shake(8, 2, 1);
@@ -74,7 +75,7 @@ public class Charge extends Melee {
     future.x += dx;
     future.y += dy;
     
-    for (Enemy enemy: Game.getMap().getEnemies())
+    for (Enemy enemy: MapHandler.getEnemies())
     {
       if (enemy.getHitBox().intersects(future))
       {

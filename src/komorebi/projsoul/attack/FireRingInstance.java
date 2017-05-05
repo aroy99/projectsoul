@@ -2,7 +2,7 @@ package komorebi.projsoul.attack;
 
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.entities.Face;
-import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 
 import java.awt.Rectangle;
 
@@ -38,7 +38,7 @@ public class FireRingInstance implements AttackInstance {
     flames = new Rectangle[12];
 
     for (int i = 0; i < flames.length; i++) {
-      float[] coords = Map.coordinatesAt(x, y, RING_RADIUS, i * 30);
+      float[] coords = MapHandler.coordinatesAt(x, y, RING_RADIUS, i * 30);
       flames[i] = new Rectangle((int) coords[0], (int) coords[1], 13, 16);
     }
   }
@@ -64,7 +64,7 @@ public class FireRingInstance implements AttackInstance {
 
   public void render() {
     for (int ang = 0; ang < 360; ang += 30) {
-      float[] coords = Map.coordinatesAt(x, y, RING_RADIUS, ang);
+      float[] coords = MapHandler.coordinatesAt(x, y, RING_RADIUS, ang);
       ani.playCam(coords[0], coords[1]);
     }
   }
@@ -97,7 +97,7 @@ public class FireRingInstance implements AttackInstance {
     //Loops though: west, north; west, south; east, north; east, south
     for(int i = 0; i < 2; i++){
       for(int j = 0; j < 2; j++){
-        dist = Map.distanceBetween(ptsToCheck[1][i], ptsToCheck[0][j], x, y);
+        dist = MapHandler.distanceBetween(ptsToCheck[1][i], ptsToCheck[0][j], x, y);
         if (dist > 36 && dist < 48) {
           return true;
         }
@@ -114,23 +114,23 @@ public class FireRingInstance implements AttackInstance {
     double wstX = r.getX();
     double eastX = r.getX() + r.getHeight();
 
-    double dist = Map.distanceBetween((float) wstX, (float) sthY, x, y);
+    double dist = MapHandler.distanceBetween((float) wstX, (float) sthY, x, y);
     if (dist < 36) {
       return true;
     }
 
-    dist = Map.distanceBetween((float) wstX, (float) norY, x, y);
+    dist = MapHandler.distanceBetween((float) wstX, (float) norY, x, y);
 
     if (dist < 36) {
       return true;
     }
 
-    dist = Map.distanceBetween((float) eastX, (float) sthY, x, y);
+    dist = MapHandler.distanceBetween((float) eastX, (float) sthY, x, y);
     if (dist < 36) {
       return true;
     }
 
-    dist = Map.distanceBetween((float) eastX, (float) norY, x, y);
+    dist = MapHandler.distanceBetween((float) eastX, (float) norY, x, y);
     if (dist < 36) {
       return true;
     }

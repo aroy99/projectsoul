@@ -9,7 +9,7 @@ import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.map.Map;
-import komorebi.projsoul.states.Game;
+import komorebi.projsoul.map.MapHandler;
 
 import java.awt.Rectangle;
 
@@ -69,7 +69,7 @@ public class WaterBarrier implements SingleInstance {
 
   @Override
   public void update() {      
-    for (Enemy enemy: Game.getMap().getEnemies()){
+    for (Enemy enemy: MapHandler.getEnemies()){
       Rectangle rect = enemy.getHitBox();
       float[] xs = {rect.x, rect.x+rect.width};
       float[] ys = {rect.y, rect.y+rect.height};
@@ -79,10 +79,10 @@ public class WaterBarrier implements SingleInstance {
           for(int i = 0; i < 2; i++){
             for (int j = 0; j < 2; j++){
 
-              float distance = Map.distanceBetween(ox, oy, xs[j], ys[i]);
+              float distance = MapHandler.distanceBetween(ox, oy, xs[j], ys[i]);
               
               if(distance < radius){
-                double ang = Map.angleOf(xs[j], ys[i], ox, oy);
+                double ang = MapHandler.angleOf(xs[j], ys[i], ox, oy);
                 enemy.inflictPain(attack, ang,
                     Characters.CASPIAN, KNOCKBACK);
                 break outer;
@@ -108,7 +108,7 @@ public class WaterBarrier implements SingleInstance {
   public void play(){
     ani.playCam(x, y);
     //DEBUG Hitbox visual
-    if(Map.isHitBox){
+    if(MapHandler.isHitBox){
       Draw.circCam(ox, oy, radius, 0, 255, 255, 128);
     }
   }

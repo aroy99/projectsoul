@@ -22,6 +22,7 @@ import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.gameplay.MagicBar;
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
 import komorebi.projsoul.states.Game;
@@ -237,7 +238,7 @@ public abstract class Player extends Entity implements Playable{
 
         if (!restoreMvmtX)
         {
-          if (Math.abs(dx)<=0.5 && Math.abs(dx)>=0)
+          if (Math.abs(dx) <= 0.5 && Math.abs(dx) >= 0)
           {
             dx = 0;
             restoreMvmtX = true;
@@ -296,8 +297,8 @@ public abstract class Player extends Entity implements Playable{
 
       //DEBUG God Mode
       if(!KeyHandler.keyDown(Key.G)){
-        Game.getMap().guidePlayer(x, y, dx, dy);
-        boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
+        MapHandler.guidePlayer(x, y, dx, dy);
+        boolean[] col = MapHandler.checkCollisions(x,y,dx,dy);
 
         if(!col[0] || !col[2]){
           dy=0;
@@ -575,12 +576,12 @@ public abstract class Player extends Entity implements Playable{
     framesToGo = Math.abs(distance);
     hasInstructions = true;
 
-    if (distance<0)
+    if (distance < 0)
     {
       left = true;
       dir = Face.LEFT;
       dx = -1;
-    } else if (distance>0)
+    } else if (distance > 0)
     {
       right = true;
       dir = Face.RIGHT;
@@ -598,12 +599,12 @@ public abstract class Player extends Entity implements Playable{
     framesToGo = Math.abs(distance);
     hasInstructions = true;
 
-    if (distance<0)
+    if (distance < 0)
     {
       down = true;
       dir = Face.DOWN;
       dy = -1;
-    } else if (distance>0)
+    } else if (distance > 0)
     {
       up = true;
       dir = Face.UP;
@@ -646,22 +647,22 @@ public abstract class Player extends Entity implements Playable{
 
     if (horizontal)
     {
-      if (x>tx*16)
+      if (x > tx*16)
       {
         align(Face.LEFT, lock);
         walk(Face.LEFT, getTileX()-tx);
-      } else if (x<tx*16)
+      } else if (x < tx*16)
       {
         align(Face.RIGHT, lock);
         walk(Face.RIGHT, tx-getTileX(), lock);
       }
     } else
     {
-      if (y>tx*16)
+      if (y > tx*16)
       {
         align(Face.DOWN, lock);
         walk(Face.DOWN, getTileY()-tx, lock);
-      } else if (y<tx*16)
+      } else if (y < tx*16)
       {
         align(Face.UP, lock);
         walk(Face.UP, tx-getTileY(), lock);
@@ -687,7 +688,7 @@ public abstract class Player extends Entity implements Playable{
 
     future.x += dx;
 
-    for (NPC npc: Game.getMap().getNPCs())
+    for (NPC npc: MapHandler.getActiveMap().getNPCs())
     {
       if (npc.getArea().intersects(future))
       {
@@ -698,7 +699,7 @@ public abstract class Player extends Entity implements Playable{
     future.x -= dx;
     future.y += dy;
 
-    for (NPC npc: Game.getMap().getNPCs())
+    for (NPC npc: MapHandler.getActiveMap().getNPCs())
     {
       if (npc.getArea().intersects(future))
       {
@@ -718,7 +719,7 @@ public abstract class Player extends Entity implements Playable{
 
     future.x += dx;
 
-    for (Enemy enemy: Game.getMap().getEnemies())
+    for (Enemy enemy: MapHandler.getEnemies())
     {
       if (enemy.getHitBox().intersects(future))
       {
@@ -729,7 +730,7 @@ public abstract class Player extends Entity implements Playable{
     future.x -= dx;
     future.y += dy;
 
-    for (Enemy enemy: Game.getMap().getEnemies())
+    for (Enemy enemy: MapHandler.getEnemies())
     {
       if (enemy.getHitBox().intersects(future))
       {
@@ -765,24 +766,22 @@ public abstract class Player extends Entity implements Playable{
 
   public void overrideImproperMovements()
   {
-    if (x+dx<0)
-    {
-      x = 0;
-      dx = 0;
-    } else if (x+dx>Game.getMap().getWidth()*16 - sx)
-    {
-      dx = 0;
-      x = Game.getMap().getHeight() * 16 - sx;
-    }
+    if(!MapHandler.isOutside()){
+      if (x + dx < 0) {
+        x = 0;
+        dx = 0;
+      } else if (x + dx > MapHandler.getActiveMap().getTileWidth() * 16 - sx) {
+        dx = 0;
+        x = MapHandler.getActiveMap().getTileHeight() * 16 - sx;
+      }
 
-    if (y+dy<0)
-    {
-      dy = 0;
-      y = 0;
-    } else if (y+dy>Game.getMap().getHeight()*16 - sy)
-    {
-      dy = 0;
-      y = Game.getMap().getHeight() * 16 - sy;
+      if (y + dy < 0) {
+        dy = 0;
+        y = 0;
+      } else if (y + dy > MapHandler.getActiveMap().getTileHeight() * 16 - sy) {
+        dy = 0;
+        y = MapHandler.getActiveMap().getTileHeight() * 16 - sy;
+      }
     }
 
     for (FireRingInstance ring: RingOfFire.allInstances())
@@ -790,7 +789,7 @@ public abstract class Player extends Entity implements Playable{
       if (ring.intersectsCirc(new Rectangle((int)(x+dx),(int)(y+dy),sx,sy)))
       {
         float[] center = ring.getCenter();
-        double ang = Map.angleOf(x, y, center[0], center[1]);
+        double ang = MapHandler.angleOf(x, y, center[0], center[1]);
 
         if (ring.inRing(new Rectangle((int)(x+dx),(int)(y+dy),sx,sy)))
         {
@@ -799,10 +798,11 @@ public abstract class Player extends Entity implements Playable{
         float chgx = (float) Math.cos(ang * (Math.PI/180)) * 5;
         float chgy = (float) Math.sin(ang * (Math.PI/180)) * 5;
 
-        if (this instanceof Flannery)
+        if (this instanceof Flannery) {
           inflictPain(0, chgx, chgy);
-        else
+        } else {
           inflictPain(ring.getDamage(), chgx, chgy);
+        }
       }
     }
   }

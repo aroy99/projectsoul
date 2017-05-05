@@ -16,37 +16,6 @@ import java.util.LinkedList;
  */
 public class SquareGrid {
   
-  /**
-   * Represents a Location on a grid with an X and Y
-   *
-   * @author Aaron Roy
-   */
-  public static class Location{
-    public final int x;
-    public final int y;
-    public Location(int nx, int ny){
-      x = nx;
-      y = ny;
-    }
-    
-    @Override
-    public boolean equals(Object chec){
-      if(chec instanceof Location){
-        Location check = (Location)chec;
-        return check.x == x && check.y == y;
-      }
-      return false;
-    }
-    
-    public int hashCode(){
-      return 31*x+y;
-    }
-    
-    public String toString(){
-      return x + ", " + y;
-    }
-  }
-  
   //Diagonal directions
   private static final Location[] DIRS =  {new Location(-1, 1), new Location(0, 1),
       new Location(1, 1), new Location(1, 0), new Location(1, -1),

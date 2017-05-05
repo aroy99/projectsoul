@@ -11,7 +11,7 @@ import komorebi.projsoul.ai.node.leaf.conditions.IsPlayerInRange;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.EditorMap.Modes;
-import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.states.Death;
 
 /**
@@ -56,6 +56,7 @@ public class Chaser extends Enemy{
     maxPlayDist = 16*distanceFromPlay;
 
     regAni.setSpeed((int)(6/(SPEED/2)));
+    System.out.println(1);
     
     generateHitboxColors();
     
@@ -63,7 +64,7 @@ public class Chaser extends Enemy{
         new Sequence(
             new IsPlayerInRange(this, maxPlayDist),
             new SetTargetToPlayer(this),
-            new MoveToTarget(this, SPEED, 32)
+            new MoveToTarget(this, SPEED, 0)
             ),
         new MemSequence(                             //Walk around
             new IdleBehavior(this, MAX_IDLE),
@@ -118,7 +119,7 @@ public class Chaser extends Enemy{
     if(EditorMap.getMode() == Modes.EVENT){
       Draw.circ(x, y, maxPlayDist, red, blue, green, 64);
     }
-    if(Map.isHitBox){
+    if(MapHandler.isHitBox){
       Draw.circCam(x, y, maxPlayDist, red, blue, green, 64);
     }
 

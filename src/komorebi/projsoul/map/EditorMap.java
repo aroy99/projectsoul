@@ -237,6 +237,8 @@ public class EditorMap implements Playable, Serializable{
           collision[i][j]=str[index].equals("1")?true : false;
         }
       }
+      
+      MapHandler.setCollision(collision);
 
 
       path = key;
@@ -305,7 +307,7 @@ public class EditorMap implements Playable, Serializable{
               break;
             case "smart":
               enemies.add(new SmartEnemy(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
-                  Integer.parseInt(split[4]), collision));
+                  Integer.parseInt(split[4])));
               break;
             case "shooter":
               enemies.add(new Shooter(arg0*16, arg1*16, EnemyType.toEnum(split[2]),

@@ -4,24 +4,15 @@
  */
 package komorebi.projsoul.states;
 
-import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.ThreadHandler;
-import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.entities.NPC;
-import komorebi.projsoul.entities.NPCType;
-import komorebi.projsoul.entities.SignPost;
-import komorebi.projsoul.entities.player.Player;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Item;
-import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.gameplay.MagicBar;
 import komorebi.projsoul.gameplay.Item.Items;
-import komorebi.projsoul.map.Map;
-import komorebi.projsoul.script.AreaScript;
-import komorebi.projsoul.script.EarthboundFont;
+import komorebi.projsoul.gameplay.Key;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Fader;
 import komorebi.projsoul.script.InstructionList;
@@ -32,17 +23,9 @@ import komorebi.projsoul.script.SpeechHandler;
 import komorebi.projsoul.script.Task;
 import komorebi.projsoul.script.Task.TaskWithNumber;
 import komorebi.projsoul.script.Task.TaskWithString;
-import komorebi.projsoul.script.TextHandler;
-import komorebi.projsoul.script.Word;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.security.KeyStore.PrivateKeyEntry;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * Represents the game
@@ -61,11 +44,7 @@ public class Game extends State{
   private int maxOpt;
 
   private SpeechHandler speaker;
-  
-  private TextHandler currMap;
-  
-  private int mapDisplayCount = 120;
-  private int displayY = 15;
+    
 
   private BufferedReader read;
   
@@ -84,11 +63,8 @@ public class Game extends State{
    * Creates the player and loads the map
    */
   public Game(){
-    map = new Map("res/maps/"+testLoc);
+    MapHandler.initialize(testLoc);
     
-    currMap = new TextHandler();
-    currMap.write(map.getTitle(), 5, Main.HEIGHT-13);
-
     booleans = new boolean[256];
 
     confidence = 0;
@@ -146,7 +122,7 @@ public class Game extends State{
 
 
     //DEBUG Map debug features
-    map.getInput();
+    MapHandler.getInput();
   
 
 
@@ -190,22 +166,18 @@ public class Game extends State{
 
   }
 
-  /* (non-Javadoc)
-   * @see komorebi.clyde.states.State#update()
-   */
   @Override
   public void update() {
-    // TODO Auto-generated method stub  
-	  hud.update();
-	  death.update();
-	  Camera.update();
-	  
+    hud.update();
+    death.update();
+    Camera.update();
+
     
     if (isPaused)
     {
       framesToGo--;
       
-      if (framesToGo<=0)
+      if (framesToGo <= 0)
       {
         isPaused = false;
         lock.resumeThread();
@@ -214,42 +186,17 @@ public class Game extends State{
     
     
 
-    map.update();
+    MapHandler.update();
     Fader.update();
 
   }
 
-  /* (non-Javadoc)
-   * @see komorebi.clyde.states.State#render()
-   */
   @Override
   public void render() {
-    map.render();
-    Map.getPlayer().renderHUD();
-    if(mapDisplayCount > 0 || displayY > 0){
-      Draw.rect(2, Main.HEIGHT-displayY, 100, 12, 1, 1, 2, 2, 6);
-      currMap.render(new Word(map.getTitle(), 5, Main.HEIGHT-displayY+2, new EarthboundFont(1)));
-      mapDisplayCount--;
-      
-      if(mapDisplayCount < 0){
-        displayY--;
-      }
-    }
+    MapHandler.render();
+    
     Fader.render();
 
-  }
-
-
-  /**
-   * @return The current map
-   */
-  public static Map getMap(){
-    return map;
-  }
-
-  public static void setMap(Map m)
-  {
-    map = m;
   }
 
   public void setSpeaker(SpeechHandler talk)

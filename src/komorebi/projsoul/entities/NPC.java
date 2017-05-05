@@ -6,8 +6,7 @@ package komorebi.projsoul.entities;
 
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Main;
-import komorebi.projsoul.map.Map;
-import komorebi.projsoul.script.EarthboundFont;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Font;
 import komorebi.projsoul.script.Lock;
@@ -699,7 +698,7 @@ public class NPC extends Entity {
   
 
   /**
-   * Runs the NPC's talking script when Clyde prompts them
+   * Runs the NPC's talking script when the player prompts them
    */
   public void approach()
   {
@@ -899,7 +898,7 @@ public class NPC extends Entity {
       future.grow(0, 1);
     }
     
-    get = !future.intersects(Map.getPlayer().getArea());
+    get = !future.intersects(MapHandler.getPlayer().getArea());
 
     if (direction == Face.LEFT || direction == Face.RIGHT)
     {
@@ -954,5 +953,13 @@ public class NPC extends Entity {
   
   public void setName(String newName){
     name = newName;
+  }
+  
+  /**
+   * Destroys all outstanding threads that this NPC has running
+   */
+  public void cleanUp(){
+    talkScript.close();
+    walkScript.close();
   }
 }

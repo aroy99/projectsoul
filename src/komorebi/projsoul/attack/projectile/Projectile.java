@@ -6,6 +6,7 @@ package komorebi.projsoul.attack.projectile;
 import komorebi.projsoul.attack.AttackInstance;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.entities.Face;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.states.Game;
 
 import java.awt.Rectangle;
@@ -86,19 +87,20 @@ public abstract class Projectile implements AttackInstance {
    */
   public void overrideImproperMovements()
   {
-    if (x+dx < 0 || x+dx > Game.getMap().getWidth()*16 - area.getWidth())
+    //TODO Fix for border maps
+    if (x+dx < 0 || x+dx > MapHandler.getActiveMap().getTileWidth()*16 - area.getWidth())
     {
       dx = 0;
       destroyMe = true;
     }
 
-    if (y+dy < 0 || y+dy > Game.getMap().getHeight()*16 - area.getHeight())
+    if (y+dy < 0 || y+dy > MapHandler.getActiveMap().getTileHeight()*16 - area.getHeight())
     {
       dy = 0;
       destroyMe = true;
     }
 
-    boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
+    boolean[] col = MapHandler.checkCollisions(x,y,dx,dy);
 
     if(!col[0] || !col[2]){
       dy=0;

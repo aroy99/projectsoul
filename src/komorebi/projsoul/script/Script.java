@@ -3,17 +3,11 @@
  */
 package komorebi.projsoul.script;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-
 import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.player.Characters;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.script.Task.TaskWithBoolean;
 import komorebi.projsoul.script.Task.TaskWithBranch;
 import komorebi.projsoul.script.Task.TaskWithBranches;
@@ -23,7 +17,13 @@ import komorebi.projsoul.script.Task.TaskWithNumberAndLocation;
 import komorebi.projsoul.script.Task.TaskWithString;
 import komorebi.projsoul.script.Task.TaskWithStringArray;
 import komorebi.projsoul.script.Task.TaskWithTask;
-import komorebi.projsoul.states.Game;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * 
@@ -286,7 +286,7 @@ public abstract class Script {
     {
       s = s.replace("npc ", "");
 
-      npc = Game.getMap().findNPC(s);
+      npc = MapHandler.getActiveMap().findNPC(s);
       if (npc == null) 
       {
         throwError(line, "NPC \'" + s + "\' not recognized");
@@ -718,6 +718,12 @@ public abstract class Script {
   public void resume()
   {
     ThreadHandler.unlock(this);
+  }
+  
+  public void close()
+  {
+    ThreadHandler.remove(this);
+    execution.setLoopable(false);
   }
 
   public void checkForBranch(String s)

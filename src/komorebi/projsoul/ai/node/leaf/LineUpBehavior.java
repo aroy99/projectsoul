@@ -6,7 +6,7 @@ package komorebi.projsoul.ai.node.leaf;
 import komorebi.projsoul.ai.node.Status;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
-import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 
 /**
  * The enemy lines up with the player
@@ -27,8 +27,8 @@ public class LineUpBehavior extends Behavior {
   @Override
   public Status update() {
     
-    float targetX = Map.getPlayer().getX();
-    float targetY = Map.getPlayer().getY();
+    float targetX = MapHandler.getPlayer().getX();
+    float targetY = MapHandler.getPlayer().getY();
           
     float x = parent.getX();
     float y = parent.getY();
@@ -39,8 +39,6 @@ public class LineUpBehavior extends Behavior {
     lineUp(deltaX, deltaY);
     
     if(closeEnoughtoAttack(targetX, targetY, x, y)){
-      System.out.format("Enemy is close enough to attack with dir: %s\n", 
-          parent.getDirection().toString());
       return Status.SUCCESS;
     }
     

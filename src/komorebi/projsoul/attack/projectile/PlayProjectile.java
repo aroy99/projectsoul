@@ -3,7 +3,7 @@ package komorebi.projsoul.attack.projectile;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.player.Characters;
-import komorebi.projsoul.states.Game;
+import komorebi.projsoul.map.MapHandler;
 
 import java.awt.Rectangle;
 
@@ -25,7 +25,7 @@ public abstract class PlayProjectile extends Projectile{
 
   @Override
   public void update() {    
-    for (Enemy enemy: Game.getMap().getEnemies())
+    for (Enemy enemy: MapHandler.getEnemies())
     {
       if (enemy.getHitBox().intersects(new Rectangle((int) (x+dx), 
           (int) (y+dy), (int) area.getWidth(), 

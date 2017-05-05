@@ -65,6 +65,7 @@ public class MoveToTarget extends Behavior{
     }
 
     parent.move(dx, dy);
+    System.out.format("Dx: %f, Dy: %f\t Tx: %f, Ty: %f\n", dx, dy, targetX, targetY);
 
     return Status.RUNNING;
   }

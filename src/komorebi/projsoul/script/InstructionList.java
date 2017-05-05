@@ -9,8 +9,7 @@ import java.util.ArrayList;
 
 /**
  * 
- * @author Aaron Roy
- * @version 
+ * @author Andrew Faulkenberry
  */
 public class InstructionList {
 

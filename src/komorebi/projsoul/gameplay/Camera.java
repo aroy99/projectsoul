@@ -6,6 +6,7 @@ package komorebi.projsoul.gameplay;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.states.Game;
 
 /**
@@ -31,7 +32,7 @@ public class Camera{
    * @param dy delta y
    */
   public static void move(float dx, float dy){
-    boolean[] check = Game.getMap().checkBoundaries(x, y, dx, dy);
+    boolean[] check = MapHandler.getActiveMap().checkBoundaries(x, y, dx, dy);
     
     if(check.length == 3){
       return;
@@ -54,7 +55,7 @@ public class Camera{
       
       if(shakeCount % step == 0){
       
-        center(Map.getPlayer().getX(), Map.getPlayer().getY());
+        center(MapHandler.getPlayer().getX(), MapHandler.getPlayer().getY());
 
         switch (current) {
           case DOWN:
@@ -86,7 +87,7 @@ public class Camera{
       shakeCount-=1;
       
     }else{
-      center(Map.getPlayer().getX(), Map.getPlayer().getY());
+      center(MapHandler.getPlayer().getX(), MapHandler.getPlayer().getY());
     }
   }
   

@@ -6,7 +6,7 @@ package komorebi.projsoul.ai.node.leaf;
 import komorebi.projsoul.ai.node.Node;
 import komorebi.projsoul.ai.node.Status;
 import komorebi.projsoul.entities.enemy.Enemy;
-import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 
 /**
  * @author Aaron Roy
@@ -21,7 +21,8 @@ public class SetTargetToPlayer extends Node {
   
   @Override
   public Status update() {
-    parent.setTarget(Map.getPlayer().getX(), Map.getPlayer().getY());
+    System.out.println("Target set to playa");
+    parent.setTarget(MapHandler.getPlayer().getX(), MapHandler.getPlayer().getY());
     
     return Status.SUCCESS;
   }

@@ -1,11 +1,11 @@
 package komorebi.projsoul.entities;
 
-import java.awt.Rectangle;
-
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.map.Map;
-import komorebi.projsoul.states.Game;
+import komorebi.projsoul.map.MapHandler;
+
+import java.awt.Rectangle;
 
 public class XPObject extends Entity {
 
@@ -44,13 +44,15 @@ public class XPObject extends Entity {
     int halfXP = (int) Math.ceil(xp / (double) 2);
     
     //Gives half the XP to the player who picked up the object
-    Map.getPlayer().giveXP(halfXP);
+    MapHandler.getPlayer().giveXP(halfXP);
     
     int denom = 0;
     
     for (boolean b: hitBy)
     {
-      if (b) denom++;
+      if (b) {
+        denom++;
+      }
     }
     
     int split = (int) Math.ceil(halfXP / (double) denom);
@@ -61,7 +63,7 @@ public class XPObject extends Entity {
     {
       if (hitBy[i])
       {
-        Game.getMap().giveXP(Characters.getCharacter(i), split);  
+        MapHandler.giveXP(Characters.getCharacter(i), split);  
       }
     }
     
@@ -69,7 +71,7 @@ public class XPObject extends Entity {
 
   @Override
   public void render() {
-     Draw.rectCam(x, y, sx, sy, 1, 45, 9, 53, 11);
+    Draw.rectCam(x, y, sx, sy, 1, 45, 9, 53, 11);
   }
   
   public boolean destroyed()
@@ -85,19 +87,25 @@ public class XPObject extends Entity {
   public boolean withinRadius(Rectangle r)
   {
     
-    return (Map.distanceBetween(r.x, r.y, x+4, y+4)<GRAV_RADIUS) ||
-        (Map.distanceBetween(r.x+r.width, r.y, x+4, y+4)<GRAV_RADIUS) ||
-        (Map.distanceBetween(r.x+r.width, r.y+r.height, x+4, y+4)<GRAV_RADIUS) ||
-        (Map.distanceBetween(r.x, r.y+r.height, x+4, y+4)<GRAV_RADIUS);
+    return (MapHandler.distanceBetween(r.x, r.y, x+4, y+4) < GRAV_RADIUS) ||
+        (MapHandler.distanceBetween(r.x+r.width, r.y, x+4, y+4) < GRAV_RADIUS) ||
+        (MapHandler.distanceBetween(r.x+r.width, r.y+r.height, x+4, y+4) < GRAV_RADIUS) ||
+        (MapHandler.distanceBetween(r.x, r.y+r.height, x+4, y+4) < GRAV_RADIUS);
   }
   
   public void guide(float tarX, float tarY)
   {
-    if (x < tarX) dx = 1;
-    else if (x > tarX) dx = -1;
-    
-    if (y < tarY) dy = 1;
-    else if (y > tarY) dy = -1;
+    if (x < tarX) {
+      dx = 1;
+    } else if (x > tarX) {
+      dx = -1;
+    }
+
+    if (y < tarY) {
+      dy = 1;
+    } else if (y > tarY) {
+      dy = -1;
+    }
   }
   
   public void setSpeed(float dx, float dy)

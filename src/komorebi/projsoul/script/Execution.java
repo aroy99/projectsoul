@@ -13,6 +13,7 @@ import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.gameplay.Item.Items;
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.map.TileList;
 import komorebi.projsoul.script.Task.TaskWithBoolean;
 import komorebi.projsoul.script.Task.TaskWithBranch;
@@ -90,14 +91,15 @@ public class Execution implements Runnable {
 
   @Override
   public void run() {
-
     if (!isBlank)
     {
       if (loop)
       {
         while (true) 
         {
-          execute(); 
+          //DEBUG Execution check
+//          System.out.println("Executing task");
+          execute();
         }
       }
       else 
@@ -225,20 +227,21 @@ public class Execution implements Runnable {
         npc.setTileLocation(taskLoc.getX(), taskLoc.getY());
         break;
       case LOCK:
-        Map.getPlayer().stop();
-        Map.getPlayer().lock();
+        MapHandler.getPlayer().stop();
+        MapHandler.getPlayer().lock();
         break;
       case UNLOCK:
-        Map.getPlayer().unlock();
+        MapHandler.getPlayer().unlock();
         break;
       case SAY:
         taskStr = (TaskWithString) task;
         taskStr.setString(taskStr.getString().replace("@me", 
-            Map.getPlayer().getCharacter().getName()));
+            MapHandler.getPlayer().getCharacter().getName()));
                 
         npc.say(taskStr.getString(), lock);
         
-        taskStr.setString(taskStr.getString().replace(Map.getPlayer().getCharacter().getName(), 
+        taskStr.setString(taskStr.getString().replace(
+            MapHandler.getPlayer().getCharacter().getName(), 
             "@me"));
         break;
       case ASK:
@@ -250,14 +253,14 @@ public class Execution implements Runnable {
         for (int i = 0; i < oldStrings.length; i++)
         {
           newStrings[i] = oldStrings[i].replace("@me", 
-              Map.getPlayer().getCharacter().getName());
+              MapHandler.getPlayer().getCharacter().getName());
         }
         
         String answer = npc.ask(newStrings, this, lock);
         
         for (String s: taskStrArr.getStrings())
         {
-          s.replace(Map.getPlayer().getCharacter().getName(), "@me");
+          s.replace(MapHandler.getPlayer().getCharacter().getName(), "@me");
         }        
         
         (new Execution(npc, taskStrArr.getTask(answer).getBranch())).run();
@@ -284,33 +287,33 @@ public class Execution implements Runnable {
         break;
       case RUN_SCRIPT:
         taskStr = (TaskWithString) task;
-        AreaScript script = Game.getMap().getScript(taskStr.getString());
+        AreaScript script = MapHandler.getActiveMap().getScript(taskStr.getString());
         script.run();
         break;
       case LOAD_MAP:
         taskStr = (TaskWithString) task;
-        Game.setMap(new Map("res/maps/" + taskStr.getString() + ".map"));
+        MapHandler.loadMap(taskStr.getString() + ".map", 0, 0);
         break;
       case RETILE:
         taskNumLoc = (TaskWithNumberAndLocation) task;
-        Game.getMap().setTile(TileList.getTile(taskNumLoc.getNumber()), 
+        MapHandler.getActiveMap().setTile(TileList.getTile(taskNumLoc.getNumber()), 
             taskNumLoc.getX(), taskNumLoc.getY());
         break;
       case CLYDE_WALK_LEFT:
-        Map.getPlayer().walk(Face.LEFT, 1, lock);
+        MapHandler.getPlayer().walk(Face.LEFT, 1, lock);
         break;
       case CLYDE_WALK_RIGHT:
-        Map.getPlayer().walk(Face.RIGHT, 1, lock);
+        MapHandler.getPlayer().walk(Face.RIGHT, 1, lock);
         break;
       case CLYDE_WALK_UP:
-        Map.getPlayer().walk(Face.UP, 1, lock);
+        MapHandler.getPlayer().walk(Face.UP, 1, lock);
         break;
       case CLYDE_WALK_DOWN:
-        Map.getPlayer().walk(Face.DOWN, 1, lock);
+        MapHandler.getPlayer().walk(Face.DOWN, 1, lock);
         break;
       case CLYDE_PAUSE:
         taskNum = (TaskWithNumber) task;
-        Map.getPlayer().pause(taskNum.getNumber(), lock);
+        MapHandler.getPlayer().pause(taskNum.getNumber(), lock);
         break;
       case SIMUL_RUN_BRANCH:
         taskBr = (TaskWithBranch) task;
@@ -319,31 +322,31 @@ public class Execution implements Runnable {
         ThreadHandler.newThread(new NewThread(ex));
         break;
       case CLYDE_TURN_LEFT:
-        Map.getPlayer().turn(Face.LEFT);
+        MapHandler.getPlayer().turn(Face.LEFT);
         break;
       case CLYDE_TURN_RIGHT:
-        Map.getPlayer().turn(Face.RIGHT);
+        MapHandler.getPlayer().turn(Face.RIGHT);
         break;
       case CLYDE_TURN_UP:
-        Map.getPlayer().turn(Face.UP);
+        MapHandler.getPlayer().turn(Face.UP);
         break;
       case CLYDE_TURN_DOWN:
-        Map.getPlayer().turn(Face.DOWN);
+        MapHandler.getPlayer().turn(Face.DOWN);
         break;
       case ALIGN_LEFT:
-        Map.getPlayer().align(Face.LEFT, lock);
+        MapHandler.getPlayer().align(Face.LEFT, lock);
         break;
       case ALIGN_RIGHT:
-        Map.getPlayer().align(Face.RIGHT, lock);
+        MapHandler.getPlayer().align(Face.RIGHT, lock);
         break;
       case ALIGN_DOWN:
-        Map.getPlayer().align(Face.DOWN, lock);
+        MapHandler.getPlayer().align(Face.DOWN, lock);
         break;
       case ALIGN_UP:
-        Map.getPlayer().align(Face.UP, lock);
+        MapHandler.getPlayer().align(Face.UP, lock);
         break;
       case ALIGN:
-        Map.getPlayer().align(npc, lock);
+        MapHandler.getPlayer().align(npc, lock);
         break;
       case PLAY_SONG:
         taskStr = (TaskWithString) task;
@@ -356,8 +359,8 @@ public class Execution implements Runnable {
         break;
       case CLYDE_GO_TO:
         taskLoc = (TaskWithLocation) task;
-        Map.getPlayer().goToPixX(taskLoc.getX()*16, lock);
-        Map.getPlayer().goToPixY(taskLoc.getY()*16, lock);
+        MapHandler.getPlayer().goToPixX(taskLoc.getX()*16, lock);
+        MapHandler.getPlayer().goToPixY(taskLoc.getY()*16, lock);
         break;
       case STOP_SONG:
         AudioHandler.stop();
@@ -463,8 +466,8 @@ public class Execution implements Runnable {
         taskTask = (TaskWithTask) task;
         nextTask = getNextTask(task);
         
-        System.out.println(Map.currentPlayer());
-        run = Map.currentPlayer() == taskTask.getCharacter();
+        System.out.println(MapHandler.currentPlayer());
+        run = MapHandler.currentPlayer() == taskTask.getCharacter();
         if (taskTask.isReversed())
         {
           run = !run;
@@ -511,7 +514,7 @@ public class Execution implements Runnable {
         break;
       case BLOCK:
         taskLoc = (TaskWithLocation) task;
-        Game.getMap().setCollision(taskLoc.getX(), taskLoc.getY(), false);
+        MapHandler.getActiveMap().setCollision(taskLoc.getX(), taskLoc.getY(), false);
         break;
       case SYNC:
         if (list.getSuperTask() == null)
@@ -526,7 +529,7 @@ public class Execution implements Runnable {
         break;
       case UNBLOCK:
         taskLoc = (TaskWithLocation) task;
-        Game.getMap().setCollision(taskLoc.getX(), taskLoc.getY(), true);
+        MapHandler.getActiveMap().setCollision(taskLoc.getX(), taskLoc.getY(), true);
         break;
       default:
         break;

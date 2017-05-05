@@ -3,8 +3,8 @@
  */
 package komorebi.projsoul.ai;
 
-import komorebi.projsoul.ai.SquareGrid.Location;
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ public class PathFindingTest {
    * @param args Does absolutely nothing
    */
   public static void main(String[] args){
-    Map testMap = new Map("res/maps/Maze.map");
+    Map testMap = MapHandler.loadMap("Maze.map", 0,0);
     
     WeightedSquareGrid grid = new WeightedSquareGrid(testMap.getCollision());
     Location start = new Location(10, 10);

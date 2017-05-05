@@ -3,7 +3,7 @@
  */
 package komorebi.projsoul.ai.node.leaf;
 
-import komorebi.projsoul.ai.SquareGrid.Location;
+import komorebi.projsoul.ai.Location;
 import komorebi.projsoul.ai.node.Node;
 import komorebi.projsoul.ai.node.Status;
 import komorebi.projsoul.entities.enemy.SmartEnemy;
@@ -25,15 +25,16 @@ public class SetTargetToNextInPath extends Node{
   @Override
   public Status update() {
     path = parent.getPath();
-    
+    System.out.println("Target set to path");
     Location prev = path.remove(0);
 
     if(!path.isEmpty()){
       Location curr = path.get(0);
       decideNextTarget(prev, curr);
+      return Status.SUCCESS;
     }
     
-    return null;
+    return Status.FAIL;
   }
 
   private void decideNextTarget(Location prev, Location curr) {

@@ -24,7 +24,6 @@ public class IsOutofMagic extends Node {
 
   @Override
   public Status update() {
-    System.out.println(parent.getMagic());
     if(parent.getMagic() <= shootCost){
       return Status.SUCCESS;
     }

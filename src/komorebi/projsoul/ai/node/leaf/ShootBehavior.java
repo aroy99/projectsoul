@@ -5,7 +5,7 @@ package komorebi.projsoul.ai.node.leaf;
 
 import komorebi.projsoul.ai.node.Status;
 import komorebi.projsoul.entities.enemy.Shooter;
-import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 
 /**
  * The enemy shoots its projectile out
@@ -74,13 +74,13 @@ public class ShootBehavior extends Behavior {
   }
 
   private void calculateDistance() {
-    targetX = Map.getPlayer().getX();
-    targetY = Map.getPlayer().getY();
+    targetX = MapHandler.getPlayer().getX();
+    targetY = MapHandler.getPlayer().getY();
     
     x = parent.getX();
     y = parent.getY();
     
-    currDist = Map.distanceBetween(x,y,targetX,targetY);
+    currDist = MapHandler.distanceBetween(x,y,targetX,targetY);
   }
   
   @Override

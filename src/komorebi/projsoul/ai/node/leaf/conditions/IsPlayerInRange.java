@@ -7,6 +7,7 @@ import komorebi.projsoul.ai.node.Node;
 import komorebi.projsoul.ai.node.Status;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 
 /**
  * Checks whether the player is close enough to the enemy
@@ -36,13 +37,13 @@ public class IsPlayerInRange extends Node {
   }
 
   private float calculateDistance() {
-    float targetX = Map.getPlayer().getX();
-    float targetY = Map.getPlayer().getY();
+    float targetX = MapHandler.getPlayer().getX();
+    float targetY = MapHandler.getPlayer().getY();
     
     float x = parent.getX();
     float y = parent.getY();
     
-    float currDist = Map.distanceBetween(x,y,targetX,targetY);
+    float currDist = MapHandler.distanceBetween(x,y,targetX,targetY);
     return currDist;
   }
 

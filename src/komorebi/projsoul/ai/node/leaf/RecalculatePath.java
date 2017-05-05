@@ -3,11 +3,13 @@
  */
 package komorebi.projsoul.ai.node.leaf;
 
-import komorebi.projsoul.ai.SquareGrid.Location;
+import komorebi.projsoul.ai.Location;
 import komorebi.projsoul.ai.WeightedSquareGrid;
 import komorebi.projsoul.ai.node.Node;
 import komorebi.projsoul.ai.node.Status;
 import komorebi.projsoul.entities.enemy.SmartEnemy;
+import komorebi.projsoul.entities.player.Player;
+import komorebi.projsoul.map.MapHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,11 +41,15 @@ public class RecalculatePath extends Node {
   
   @Override
   public Status update() {
-    ctx = (int)parent.getTargetX()/16;
-    cty = (int)parent.getTargetY()/16;
+    System.out.println("Recalculating path");
+    
+    Player player = MapHandler.getPlayer();
+    
+    ctx = (int)player.getX()/16-MapHandler.getLowX();
+    cty = (int)player.getY()/16-MapHandler.getLowY();
 
-    rtx = (int)(parent.getX()/16);
-    rty = (int)(parent.getY()/16);
+    rtx = (int)(parent.getX()/16)-MapHandler.getLowX();
+    rty = (int)(parent.getY()/16)-MapHandler.getLowY();
 
     
     HashMap<Location, Location> cameFrom = new HashMap<Location, Location>();
@@ -55,6 +61,8 @@ public class RecalculatePath extends Node {
     grid.aStarSearch(start, goal, cameFrom, costSoFar);
   
     ArrayList<Location> path = grid.reconstructPath(start, goal, cameFrom);
+    
+    grid.drawGrid(1, start, goal, null, null, path);
     
     parent.setPath(path);
     

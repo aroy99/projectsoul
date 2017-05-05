@@ -6,7 +6,6 @@ package komorebi.projsoul.script;
 /**
  * 
  * @author Andrew Faulkenberry
- * @version 
  */
 public class Lock {
   

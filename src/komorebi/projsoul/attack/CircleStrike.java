@@ -8,8 +8,7 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.player.Characters;
-import komorebi.projsoul.map.Map;
-import komorebi.projsoul.states.Game;
+import komorebi.projsoul.map.MapHandler;
 
 import java.awt.Rectangle;
 
@@ -69,7 +68,7 @@ public class CircleStrike implements SingleInstance {
 
   }
 
-  private CircleStrike() {}
+  public CircleStrike() {}
 
   @Override
   public boolean playing() {
@@ -87,7 +86,7 @@ public class CircleStrike implements SingleInstance {
     if (currRadius < endRad) {
       currRadius += STEP;
 
-      for (Enemy enemy : Game.getMap().getEnemies()) {
+      for (Enemy enemy : MapHandler.getEnemies()) {
         Rectangle rect = enemy.getHitBox();
         float[] xs = { rect.x, rect.x + rect.width };
         float[] ys = { rect.y, rect.y + rect.height };
@@ -96,9 +95,9 @@ public class CircleStrike implements SingleInstance {
           outer: for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 2; j++) {
 
-              float distance = Map.distanceBetween(ox, oy, xs[j], ys[i]);
+              float distance = MapHandler.distanceBetween(ox, oy, xs[j], ys[i]);
               if (distance < currRadius) {
-                double ang = Map.angleOf(xs[j], ys[i], ox, oy);
+                double ang = MapHandler.angleOf(xs[j], ys[i], ox, oy);
                 enemy.inflictPain((int) (endRad / distance * attack - attack),
                     ang, Characters.SIERRA, KNOCKBACK);
                 break outer;
@@ -115,7 +114,7 @@ public class CircleStrike implements SingleInstance {
   public void play() {
     ani.playCam(x, y);
     // DEBUG Hitbox visual
-    if (Map.isHitBox) {
+    if (MapHandler.isHitBox) {
       Draw.circCam(ox, oy, currRadius, 0, 255, 255, 128);
     }
   }

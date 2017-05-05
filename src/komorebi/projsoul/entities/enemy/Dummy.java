@@ -50,7 +50,7 @@ public class Dummy extends Enemy {
 
   @Override
   public int baseHealth() {
-    return 5000;
+    return 500;
   }
 
 }

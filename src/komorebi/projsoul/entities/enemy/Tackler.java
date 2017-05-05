@@ -22,6 +22,7 @@ import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.EditorMap.Modes;
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -153,184 +154,12 @@ public class Tackler extends Enemy {
       dx = 0;
       dy = 0;
 
-      targetX = Map.getPlayer().getX();
-      targetY = Map.getPlayer().getY();
+      targetX = MapHandler.getPlayer().getX();
+      targetY = MapHandler.getPlayer().getY();
 
-      currDist = Map.distanceBetween(x,y,targetX,targetY);
+      currDist = MapHandler.distanceBetween(x,y,targetX,targetY);
 
       root.update();
-      
-      /**
-      
-      if(currState != BehaviorStates.STUN && currState != BehaviorStates.WAIT){
-        if (currState != BehaviorStates.IDLE && currState != BehaviorStates.WALK && 
-            currDist > distance){
-          regAni.stop();
-          currState = BehaviorStates.IDLE;
-        }
-
-        if(currState != BehaviorStates.TACKLE && 
-            currState != BehaviorStates.LINE_UP && currDist <= distance){
-          regAni.resume();
-          regAni.setSpeed((int)(6/RUN_SPEED));
-
-          //DEBUG Labels
-          System.out.println("Switch to Line UP");
-          currState = BehaviorStates.LINE_UP;
-        }
-      }
-
-      switch (currState) {
-        //Idle and Walk Animations run as a pair
-        case IDLE:
-          idleCount--;
-
-          if(idleCount <= 0){
-            idleCount = GEN.nextInt(30)+30;
-            currState = BehaviorStates.WALK;
-            regAni.resume();
-            regAni.setSpeed((int)(6/WALK_SPEED));
-          }
-          break;
-        case WALK:        
-          walkCount--;
-
-          if(walkCount <= 0){
-            walkCount = GEN.nextInt(60)+60;
-            direction = Face.random();
-            currState = BehaviorStates.IDLE;
-            regAni.stop();
-          }
-
-          switch (direction) {
-            case DOWN: dy = -WALK_SPEED; break;
-            case LEFT: dx = -WALK_SPEED; break;
-            case RIGHT:dx =  WALK_SPEED; break;
-            case UP:   dy =  WALK_SPEED; break;
-            default:;
-          }
-
-          break;
-
-        //Attack and Tackle work as a pair
-        case LINE_UP:
-          float delX = targetX-x;
-          float delY = targetY-y;
-
-          if(Math.abs(delX) < Math.abs(delY)){
-            if(delX < 0){
-              dx = -RUN_SPEED;
-            }
-            else if(delX > 0){
-              dx = RUN_SPEED;
-            }
-
-            if (delY < 0) {
-              direction = Face.DOWN;
-            }
-            else if (delY > 0) {
-              direction = Face.UP;
-            }
-          }
-
-          else if(Math.abs(delY) < Math.abs(delX)){
-            if(delY < 0){
-              dy = -RUN_SPEED;
-            }
-            else if(delY > 0){
-              dy = RUN_SPEED;
-            }
-
-            if (delX < 0) {
-              direction = Face.LEFT;
-            }
-            else if (delX > 0) {
-              direction = Face.RIGHT;
-            }
-          }
-          
-          if(Math.abs(delX) < 4 || Math.abs(delY) < 4){
-            //DEBUG Labels
-            System.out.println("Switch to TackLe");
-            regAni.setSpeed((int)(6/TACKLE_SPEED));
-            invincible = true;
-            currState = BehaviorStates.TACKLE;
-          }
-          
-          System.out.format("%s, %s\n", dx, dy);
-
-          break;
-        case TACKLE:
-          
-          float dist = 0;
-          switch (direction) {
-            case DOWN:  dist = targetY - y; break;
-            case LEFT:  dist = targetX - x; break; 
-            case RIGHT: dist = x - targetX; break; 
-            case UP:    dist = y - targetY; break; 
-            default:
-          }
-          if(dist > 48){
-            invincible = false;
-            regAni.resume();
-            regAni.setSpeed((int)(6/RUN_SPEED));
-            currState = BehaviorStates.LINE_UP;
-          }
-                    
-          if(hittingWall){
-            invincible = false;
-            stunCount = MAX_STUN;
-            Camera.shake(8, 2, 1);
-            regAni.hStop();
-            currState = BehaviorStates.STUN;
-          }
-          
-          if(hittingPlayer){
-            waitCount = MAX_WAIT;
-            regAni.hStop();
-            currState = BehaviorStates.WAIT;
-          }
-          
-          switch (direction)
-          {
-            case DOWN:
-              dy = -TACKLE_SPEED;
-              break;
-            case LEFT:
-              dx = -TACKLE_SPEED;
-              break;
-            case RIGHT:
-              dx = TACKLE_SPEED;
-              break;
-            case UP:
-              dy = TACKLE_SPEED;
-              break;
-            default:
-              break;
-          }
-          break;
-        case STUN:
-          stunCount--;
-          if(stunCount <= 0){
-            regAni.resume();
-            regAni.setSpeed((int)(6/RUN_SPEED));
-            currState = BehaviorStates.LINE_UP;
-          }
-          break;
-        case WAIT:
-          waitCount--;
-          if(waitCount <= 0){
-            invincible = false;
-            regAni.resume();
-            regAni.setSpeed((int)(6/RUN_SPEED));
-          }
-          break;
-        default:
-          break;
-
-      }
-      
-      */
     }
     
 
@@ -345,7 +174,7 @@ public class Tackler extends Enemy {
       Draw.circ(x, y, distance, red, blue, green, 64);
 
     }
-    if(Map.isHitBox){
+    if(MapHandler.isHitBox){
       Draw.circCam(x, y, distance, red, blue, green, 64);
     }
 

@@ -68,8 +68,7 @@ public enum EnemyType {
     return ani;
   }
   
-  @Override
-  public String toString(){
+  public String toNiceString(){
     switch(this){
       case SATURN:        return "Mr. Saturn";
       case EVIL_SATURN:   return "Evil Saturn";
@@ -85,7 +84,7 @@ public enum EnemyType {
   public static ArrayList<String> allStrings(){
     ArrayList<String> a = new ArrayList<String>();
     for(EnemyType type : values()){
-      a.add(type.toString());
+      a.add(type.toNiceString());
     }
     
     return a;

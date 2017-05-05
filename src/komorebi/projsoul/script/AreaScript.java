@@ -7,6 +7,7 @@ import komorebi.projsoul.editor.Editable;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.map.EditorMap;
+import komorebi.projsoul.map.MapHandler;
 
 /**
  * Represents a script to be activated on the map
@@ -154,7 +155,13 @@ public class AreaScript extends Script implements Editable{
    * Renders the "S" tile
    */
   public void render() {
-    Draw.rect(x, y, 16, 16, 32, 0, 2);
+    if(MapHandler.isHitBox){
+      Draw.rectCam(x, y, 16, 16, 32, 0, 2);
+    }
+    
+    if(EditorMap.getMode() == EditorMap.Modes.EVENT){
+      Draw.rect(x, y, 16, 16, 32, 0, 2);
+    }
   }
   
   /**

@@ -1,11 +1,7 @@
 package komorebi.projsoul.states;
 
 import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.gameplay.HUD;
-import komorebi.projsoul.map.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import komorebi.projsoul.map.MapHandler;
 
 
 public class Death extends State
@@ -35,14 +31,14 @@ public class Death extends State
   public void render()
   {
     // TODO Auto-generated method stub
-    if (Map.allPlayersDead())
+    if (MapHandler.allPlayersDead())
     {
       playable = false;
       death = true;
     }
     if(death)
     {
-      deathAnimation.playCam(Map.getPlayer().getX(),Map.getPlayer().getY());
+      deathAnimation.playCam(MapHandler.getPlayer().getX(), MapHandler.getPlayer().getY());
       //Index out of bounds? Need to find out how textIDs work
 
       //Draw.rect((float)0, (float)0, (float)256, (float)244, 0, 0, 256, 244, 0, 13);

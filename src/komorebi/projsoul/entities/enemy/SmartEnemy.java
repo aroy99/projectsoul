@@ -3,7 +3,7 @@
  */
 package komorebi.projsoul.entities.enemy;
 
-import komorebi.projsoul.ai.SquareGrid.Location;
+import komorebi.projsoul.ai.Location;
 import komorebi.projsoul.ai.WeightedSquareGrid;
 import komorebi.projsoul.ai.node.composite.MemSequence;
 import komorebi.projsoul.ai.node.composite.Priority;
@@ -19,10 +19,9 @@ import komorebi.projsoul.ai.node.leaf.WalkBehavior;
 import komorebi.projsoul.ai.node.leaf.conditions.IsPlayerInRange;
 import komorebi.projsoul.ai.node.leaf.conditions.IsTargetInSameTile;
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * A smart enemy that can go everywhere no prob
@@ -35,7 +34,7 @@ public class SmartEnemy extends Chaser {
   private int rtx, rty;           //Current tile x
   private int ptx, pty, ctx, cty; //Player tile x
   private ArrayList<Location> path = new ArrayList<Location>();
-  private WeightedSquareGrid grid;
+  private static WeightedSquareGrid grid;
 
   private static final int MAX_IDLE = 60;
   private static final int MAX_WALK = 120;
@@ -58,8 +57,8 @@ public class SmartEnemy extends Chaser {
    * @param radius The maximum distance the enemy can be from the player
    *      and still chase him/her
    */
-  public SmartEnemy(float x, float y, EnemyType type, int distanceFromPlay, boolean[][] collision) {
-    this(x, y, type, distanceFromPlay, collision, 1);
+  public SmartEnemy(float x, float y, EnemyType type, int distanceFromPlay) {
+    this(x, y, type, distanceFromPlay, 1);
   }
 
 
@@ -73,15 +72,21 @@ public class SmartEnemy extends Chaser {
    *      and still chase him/her
    * @param level The level of this enemy
    */
-  public SmartEnemy(float x, float y, EnemyType type, int distanceFromPlay, 
-      boolean[][] collision, int level) {
+  public SmartEnemy(float x, float y, EnemyType type, int distanceFromPlay, int level) {
     super(x, y, type, distanceFromPlay, level);
 
     regAni.setSpeed((int)(15/SPEED));
-
-    grid = new WeightedSquareGrid(collision);
-
+  }
+  
+  /**
+   * Does the rest of the initialization for the SmartEnemy, since it needs
+   * additional information that is created after enemies get loaded
+   */
+  public void initGrid(){
     
+    if(grid == null){
+      grid = new WeightedSquareGrid(MapHandler.getCollision());
+    }
     //Refer to https://docs.google.com/drawings/d/1Ht_5zxyptG1DSIq-I9YlRkH7Walw8kxPpIkbin3Elz4/edit
     root = new Priority(
         new Sequence(
@@ -106,59 +111,12 @@ public class SmartEnemy extends Chaser {
             )
         );
 
-
   }
 
   @Override
   public void update(){
     recalculateInstanceVariables();
-    
     root.update();
-
-    /**
-    if (Map.distanceBetween(x,y,targetX,targetY) > maxPlayDist && 
-        (dx != 0 || dy != 0)){
-      dx = 0;
-      dy = 0;
-      regAni.stop();
-    }
-
-    if(!hurt && Map.distanceBetween(x, y, targetX,targetY) <= maxPlayDist && 
-        (ptx != ctx || pty != cty)){
-      calculatePath();
-      regAni.resume();
-
-    }
-
-    if(!path.isEmpty() && new Location(rtx, rty).equals(path.get(0))){
-      Location prev = path.remove(0);
-
-      if(!path.isEmpty()){
-        Location curr = path.get(0);
-        decideNextTarget(prev, curr);
-      }else{
-        nextX = targetX;
-        nextY = targetY;
-        fineMode = true;
-      }
-    }
-
-    if (!hurt && Map.distanceBetween(x,y,targetX,targetY) <= maxPlayDist)
-    {      
-      float triX = Math.abs(nextX-x);
-      float triY = Math.abs(nextY-y);
-      float theta = (float)Math.atan(triY/triX);
-
-      moveToTarget(theta);
-
-      //DEBUG Smart Enemy Velocity, Key.V
-      if(KeyHandler.keyClick(Key.V)){
-        printFormatedParameters(triX, triY, theta);
-      }
-
-    }
-     **/
-
     enemyUpdate();
   }
 
@@ -167,8 +125,8 @@ public class SmartEnemy extends Chaser {
     ptx = ctx;
     pty = cty;
 
-    targetX = Map.getPlayer().getX();
-    targetY = Map.getPlayer().getY();
+    targetX = MapHandler.getPlayer().getX();
+    targetY = MapHandler.getPlayer().getY();
 
     ctx = (int)targetX/16;
     cty = (int)targetY/16;
@@ -178,64 +136,7 @@ public class SmartEnemy extends Chaser {
   }
 
 
-  private void calculatePath() {
-    HashMap<Location, Location> cameFrom = new HashMap<Location, Location>();
-    HashMap<Location, Double> costSoFar = new HashMap<Location, Double>();
-
-    Location start = new Location(rtx, rty);
-    Location goal = new Location(ctx, cty);
-
-    grid.aStarSearch(start, goal, cameFrom, costSoFar);
-
-    path = grid.reconstructPath(start, goal, cameFrom);
-    fineMode = false;
-  }
-
-
-  private void decideNextTarget(Location prev, Location curr) {
-    if(curr.x > prev.x){
-      nextX = curr.x*16+8;
-    }else if(curr.x < prev.x){
-      nextX = curr.x*16-8;
-      curr = path.set(0, new Location(curr.x-1, curr.y));
-    }else {
-      nextX = curr.x*16;
-    }
-
-    if(curr.y > prev.y){
-      nextY = curr.y*16+8;
-    }else if(curr.y < prev.y){
-      nextY = curr.y*16-8;
-      curr = path.set(0, new Location(curr.x, curr.y-1));
-    }else {
-      nextY = curr.y*16;
-    }
-  }
-
-
-  private void moveToTarget(float theta) {
-    if (nextX > x)
-    {
-      dx = SPEED*(float)Math.cos(theta);
-    } else if (nextX < x)
-    {
-      dx = -SPEED*(float)Math.cos(theta);
-    }else{
-      dx = 0;
-    }
-
-    if (nextY > y)
-    {
-      dy = SPEED*(float)Math.sin(theta);
-    } else if (nextY < y)
-    {
-      dy = -SPEED*(float)Math.sin(theta);
-    }else {
-      dy = 0;
-    }
-  }
-
-
+  @SuppressWarnings("unused")
   private void printFormatedParameters(float triX, float triY, float theta) {
     System.out.println("Velocity   : " + dx + ", " + dy);
     System.out.println("Trig Stuff : " + triX + ", " + triY + ", " + theta);

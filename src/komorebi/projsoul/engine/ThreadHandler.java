@@ -3,11 +3,11 @@
  */
 package komorebi.projsoul.engine;
 
-import java.util.ArrayList;
-
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
 import komorebi.projsoul.script.Script;
+
+import java.util.ArrayList;
 
 /**
  * 
@@ -22,8 +22,8 @@ public class ThreadHandler {
   /**
    * A thread object (extending java's Thread class) that can
    * interact with the ThreadHandler class
+   * 
    * @author Andrew Faulkenberry
-   *
    */
   public static class NewThread extends Thread
   {
@@ -111,6 +111,9 @@ public class ThreadHandler {
   public static void newThread(Script script)
   {
     NewThread thr = new NewThread(script);
+    
+    System.out.println("Added: " + thr);
+    
     threads.add(thr);
     thr.start();
   }
@@ -121,30 +124,45 @@ public class ThreadHandler {
    */
   public static void newThread(NewThread thread)
   {
+    System.out.println("Added: " + thread);
+    
     threads.add(thread);
     thread.start();
   }
   
   public static void remove(Script script)
-  {     
+  {
     int i = -1;
     
-    for (int j=0; j<threads.size(); j++)
+    for (int j=0; j < threads.size(); j++)
     {
-      if (threads.get(j).getScript()==script)
+      if (threads.get(j).getScript() == script)
       {
         i = j;
       }
     }
     
-    if (i!=-1) threads.remove(i);
+    if (i != -1){
+      NewThread dead = threads.remove(i);
+      /*
+      System.out.println("removed " + dead);
+      dead.setInterrupted(true);
+      dead.interrupt();
+      try {
+        dead.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+        System.err.println("Successfully murdered thread");
+      }
+      */
+    }
   }
   
   public static void remove(NewThread thread)
-  {    
+  {
     int i = -1;
     
-    for (int j=0; j<threads.size(); j++)
+    for (int j=0; j < threads.size(); j++)
     {
       if (threads.get(j) == thread)
       {
@@ -152,19 +170,33 @@ public class ThreadHandler {
       }
     }
     
-    if (i!=-1) threads.remove(i);
+    if (i != -1){
+      NewThread dead = threads.remove(i);
+      /*
+      System.out.println("removed " + dead);
+      dead.setInterrupted(true);
+      dead.interrupt();
+      try {
+        dead.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+        System.err.println("Successfully murdered thread");
+      }
+      */
+    }
   }
   
   public static void interrupt(Script script)
-  {    
+  {
     System.out.println(threads.size());
     
+    //DEBUG Print threads
     for (NewThread t: threads)
     {
       System.out.println(t);
     }
     
-    for (int j=0; j<threads.size(); j++)
+    for (int j=0; j < threads.size(); j++)
     {
       if (threads.get(j).getScript() == script)
       {
@@ -179,27 +211,27 @@ public class ThreadHandler {
   {
     int i = threads.indexOf(thread);
     
-    if (i!=-1) 
+    if (i != -1) 
     {
       threads.get(i).setLock(lock);
     }
-   }
+  }
   
   public static void unlock(Script script)
   {
     int i = -1;
     
-    for (int j=0; j<threads.size(); j++)
+    for (int j=0; j < threads.size(); j++)
     {
-      if (threads.get(j).getScript()==script)
+      if (threads.get(j).getScript() == script)
       {
         i = j;
       }
     }
     
-    if (i!=-1)
+    if (i != -1)
     {
-      if (threads.get(i).getLock()!=null)
+      if (threads.get(i).getLock() != null)
       {
         threads.get(i).getLock().resumeThread();
       }

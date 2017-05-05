@@ -3,7 +3,10 @@
  */
 package komorebi.projsoul.script;
 
+import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.map.EditorMap;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.script.Task.TaskWithNumber;
 import komorebi.projsoul.script.Task.TaskWithString;
 
@@ -53,8 +56,14 @@ public class WarpScript extends AreaScript {
   /**
    * Renders the "W" tile
    */
-  public void render(){
-    Draw.rect(x, y, 16, 16, 48, 0, 2);
+  public void render(){    
+    if(MapHandler.isHitBox){
+      Draw.rectCam(x, y, 16, 16, 48, 0, 2);
+    }
+    
+    if(EditorMap.getMode() == EditorMap.Modes.EVENT){
+      Draw.rect(x, y, 16, 16, 48, 0, 2);
+    }
   }
 
 }

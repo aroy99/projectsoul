@@ -26,6 +26,7 @@ import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.opengl.GL11.glVertex2f;
 
 import komorebi.projsoul.gameplay.Camera;
+import komorebi.projsoul.map.Map;
 
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
@@ -327,6 +328,24 @@ public class Draw {
       int texy, int texsx, int texsy, int texID) {
     rectCam(x, y, sx, sy, texx, texy, texsx, texsy, 0, texID);
   }
+  
+  /**
+   * Draws a sprite that loops around the screen (good for map border tiles).
+   * 
+   * @param x the X position on the screen, starting from the left           
+   * @param y the Y position on the screen, starting from the <i>bottom</i>  
+   * @param sx the width                                                     
+   * @param sy the height                                                    
+   * @param texx X position on the picture, starting from the left           
+   * @param texy Y position on the picture, starting from the <i>top</i>     
+   * @param texID see {@link Draw#loadTextures() loadTextures}
+   */
+  public static void rectScroll(float x, float y, float sx, float sy, int texx, 
+      int texy, int texID) {
+    rect(x-Camera.getX()%Map.SIZE, y-Camera.getY()%Map.SIZE, 
+        sx, sy, texx, texy, texID);
+  }
+
   
   public static void addSpreadsheetTexture(int png) throws IOException
   {

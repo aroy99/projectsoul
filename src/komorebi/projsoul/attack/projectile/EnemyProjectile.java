@@ -6,9 +6,8 @@ package komorebi.projsoul.attack.projectile;
 import komorebi.projsoul.attack.WaterBarrier;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.player.Caspian;
-import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.entities.player.Player;
-import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 
 import java.awt.Rectangle;
 
@@ -28,7 +27,7 @@ public abstract class EnemyProjectile extends Projectile {
   
   @Override
   public void update(){
-    Player player = Map.getPlayer();
+    Player player = MapHandler.getPlayer();
     
     if (player.getHitBox().intersects(new Rectangle((int) (x+dx), 
         (int) (y+dy), (int) area.getWidth(), 
@@ -51,7 +50,7 @@ public abstract class EnemyProjectile extends Projectile {
         for(int i = 0; i < 2; i++){
           for (int j = 0; j < 2; j++){
 
-            float distance = Map.distanceBetween(barr.getX(), barr.getY(), xs[j], ys[i]);
+            float distance = MapHandler.distanceBetween(barr.getX(), barr.getY(), xs[j], ys[i]);
 
             if(barr.intersectsCirc(distance)){
               destroyMe = true;

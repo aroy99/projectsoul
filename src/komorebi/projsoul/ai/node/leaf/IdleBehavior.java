@@ -23,13 +23,9 @@ public class IdleBehavior extends Behavior{
 
   @Override
   public Status update() {
-    System.out.println("IN IDLE");
-    
     idleCount--;
     
     if(idleCount <= 0){
-      System.out.println("Finished Idle");
-
       close();
       return Status.SUCCESS;
     }

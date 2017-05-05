@@ -24,7 +24,7 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.EditorMap.Modes;
-import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 
 import java.util.HashMap;
 
@@ -163,10 +163,10 @@ public class Shooter extends MagicEnemy {
       dx = 0;
       dy = 0;
 
-      targetX = Map.getPlayer().getX();
-      targetY = Map.getPlayer().getY();
+      targetX = MapHandler.getPlayer().getX();
+      targetY = MapHandler.getPlayer().getY();
 
-      currDist = Map.distanceBetween(x,y,targetX,targetY);
+      currDist = MapHandler.distanceBetween(x,y,targetX,targetY);
 
 //      behaviors.get(currState).update();
 //      decideWhetherToSwitchStates();
@@ -314,7 +314,7 @@ public class Shooter extends MagicEnemy {
       Draw.circ(x, y, runDistance, red, blue, green, 64);
 
     }
-    if(Map.isHitBox){
+    if(MapHandler.isHitBox){
       Draw.circCam(x, y, aggroDistance, red, blue, green, 64);
       Draw.circCam(x, y, runDistance, red, blue, green, 64);
     }

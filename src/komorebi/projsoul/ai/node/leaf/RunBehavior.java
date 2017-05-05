@@ -5,7 +5,7 @@ package komorebi.projsoul.ai.node.leaf;
 
 import komorebi.projsoul.ai.node.Status;
 import komorebi.projsoul.entities.enemy.Enemy;
-import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 
 /**
  * The enemy runs away
@@ -26,8 +26,8 @@ public class RunBehavior extends Behavior {
 
   @Override
   public Status update() {
-    float targetX = Map.getPlayer().getX();
-    float targetY = Map.getPlayer().getY();
+    float targetX = MapHandler.getPlayer().getX();
+    float targetY = MapHandler.getPlayer().getY();
 
     float x = parent.getX();
     float y = parent.getY();
