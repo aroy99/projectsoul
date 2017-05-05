@@ -2,28 +2,32 @@ package komorebi.projsoul.states;
 
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
+import komorebi.projsoul.engine.HUD;
 import komorebi.projsoul.engine.Inventory;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.entities.Characters;
 import komorebi.projsoul.items.CharacterItem;
-import komorebi.projsoul.items.Potion;
+import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
+import komorebi.projsoul.states.State.States;
 
 public class InventoryState extends State 
 {
 	private TextHandler text = new TextHandler();
 	EarthboundFont font = new EarthboundFont(1);
-	@SuppressWarnings("unused")
-	private int index = 0;
+	int index = 0;
 	private int topindex = 0;
+	public static ShopState shop = new ShopState();
 	private int bottomindex = 5;
 	private int count = 50;
 	private int count2 = 140;
-	private int check = 0;
 	private static int count3 = 0;
 	private static int listIndex = 0;
 	private static CharacterItem[] items;
+	public Characters character;
+	public HUD healths = new HUD(0,0,0);
 	
 	public void getInput() 
 	{
@@ -32,8 +36,7 @@ public class InventoryState extends State
 	
 	public void update() 
 	{	
-		
-		if(listIndex == 0)
+		//if(listIndex == 0)
 		{
 			text.clear();
 			listIndex=1;
@@ -45,7 +48,7 @@ public class InventoryState extends State
 				{
 					items[count3] = item;
 					count3++;
-					System.out.println(item.getName());
+					//System.out.println(item.getName());
 				}
 				else
 				{
@@ -55,44 +58,87 @@ public class InventoryState extends State
 					break;
 				}	
 			}
-			if(items.length > 5)
+			/*if(items.length > 5)
 			{
 				topindex = 0;
 				bottomindex = 5;
-			}
+			}*/
 		}
 		
 		text.clear();
 		text.write("Inventory", 100, 155, font);
+		text.write("Exit", 150, 90, font);
 		if(KeyHandler.keyClick(Key.DOWN))
-		{
-			index++;
+		{	
 			topindex++;
 			bottomindex++;
-		
+			
 			if(bottomindex>items.length)
 			{
-				index = items.length-1;
-				topindex = items.length - 5;
-				bottomindex = items.length;
+				if(bottomindex == 0)
+				{
+					index = 5;
+				}
+				else
+				{
+					index++;
+					topindex = items.length - 5;
+					bottomindex = items.length;
+				}
 			}
+			
 		}
 		if(KeyHandler.keyClick(Key.UP))
 		{
-			index--;
-			topindex--;
-			bottomindex--;
-		
+			if(index != 5)
+			{
+				topindex--;
+				bottomindex--;
+			}
+			else if(items.length < 5)index = items.length-1;
+			else index = 4;
 			if(topindex<0)
 			{
-				index = 0;
+				index--;
 				topindex = 0;
 				bottomindex = 5;
 			}
 		}
 		
-		if(KeyHandler.keyClick(Key.ENTER))
+		if(KeyHandler.keyClick(Key.U))
+			GameHandler.switchState(States.GAME);
+		
+		//NOTE: remove the print statements.
+		if(KeyHandler.keyClick(Key.E))
 		{
+			System.out.println("The conditional works");
+
+			if(index == 5)
+			{
+				if(ShopState.sell)
+				{
+					ShopState.sell = false;
+					System.out.println("The boolean works");
+				}
+				else
+				{
+					index = 0;
+					listIndex = 0;
+					GameHandler.switchState(States.GAME);
+				}
+				System.out.println("The index works");
+			}
+			else
+			{
+				if(ShopState.sell)
+				{
+					character = Map.currentPlayer();
+				    healths = Map.getPlayer().getCharacterHUD(character);
+				    healths.giveMoney(Inventory.getInventoryItem(index).getResalePrice());
+					Inventory.removeItem(Inventory.getInventoryItem(index));
+					System.out.println("Removing works");
+				}
+			}
 			/*if(index == 0) 
 				if(!item1.equipped)
 					item1.equip();
@@ -117,11 +163,6 @@ public class InventoryState extends State
 				items[2].useItem();*/
 			
 		}
-		if(KeyHandler.keyClick(Key.I))
-		{
-			listIndex=0;
-			GameHandler.switchState(States.GAME);
-		}
 		
 		if(items.length<=5)
 		{
@@ -138,7 +179,7 @@ public class InventoryState extends State
 			}
 			//It prints it out in the correct order however it does not display in the correct order?!
 			//System.out.println(items[i].getName());
-			text.write(items[i].getName() + "   " + items[i].getQuantity(), count, count2, font);
+			text.write(items[i].getName() + "   " + items[i].getQuantity() + "     " + items[i].getResalePrice(), count, count2, font);
 			count2-=10;
 		}	
 	}
@@ -148,19 +189,27 @@ public class InventoryState extends State
 	{
 		Draw.rect(10, 75, 240, 100, 0, 0, 220, 59, 6);
 		
-		/*while(index < items.length)
+		if(index > 5)index = 5;
+		
+		if(items.length < 5 && index == items.length)
+			index = 5;
+		//this needs to be modified to be an else if, but what's the condition?
+		
+		
+		if(index < 0)index = 0;
+		
+		if(bottomindex == items.length || items.length - 5 <= bottomindex)
 		{
-			Draw.rect(count-3, count2+3, 2, 2, 48, 3, 50, 5, 5);
-		}*/
-		
-		//index = 0;
-		
-		/*if(index == 0)Draw.rect(27, 142, 2, 2, 48, 3, 50, 5, 5);
-		else if(index == 1)Draw.rect(27, 132, 2, 2, 48, 3, 50, 5, 5);
-		else if(index == 2)Draw.rect(27, 122, 2, 2, 48, 3, 50, 5,5);*/
-		
-		/*if(index > 2)index = 0;
-		else if(index < 0) index = 2;*/
+			if(bottomindex == 0)
+				index = 5;
+			if(index == 0)Draw.rect(27, 142, 2, 2, 48, 3, 50, 5, 5);
+			else if(index == 1)Draw.rect(27, 132, 2, 2, 48, 3, 50, 5, 5);
+			else if(index == 2)Draw.rect(27, 122, 2, 2, 48, 3, 50, 5,5);
+			else if(index == 3)Draw.rect(27, 112, 2, 2, 48, 3, 50, 5, 5);
+			else if(index == 4)Draw.rect(27, 102, 2, 2, 48, 3, 50, 5,5);
+			else if(index == 5)Draw.rect(147, 92, 2, 2, 48, 3, 50, 5,5);
+		}
+		else Draw.rect(27, 142, 2, 2, 48, 3, 50, 5, 5);
 		
 		text.render();
 

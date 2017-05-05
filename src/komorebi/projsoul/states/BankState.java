@@ -20,7 +20,7 @@ public class BankState extends State
 	private int index = 0;
 	boolean deposit, withdraw = false;
 	boolean wrongNums;
-	public Bank bank = new Bank(1000);
+	public static Bank bank = new Bank(1000);
 	EarthboundFont font = new EarthboundFont(1);
 	private int[] nums = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
@@ -44,7 +44,7 @@ public class BankState extends State
 		
 		if(!deposit && !withdraw)
 		{
-			text.write("Hello!", 115, 155, font);
+			text.write("Bank", 115, 155, font);
 			text.write("Would you like to make a Withdrawal or a Deposit?", 20, 140, font);
 			text.write("Withdrawal", 40, 110, font);
 			text.write("Deposit", 170, 110, font);

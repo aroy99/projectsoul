@@ -15,7 +15,7 @@ public abstract class Inventory
 	{
 		for(CharacterItem myItem: items)
 		{
-			if(myItem.getName() == item.getName())
+			if(myItem.getName().equalsIgnoreCase(item.getName()))
 			{
 				myItem.increaseQuantity(item.getQuantity());
 				checked++;
@@ -35,10 +35,30 @@ public abstract class Inventory
 		}
 		numOfItems = items.size();
 		
-		/*if(items.size()-1 == size)
+	}
+	
+	public static void removeItem(CharacterItem item)
+	{
+		for(int i=0; i<items.size(); i++)
 		{
-			System.out.println("Sorry your inventory is full");
-		}*/
+			if(item.getName().equalsIgnoreCase(items.get(i).getName()))
+			{
+				if(item.getQuantity()==1)
+				{
+					items.remove(item);
+					numOfItems--;
+				}
+				else
+				{
+					item.subQuantity();
+				}
+			}
+		}
+	}
+	
+	public static CharacterItem getInventoryItem(int index)
+	{
+		return items.get(index);
 	}
 	
 	public void printInventoryContents()
