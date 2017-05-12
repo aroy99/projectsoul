@@ -7,10 +7,10 @@ import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.entities.player.Player;
 import komorebi.projsoul.script.commands.abstracts.CommandOnNPCAndPlayer;
 import komorebi.projsoul.script.decision.DecisionTree;
-import komorebi.projsoul.script.decision.ElseThenPair;
+import komorebi.projsoul.script.decision.ElseStatement;
 import komorebi.projsoul.script.decision.FlagPredicate;
 import komorebi.projsoul.script.decision.Flags;
-import komorebi.projsoul.script.decision.IfThenPair;
+import komorebi.projsoul.script.decision.IfStatement;
 import komorebi.projsoul.script.decision.PlayerPredicate;
 import komorebi.projsoul.script.decision.Predicate;
 import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
@@ -92,7 +92,7 @@ public class IfElseCommand extends CommandOnNPCAndPlayer {
     conseq = conseq.trim();
     
     Predicate predicate = interpretPredicate(pred, line);
-    IfThenPair ifThen = new IfThenPair(predicate);
+    IfStatement ifThen = new IfStatement(predicate);
     
     requests.add(new ConsequenceRequest(ifThen, conseq, line));
     decision.addIfStatement(ifThen);
@@ -117,7 +117,7 @@ public class IfElseCommand extends CommandOnNPCAndPlayer {
     String conseq = data.substring(1);
     conseq = conseq.trim();
     
-    ElseThenPair elseThen = new ElseThenPair();
+    ElseStatement elseThen = new ElseStatement();
     
     requests.add(new ConsequenceRequest(elseThen, conseq, line));
     decision.setElseStatement(elseThen);

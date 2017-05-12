@@ -1,10 +1,10 @@
 package komorebi.projsoul.script.decision;
 
-public class IfThenPair extends DecisionStatement {
+public class IfStatement extends DecisionStatement {
 
   private Predicate predicate;
   
-  public IfThenPair(Predicate predicate)
+  public IfStatement(Predicate predicate)
   {
     this.predicate = predicate;
   }

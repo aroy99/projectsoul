@@ -16,7 +16,6 @@ import komorebi.projsoul.script.commands.FreezeCommand;
 import komorebi.projsoul.script.commands.GoToCommand;
 import komorebi.projsoul.script.commands.IfElseCommand;
 import komorebi.projsoul.script.commands.JogCommand;
-import komorebi.projsoul.script.commands.LoadMapCommand;
 import komorebi.projsoul.script.commands.LockPlayerCommand;
 import komorebi.projsoul.script.commands.PauseCommand;
 import komorebi.projsoul.script.commands.PlayMusicCommand;
@@ -27,6 +26,8 @@ import komorebi.projsoul.script.commands.TurnCommand;
 import komorebi.projsoul.script.commands.UnblockCommand;
 import komorebi.projsoul.script.commands.UnlockPlayerCommand;
 import komorebi.projsoul.script.commands.WalkCommand;
+import komorebi.projsoul.script.commands.WarpCommand;
+import komorebi.projsoul.script.commands.WarpTogetherCommand;
 import komorebi.projsoul.script.commands.abstracts.Command;
 import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
 
@@ -47,7 +48,6 @@ public class Keywords {
     addKeyword("flag", FlagBooleanCommand.class, false);
     addKeyword("freeze", FreezeCommand.class, false);
     addKeyword("if", IfElseCommand.class, false);
-    addKeyword("load", LoadMapCommand.class, false);
     addKeyword("lock", LockPlayerCommand.class, false);
     addKeyword("pause", PauseCommand.class, false);
     addKeyword("play", PlayMusicCommand.class, false);
@@ -55,6 +55,8 @@ public class Keywords {
     addKeyword("stopmusic", StopMusicCommand.class, false);
     addKeyword("unblock", UnblockCommand.class, false);
     addKeyword("unlock", UnlockPlayerCommand.class, false);
+    addKeyword("warp", WarpCommand.class, false);
+    addKeyword("warpwith", WarpTogetherCommand.class, false);
     
     addKeyword("change", ChangeSpriteCommand.class, true);
     addKeyword("goto", GoToCommand.class, true);

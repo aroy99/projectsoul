@@ -6,11 +6,10 @@ call talking, running, flash
 call finishing
 unlock
 
-
 branch talking
 if caspian, say Ash: AHHHHHH HELP CASP!
 elseif flannery, say Ash: Y U DO THIS!
-else say Ash: AHHHHHHHH!
+else, say Ash: AHHHHHHHH!
 
 branch running
 jog up up left left down down right right

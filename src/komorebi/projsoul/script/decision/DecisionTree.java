@@ -7,19 +7,15 @@ import komorebi.projsoul.entities.player.Player;
 
 public class DecisionTree {
   
-  private NPC npc;
-  private Player player;
-  
-  private ArrayList<IfThenPair> ifStatements;
-  private ElseThenPair elseStatement;
+  private ArrayList<IfStatement> ifStatements;
+  private ElseStatement elseStatement;
   
   public DecisionTree()
   {
-    ifStatements = new ArrayList<IfThenPair>();
-    
+    ifStatements = new ArrayList<IfStatement>();
   }
   
-  public void addIfStatement(IfThenPair add)
+  public void addIfStatement(IfStatement add)
   {    
     ifStatements.add(add);
   }
@@ -29,7 +25,7 @@ public class DecisionTree {
     return elseStatement != null;
   }
   
-  public void setElseStatement(ElseThenPair elseThen)
+  public void setElseStatement(ElseStatement elseThen)
   {
     elseStatement = elseThen;
   }
@@ -50,7 +46,7 @@ public class DecisionTree {
       i++;
     }
     
-    if (!anyEvaluatedTrue)
+    if (!anyEvaluatedTrue && hasElse())
       elseStatement.execute(npc, player);
   }
 }

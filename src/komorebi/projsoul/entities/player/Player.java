@@ -319,7 +319,7 @@ public abstract class Player extends Person implements Playable{
 
     future.x = (int) x;
     future.y = (int) y;
-
+    
     guiding = false;
 
     magic.update();
@@ -399,36 +399,16 @@ public abstract class Player extends Person implements Playable{
 
  
 
-  public void align(Face dir)
+  public void align(Face dir, NPC npc)
   {
     waiting = ThreadHandler.currentThread();
     hasInstructions=true;
 
-    this.dir = dir;
+    Rectangle r = npc.getSurroundingRectangle(dir);
+    
+    goToPixX(r.x);
+    goToPixY(r.y);
 
-    switch (dir)
-    {
-      case DOWN:
-        framesToGo = (int) this.y - 16*getTileY();
-        down = true;
-        break;
-      case LEFT:
-        framesToGo = (int) this.x - 16*getTileX();
-        left = true;
-        break;
-      case RIGHT:
-        framesToGo = (int) (16*getTileX() + 16 - this.x);
-        right = true;
-        break;
-      case UP:
-        framesToGo = (int) (16*getTileY() + 16 - this.y);
-        up = true;
-        break;
-      default:
-        break;
-    }
-
-    ThreadHandler.lockCurrentThread();
   }
 
   public void align(NPC npc)

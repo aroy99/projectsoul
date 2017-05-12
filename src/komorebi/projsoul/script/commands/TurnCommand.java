@@ -19,7 +19,7 @@ public class TurnCommand extends CommandOnAnyPerson {
     
     for (int i = 0; i < instructions.length; i++)
     {
-      if (Face.valueOf(instructions[i].toUpperCase()) != null)
+      if (isValidDirection(instructions[i].toUpperCase()))
       {
         directions[i] = Face.valueOf(instructions[i].toUpperCase());
       } else
@@ -36,6 +36,18 @@ public class TurnCommand extends CommandOnAnyPerson {
       person.turn(direction); 
     }
        
+  }
+  
+  private boolean isValidDirection(String instruction)
+  {
+    try
+    {
+      Face face = Face.valueOf(instruction);
+      return true;
+    } catch (IllegalArgumentException e)
+    {
+      return false;
+    }
   }
   
   

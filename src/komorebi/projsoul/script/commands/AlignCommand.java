@@ -48,7 +48,7 @@ public class AlignCommand extends CommandOnNPCAndPlayer {
     if (alignment.alignsToNPC())
       player.align(npc);
     else
-      player.align(alignment.getDirection());
+      player.align(alignment.getDirection(), npc);
     
   }
   

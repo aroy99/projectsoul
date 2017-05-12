@@ -129,5 +129,19 @@ public class NumberedTextArea extends JPanel {
     numbers.setText(newText);
   }
   
+  public void clearText()
+  {
+    text.setText("");
+    
+    adjustPanelSize();
+    adjustTextAreaSize();
+    updateNumbers();
+  }
+  
+  public void addKeyTypedListener(KeyListener l)
+  {
+    text.addKeyListener(l);
+  }
+  
 
 }

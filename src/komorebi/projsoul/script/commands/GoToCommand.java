@@ -2,9 +2,7 @@ package komorebi.projsoul.script.commands;
 
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.script.commands.abstracts.CommandOnNPCOnly;
-import komorebi.projsoul.script.commands.keywords.Keyword;
 import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
-import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
 
 public class GoToCommand extends CommandOnNPCOnly {
 
@@ -26,20 +24,9 @@ public class GoToCommand extends CommandOnNPCOnly {
 
   @Override
   public void execute(NPC npc) {
-    npc.setTileLocation(x, y);
+    npc.goToPixX(x*16);
+    npc.goToPixY(y*16);
 
-  }
-  
-  private int tryParse(String number, int line) 
-      throws InvalidScriptSyntaxExceptionWithLine
-  {
-    try {
-      return Integer.parseInt(number);
-    } catch (NumberFormatException e)
-    {
-      throw new InvalidScriptSyntaxExceptionWithLine(number + " cannot be "
-          + "resolved to an integer", line);
-    }
   }
 
 }

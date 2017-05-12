@@ -96,6 +96,8 @@ public abstract class Entity implements Renderable, Editable{
     
     this.tx = tx;
     this.ty = ty;
+    
+    area.setLocation(tx*16, ty*16);
   }
   
   /**

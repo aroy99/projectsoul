@@ -7,6 +7,7 @@ package komorebi.projsoul.entities;
 import java.awt.Rectangle;
 
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.map.Map;
@@ -384,5 +385,20 @@ public class NPC extends Person {
 
   public void setName(String newName){
     name = newName;
+  }
+  
+  public Rectangle getSurroundingRectangle(Face dir)
+  {
+    switch (dir)
+    {
+      case DOWN:
+        return surround[BOTTOM];
+      case LEFT:
+        return surround[LEFT];
+      case RIGHT:
+        return surround[RIGHT];
+      default:
+        return surround[TOP];
+    }
   }
 }

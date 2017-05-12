@@ -104,7 +104,20 @@ public class Map implements Playable{
    * @param key The location of the map
    */
   public Map(String key){
-
+    this(key, true);
+  }
+  
+  public static Map createMapAndTransferPlayers(String name,
+      Map map)
+  {
+    Map newMap = new Map(name, false);
+    newMap.transferPlayers(map);
+    
+    return newMap;
+  }
+  
+  private Map(String key, boolean initializePlayers)
+  {
     try {
       BufferedReader reader = new BufferedReader(new FileReader(
           new File(key)));
@@ -244,21 +257,24 @@ public class Map implements Playable{
 
       reader.close();
 
-      caspian = new Caspian(tiles[0].length/2*16,0);
-      flannery = new Flannery(tiles[0].length/2*16,0);
-      sierra = new Sierra(tiles[0].length/2*16,0);
-      bruno = new Bruno(tiles[0].length/2*16,0);
+      if (initializePlayers)
+      {
+        caspian = new Caspian(tiles[0].length/2*16,0);
+        flannery = new Flannery(tiles[0].length/2*16,0);
+        sierra = new Sierra(tiles[0].length/2*16,0);
+        bruno = new Bruno(tiles[0].length/2*16,0);
 
-      play = caspian;
-
-      Camera.center(play.getX(), play.getY(), tiles[0].length*16, tiles.length*16);
+        play = caspian;
+        
+        Camera.center(play.getX(), play.getY(), tiles[0].length*16, tiles.length*16);
+      }
+     
 
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
     }
 
     startNPCs();
-
   }
 
   private void startNPCs()
@@ -266,6 +282,54 @@ public class Map implements Playable{
     for (NPC npc: npcs)
     {
       npc.runWalkingScript();
+    }
+  }
+  
+  public void transferPlayers(Map map)
+  {
+    for (Characters c: Characters.values())
+    {
+      setPlayer(map.getPlayer(c), c);
+    }
+  }
+  
+  public void setPlayer(Player p, Characters c)
+  {
+    switch (c)
+    {
+      case BRUNO:
+        bruno = (Bruno) p;
+        break;
+      case CASPIAN:
+        caspian = (Caspian) p;
+        break;
+      case FLANNERY:
+        flannery = (Flannery) p;
+        break;
+      case SIERRA:
+        sierra = (Sierra) p;
+        break;
+      default:
+        break;
+      
+    }
+  }
+  
+  public Player getPlayer(Characters c)
+  {
+    switch (c)
+    {
+      case BRUNO:
+        return bruno;
+      case CASPIAN:
+        return caspian;
+      case FLANNERY:
+        return flannery;
+      case SIERRA:
+        return sierra;
+      default:
+        return play;
+      
     }
   }
 
@@ -863,6 +927,11 @@ public class Map implements Playable{
         return true;
 
     return false;
+  }
+  
+  public void addNPC(NPC npc)
+  {
+    npcs.add(npc);
   }
 
 

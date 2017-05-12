@@ -33,16 +33,4 @@ public class BlockCommand extends CommandNoSubject {
   public void execute() {
     Game.getMap().setCollision(x, y, false);
   }
-  
-  private int tryParse(String number, int line) throws InvalidScriptSyntaxExceptionWithLine
-  {
-    try {
-      return Integer.parseInt(number);
-    } catch (NumberFormatException e)
-    {
-      throw new InvalidScriptSyntaxExceptionWithLine(number + " cannot be "
-          + "resolved to an integer", line);
-    }
-  }
-
 }

@@ -22,5 +22,17 @@ public abstract class Command {
     return appliesToPlayer;
   }
   
+  protected int tryParse(String number, int line) 
+      throws InvalidScriptSyntaxExceptionWithLine
+  {
+    try {
+      return Integer.parseInt(number);
+    } catch (NumberFormatException e)
+    {
+      throw new InvalidScriptSyntaxExceptionWithLine(number + 
+          " cannot be resolved to an integer", line);
+    }
+  }
+  
   public abstract void interpret(String data, int line) throws InvalidScriptSyntaxExceptionWithLine;
 }

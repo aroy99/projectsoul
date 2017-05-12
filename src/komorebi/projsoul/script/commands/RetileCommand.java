@@ -32,16 +32,4 @@ public class RetileCommand extends CommandNoSubject {
         x, y);
 
   }
-  
-  private int tryParse(String number, int line) throws InvalidScriptSyntaxExceptionWithLine
-  {
-    try {
-      return Integer.parseInt(number);
-    } catch (NumberFormatException e)
-    {
-      throw new InvalidScriptSyntaxExceptionWithLine(number + " cannot be "
-          + "resolved to an integer", line);
-    }
-  }
-
 }

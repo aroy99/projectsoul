@@ -1,9 +1,10 @@
 branch main
 lock
 align
-if caspian, call talkToCasp
-else, say Hey, @me ... have you seen Caspian? Tell him \nto come see me
+say Bye!
+turn left
+fadeout
+warpwith Bigger_Town 4 4 2 2
+fadein
+pause 20
 unlock
-
-branch talkToCasp
-say Caspian, I've been looking all over for you! \pWhere the hell have you been?
