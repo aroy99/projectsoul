@@ -79,9 +79,7 @@ public class Execution implements Runnable {
   public void run() {
                 
     for (Command command: branch)
-    {                              
-      System.out.println("Running " + command.getClass().getSimpleName());
-      
+    {                                    
       if (command instanceof CommandNoSubject)
         ((CommandNoSubject) command).execute();
       else if (command instanceof CommandOnAnyPerson)

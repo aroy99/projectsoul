@@ -16,13 +16,15 @@ public class ScriptDatabase {
   
   public static void loadScripts()
   {
+    
     ArrayList<File> files = ClassUtils.getAllFilesInFolder(
         SCRIPTS_FOLDER);
     
     for (File txtFile: files)
-    {
-      System.out.println("Loading " + txtFile.getName());
+    {      
       
+      System.out.println("loading " + txtFile.getName());
+
       Script script = new Script(txtFile);
       ScriptDatabase.addScript(script);
     }

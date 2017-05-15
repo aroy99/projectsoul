@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -60,6 +59,10 @@ public class ScriptEditor extends JFrame {
   private static final Rectangle COMPILE_BUTTON_AREA =
       new Rectangle(25, 330, 100, 25);
 
+  private JButton testButton;
+  private static final Rectangle TEST_BUTTON_AREA = 
+      new Rectangle(150, 330, 100, 25);
+
   private JTextArea output;
   private static final Rectangle OUTPUT_AREA = 
       new Rectangle(0, 0, 400, 100);
@@ -85,8 +88,8 @@ public class ScriptEditor extends JFrame {
 
     Flags.loadFlags();
 
-    File file = new File("res/scripts/debug_script");
-    ScriptEditor edit = new ScriptEditor(file);
+    @SuppressWarnings("unused")
+    ScriptEditor edit = new ScriptEditor(null);
   }
 
   public ScriptEditor(File file)
@@ -99,12 +102,12 @@ public class ScriptEditor extends JFrame {
       public void windowActivated(WindowEvent arg0) {}
       public void windowClosing(WindowEvent e) {
         boolean close = true;
-        
+
         if (needsToBeSaved)
         {
           close = promptSaveBeforeClosing();
         }
-        
+
         if (close)
           System.exit(0);
       }
@@ -128,7 +131,7 @@ public class ScriptEditor extends JFrame {
     {
       @Override
       public void keyPressed(KeyEvent e) {
- 
+
       }
 
       @Override
@@ -149,8 +152,10 @@ public class ScriptEditor extends JFrame {
 
 
 
-
-    loadFile(file);
+    if (file != null)
+    {
+      loadFile(file);
+    }
 
     output = new JTextArea();
     outputScroll = new JScrollPane(output);
@@ -171,17 +176,57 @@ public class ScriptEditor extends JFrame {
 
     });
 
+    testButton = new JButton("Test");
+    testButton.setBounds(TEST_BUTTON_AREA);
+
+    testButton.addActionListener(new ActionListener()
+    {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        
+        if (!hasCompilerErrors())
+        {
+          promptTestDialog();
+        } else
+        {
+          Object[] option = {"OK"};
+          
+          JOptionPane.showOptionDialog(rootFrame(), 
+              "Compiler errors in the script must be resolved "
+              + "before testing.", 
+              "Warning", 
+              JOptionPane.OK_OPTION,
+              JOptionPane.WARNING_MESSAGE, null,
+              option, option[0]);
+        }
+      }
+        
+    });
+
 
     canvas.add(inputScroll);
     canvas.add(outputScroll);
     canvas.add(compileButton);
+    canvas.add(testButton);
     canvas.add(menu);
 
     this.add(canvas);
 
     this.setResizable(false);
-    this.setTitle("Script Editor - " + file.getName());
+    updateTitleBar();
     this.setVisible(true);
+  }
+  
+  private JFrame rootFrame()
+  {
+    return this;
+  }
+  
+  private boolean hasCompilerErrors()
+  {
+    compile();
+    
+    return !output.getText().equals("No errors.");
   }
 
   private void createMenu()
@@ -262,7 +307,14 @@ public class ScriptEditor extends JFrame {
 
   private void newFile()
   {
-    if (needsToBeSaved && promptSaveBeforeClosing())
+    boolean close = true;
+    
+    if (needsToBeSaved)
+    {
+      close = promptSaveBeforeClosing();
+    }
+    
+    if (close)
     {
       file = null;
       input.clearText();
@@ -310,8 +362,6 @@ public class ScriptEditor extends JFrame {
       file = fileChooser.getSelectedFile();
       save();
     }
-
-
   }
 
   private void open()
@@ -327,7 +377,7 @@ public class ScriptEditor extends JFrame {
     {
       showOpenDialog();
     }
-    
+
   }
 
   private void showOpenDialog()
@@ -339,10 +389,10 @@ public class ScriptEditor extends JFrame {
       File chosen = fileChooser.getSelectedFile();
 
       loadFile(chosen);
-      
+
       needsToBeSaved = false;
       updateTitleBar();
-      
+
     }
   }
 
@@ -355,7 +405,7 @@ public class ScriptEditor extends JFrame {
     Object[] options = {"Yes", "No", "Cancel"};
 
     String fileName = file==null?"this file":file.getName();
-    
+
     int response = JOptionPane.showOptionDialog(this, 
         "Would you like to save " + fileName + "?", 
         "Save?", 
@@ -427,6 +477,15 @@ public class ScriptEditor extends JFrame {
   {
     String title = this.getTitle();
     this.setTitle(title.substring(0, title.length()-1));
+  }
+  
+  private void promptTestDialog()
+  {
+    RunTestPrompt prompt = new RunTestPrompt(this, 
+        file.getName().replace(".txt", ""));
+    
+    prompt.setVisible(true);
+    
   }
 
 }

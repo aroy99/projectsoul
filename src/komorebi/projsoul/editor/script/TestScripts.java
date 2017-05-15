@@ -17,6 +17,15 @@ import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glOrtho;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Scanner;
+
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.openal.AL;
@@ -34,27 +43,101 @@ public class TestScripts {
 
   private GameHandler gamehandler;
   public int scale;
-  
+
   public static final int WIDTH = 256;
   public static final int HEIGHT = 224;
-  
+
+  private static final String DEFAULT_MAP = "ScriptTestingMap.map";
+  private static final File DEFAULT_MAP_FILE = new File(
+      "res/maps/" + DEFAULT_MAP);
 
   public static void main(String[] args){
-    new TestScripts().run();
+    
+    System.out.println("START PRINTING ARGS");
+    
+    for (String arg: args)
+    {
+      System.out.println(arg);
+    }
+    
+    System.out.println("STOP PRINTING ARGS");
+
+    
+    if (args.length != 2)
+    {
+      args = new String[2];
+      args[0] = "do_nothing";
+      args[1] = "do_nothing";
+    }
+    
+    new TestScripts().run(args);
+  }
+
+  private static void addTestNPCToDefaultMap(String walkScript,
+      String talkScript)
+  {
+    try {
+      PrintWriter write = new PrintWriter(new FileWriter(
+          DEFAULT_MAP_FILE, true));
+
+      write.println("npc testMe 12 10 POKEMON " + walkScript + " " + 
+          talkScript);
+
+      write.close();
+
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
+
+  private static void removeTestNPCFromDefaultMap()
+  {
+    File temp = new File("res/maps/temp0x0");
+
+    try {
+      BufferedReader read = new BufferedReader(
+          new FileReader(DEFAULT_MAP_FILE));
+      PrintWriter write = new PrintWriter(new FileWriter(
+          temp, false));
+
+
+      String line;
+
+      while ((line = read.readLine()) != null)
+      {
+        if (!line.startsWith("npc testMe"))
+          write.println(line);
+      }
+
+      read.close();
+      write.close();
+      
+      DEFAULT_MAP_FILE.delete();
+      temp.renameTo(DEFAULT_MAP_FILE);
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   /**
    * Runs the game
    */
-  private void run() {
-   
+  private void run(String[] args) {
+
+    addTestNPCToDefaultMap(args[0], args[1]);
+
     scale = 2;
-    Game.testLoc = "OnlyGrass.map";
-    
+    Game.testLoc = DEFAULT_MAP;
+
     initDisplay();
     initGL();
 
     initGame();
+    
+    removeTestNPCFromDefaultMap();
+
     gameLoop();
     cleanUp();
   }
@@ -82,17 +165,17 @@ public class TestScripts {
    *  @see AudioHandler
    */
   private void initGame(){
-    
+
     initScripts();
 
     gamehandler = new GameHandler();
     AudioHandler.init();
   }
-  
+
   private void initScripts()
   {
     Flags.loadFlags();
-    
+
     try
     {
       Keywords.loadKeywords();
@@ -101,7 +184,7 @@ public class TestScripts {
       e.printStackTrace();
       System.exit(1);
     }
-    
+
     ScriptDatabase.loadScripts();
   }
 
@@ -182,6 +265,7 @@ public class TestScripts {
   private void cleanUp(){
     Display.destroy();
     AL.destroy();
+
     System.exit(0);
   }
 

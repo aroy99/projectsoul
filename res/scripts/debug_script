@@ -1,10 +1,20 @@
 branch main
 lock
 align
-say Bye!
-turn left
-fadeout
-warpwith Bigger_Town 4 4 2 2
-fadein
-pause 20
+if caspian, call casp
+elseif flannery, call flan
+elseif sierra, call sier
+else, call brun
 unlock
+
+branch casp
+say You do things with water.
+
+branch flan
+say Don't hurt me
+
+branch sier
+@walk right right
+
+branch brun
+walk left left

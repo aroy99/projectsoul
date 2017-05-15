@@ -364,16 +364,14 @@ public class Map implements Playable{
     { 
       enemy.update();
     }
-
+    
     for (NPC npc: npcs) {
 
       npc.update();
       
       if (npc.isApproached(play.getArea(), play.getDirection())
           && KeyHandler.firstKeyClick(Key.C))
-      {        
-        System.out.println("Hi");
-        
+      {                
         npc.turn(play.getDirection().opposite());
         npc.approach();
       }
@@ -395,7 +393,7 @@ public class Map implements Playable{
       }
     }
 
-    if (KeyHandler.keyClick(Key.SPACE))
+    if (KeyHandler.keyClick(Key.SPACE) && !play.isLocked())
     {
       switchPlayer();
     }

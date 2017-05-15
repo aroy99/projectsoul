@@ -51,7 +51,7 @@ public abstract class Player extends Person implements Playable{
 
   public boolean isAttacking;
 
-  protected boolean canMove = true;
+  protected boolean unlocked = true;
 
   private int framesToGo;
   private boolean hasInstructions;
@@ -112,7 +112,7 @@ public abstract class Player extends Person implements Playable{
    */
   public void getInput(){
 
-    if (canMove)
+    if (unlocked)
     {
       up =    Keyboard.isKeyDown(Keyboard.KEY_UP) && 
           !Keyboard.isKeyDown(Keyboard.KEY_DOWN);
@@ -138,7 +138,7 @@ public abstract class Player extends Person implements Playable{
     
     int aniSpeed = 8;
 
-    if (canMove) {
+    if (unlocked) {
 
       if (!guiding && restoreMvmtX && restoreMvmtY)
       {
@@ -425,11 +425,11 @@ public abstract class Player extends Person implements Playable{
   }
 
   public void lock(){
-    canMove=false;
+    unlocked=false;
   }
 
   public void unlock(){
-    canMove=true;
+    unlocked=true;
   }
 
   public int getTileX(){
@@ -798,6 +798,11 @@ public abstract class Player extends Person implements Playable{
         sx, sy);
         
     return !Game.getMap().willIntersectNPCs(future);
+  }
+  
+  public boolean isLocked()
+  {
+    return !unlocked;
   }
 
 

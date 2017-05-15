@@ -139,7 +139,7 @@ public class Flannery extends Player {
     if (KeyHandler.keyDown(Key.X) && !isAttacking && magic.hasEnoughMagic(
         10) && attack1 == ring)
     {
-      canMove = false;
+      unlocked = false;
       
       dx = 0;
       dy = 0;
@@ -151,7 +151,7 @@ public class Flannery extends Player {
     {
       //TODO: replace final 0 with atatck
       ring.newAttack(0, 0, 0, 0, dir, attack);
-      canMove = true;
+      unlocked = true;
       magic.changeMagicBy(-10);
     }
     

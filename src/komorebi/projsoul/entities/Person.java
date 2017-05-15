@@ -213,8 +213,6 @@ public abstract class Person extends Entity {
     if (distance == 0)
       return;
     
-    System.out.println("Xdist: " + distance);
-
     Face direction = (distance > 0 ? Face.RIGHT : Face.LEFT);
 
     TimedTask walk = new MovementTask(ActionState.WALKING, 
@@ -231,14 +229,10 @@ public abstract class Person extends Entity {
   public void goToPixY(int goTo)
   {
     int distance = goTo - (int) y;
-    
-    System.out.println(goTo + " " + y);
 
     if (distance == 0)
       return;
 
-    System.out.println("Ydist: " + distance);
-    
     Face direction = (distance > 0 ? Face.UP : Face.DOWN);
 
     TimedTask walk = new MovementTask(ActionState.WALKING, 
