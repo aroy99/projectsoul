@@ -10,8 +10,6 @@ import komorebi.projsoul.script.TextHandler;
 import komorebi.projsoul.engine.Shop;
 import komorebi.projsoul.entities.Characters;
 
-
-
 public class ShopState extends State 
 {
 	private int count = 0;
@@ -43,7 +41,7 @@ public class ShopState extends State
 			armorShop.addShopItem("Health Potion");
 			armorShop.addShopItem("Mana Potion");
 			armorShop.addShopItem("MaxHealth Boost");
-			armorShop.addShopItem("Helmet");
+			armorShop.addShopItem("Iron Helmet");
 			armorShop.addShopItem("Boots");
 			armorShop.addShopItem("Chestplate");
 			armorShop.addShopItem("Pants");
@@ -125,7 +123,6 @@ public class ShopState extends State
 				{
 					count3 = 140;
 				}
-				//System.out.println(items[i].getName());
 				text.write(String.valueOf(armorShop.items[i]), count2, count3, font);
 				count3-=10;
 			}
@@ -133,6 +130,7 @@ public class ShopState extends State
 		
 		if(sell)
 		{
+			inventory.refreshInventory();
 			inventory.update();
 		}
 		

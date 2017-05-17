@@ -1,5 +1,6 @@
 package komorebi.projsoul.items;
 
+import komorebi.projsoul.engine.Inventory;
 import komorebi.projsoul.entities.Characters;
 import komorebi.projsoul.map.Map;
 
@@ -18,7 +19,7 @@ public class MaxHealthBoost extends Potion
 	{
 		character = Map.currentPlayer();
 	    Map.getPlayer().getCharacterHUD(character).addToMaxHealth(effect);
-	    quantity--;
+	    Inventory.removeItem(this);
 		
 	}
 

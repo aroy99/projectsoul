@@ -11,7 +11,7 @@ public class Knife extends ThrowableWeapon
 	@Override
 	public void useItem() 
 	{
-		
+
 
 	}
 

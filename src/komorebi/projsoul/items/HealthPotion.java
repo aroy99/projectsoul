@@ -1,5 +1,6 @@
 package komorebi.projsoul.items;
 
+import komorebi.projsoul.engine.Inventory;
 import komorebi.projsoul.entities.Characters;
 import komorebi.projsoul.map.Map;
 
@@ -20,7 +21,7 @@ public class HealthPotion extends Potion
 		if(dif > 0 && dif < effect)
 		{
 			Map.getPlayer().getCharacterHUD(character).addHealth(dif);
-			quantity--;
+			Inventory.removeItem(this);
 		}
 		else if(Map.getPlayer().getCharacterHUD(character).fullHealth())
 		{
@@ -29,7 +30,7 @@ public class HealthPotion extends Potion
 		else
 		{
 			Map.getPlayer().getCharacterHUD(character).addHealth(effect);
-			quantity--;
+			Inventory.removeItem(this);
 		}
 	
 	}

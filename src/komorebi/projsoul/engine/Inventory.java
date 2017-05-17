@@ -10,12 +10,13 @@ public abstract class Inventory
 	public static ArrayList<CharacterItem> items = new ArrayList<CharacterItem>();
 	public static int numOfItems;
 	private static int checked = 0;
+	private static boolean removed;
 	
 	public static void addItem(CharacterItem item)
 	{
 		for(CharacterItem myItem: items)
 		{
-			if(myItem.getName().equalsIgnoreCase(item.getName()))
+			if(myItem.getName().equals(item.getName()))
 			{
 				myItem.increaseQuantity(item.getQuantity());
 				checked++;
@@ -37,6 +38,7 @@ public abstract class Inventory
 		
 	}
 	
+	//Specifically for the Sell part of the shop
 	public static void removeItem(CharacterItem item)
 	{
 		for(int i=0; i<items.size(); i++)
@@ -47,13 +49,20 @@ public abstract class Inventory
 				{
 					items.remove(item);
 					numOfItems--;
+					removed = true;
 				}
 				else
 				{
 					item.subQuantity();
+					removed = false;
 				}
 			}
 		}
+	}
+	
+	public static Boolean checkRemoved()
+	{
+		return removed;
 	}
 	
 	public static CharacterItem getInventoryItem(int index)

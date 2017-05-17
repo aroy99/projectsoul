@@ -1,5 +1,6 @@
 package komorebi.projsoul.items;
 
+import komorebi.projsoul.engine.Inventory;
 import komorebi.projsoul.entities.Bruno;
 import komorebi.projsoul.entities.Caspian;
 import komorebi.projsoul.entities.Characters;
@@ -35,7 +36,7 @@ public class XPBoost extends Potion
 		case BRUNO:
 			
 		}*/
-	    quantity--;
+		Inventory.removeItem(this);
 		
 	}
 

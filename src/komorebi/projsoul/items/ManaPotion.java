@@ -1,5 +1,6 @@
 package komorebi.projsoul.items;
 
+import komorebi.projsoul.engine.Inventory;
 import komorebi.projsoul.entities.Characters;
 import komorebi.projsoul.map.Map;
 
@@ -20,7 +21,7 @@ public class ManaPotion extends Potion
 		if(dif > 0 && dif < effect)
 		{
 			Map.getPlayer().getCharacterHUD(character).changeMagicBy(dif);
-			quantity--;
+			Inventory.removeItem(this);
 		}
 		else if(Map.getPlayer().getCharacterHUD(character).fullMagic())
 		{
@@ -29,7 +30,7 @@ public class ManaPotion extends Potion
 		else
 		{
 			Map.getPlayer().getCharacterHUD(character).changeMagicBy(effect);
-			quantity--;
+			Inventory.removeItem(this);
 		}
 
 	}

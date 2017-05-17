@@ -82,7 +82,7 @@ public class Shop
 						System.out.println(numSold + " maxhealth boost(s) were added to your inventory");
 					}
 				}
-				else if(myItem.indexOf("Helmet")!=-1)
+				else if(myItem.indexOf("Iron Helmet")!=-1)
 				{
 					Helmet helm = new Helmet("Iron Helmet",60,numSold,8,20,"An sturdy, well forged Iron Helmet");
 					character = Map.currentPlayer();
@@ -134,7 +134,18 @@ public class Shop
 					{
 						Inventory.addItem(pants);
 						Map.getPlayer().getCharacterHUD(character).takeMoney(numSold*10);
-						System.out.println(numSold + " Pant(s) were added to your inventory");
+						System.out.println(numSold + " Pants were added to your inventory");
+					}
+				}
+				else if(myItem.indexOf("Shitty Helmet")!=-1)
+				{
+					Helmet helm = new Helmet("Shitty Helmet",2,numSold,1,5,"A shitty Helmet");
+					character = Map.currentPlayer();
+					if(Map.getPlayer().getCharacterHUD(character).hasEnoughMoney(60))
+					{
+						Inventory.addItem(helm);
+						Map.getPlayer().getCharacterHUD(character).takeMoney(numSold*60);
+						System.out.println(numSold + " Shitty Helmet(s) were added to your inventory");
 					}
 				}
 			}

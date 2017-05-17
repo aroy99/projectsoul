@@ -7,7 +7,15 @@ import komorebi.projsoul.engine.Inventory;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.entities.Characters;
+import komorebi.projsoul.items.Armor;
+import komorebi.projsoul.items.Boots;
 import komorebi.projsoul.items.CharacterItem;
+import komorebi.projsoul.items.Chestplate;
+import komorebi.projsoul.items.Consumable;
+import komorebi.projsoul.items.Gauntlets;
+import komorebi.projsoul.items.Helmet;
+import komorebi.projsoul.items.Pants;
+import komorebi.projsoul.items.Ring;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
@@ -17,59 +25,31 @@ public class InventoryState extends State
 {
 	private TextHandler text = new TextHandler();
 	EarthboundFont font = new EarthboundFont(1);
-	int index = 0;
+	int index, index2 = 0;
 	private int topindex = 0;
 	public static ShopState shop = new ShopState();
 	private int bottomindex = 5;
 	private int count = 50;
 	private int count2 = 140;
+	private int count4 = 0;
 	private static int count3 = 0;
-	private static int listIndex = 0;
 	private static CharacterItem[] items;
 	public Characters character;
 	public HUD healths = new HUD(0,0,0);
 	
 	public void getInput() 
 	{
-		
 	}
 	
 	public void update() 
 	{	
-		//if(listIndex == 0)
-		{
-			text.clear();
-			listIndex=1;
-			count3=0;
-			items = new CharacterItem[Inventory.numOfItems];
-			for(CharacterItem item: Inventory.items)
-			{
-				if(count3<items.length)
-				{
-					items[count3] = item;
-					count3++;
-					//System.out.println(item.getName());
-				}
-				else
-				{
-					count3 = 0;
-					count2 = 140;
-					topindex = 0;
-					break;
-				}	
-			}
-			/*if(items.length > 5)
-			{
-				topindex = 0;
-				bottomindex = 5;
-			}*/
-		}
-		
+		refreshInventory();
 		text.clear();
 		text.write("Inventory", 100, 155, font);
 		text.write("Exit", 150, 90, font);
 		if(KeyHandler.keyClick(Key.DOWN))
 		{	
+			index2++;
 			topindex++;
 			bottomindex++;
 			
@@ -86,10 +66,12 @@ public class InventoryState extends State
 					bottomindex = items.length;
 				}
 			}
+			if(index2 > items.length)index2 = items.length-1;
 			
 		}
 		if(KeyHandler.keyClick(Key.UP))
 		{
+			index2--;
 			if(index != 5)
 			{
 				topindex--;
@@ -103,30 +85,121 @@ public class InventoryState extends State
 				topindex = 0;
 				bottomindex = 5;
 			}
+			if(index2 < 0)index2 = 0;
 		}
 		
 		if(KeyHandler.keyClick(Key.U))
 			GameHandler.switchState(States.GAME);
 		
-		//NOTE: remove the print statements.
+		
 		if(KeyHandler.keyClick(Key.E))
 		{
-			System.out.println("The conditional works");
-
+			if(!ShopState.sell)
+			{
+				if(index != 5)
+				{
+					if(Inventory.getInventoryItem(index2) instanceof Armor)
+					{
+						Armor a = (Armor) Inventory.getInventoryItem(index2);
+						if(a.equipped)a.unequip();
+						else a.equip();
+						//Checks that no more than 1 of each armor piece is equipped at a time
+						for(int i=0; i<items.length; i++)
+						{
+							if(Inventory.getInventoryItem(i) instanceof Helmet)
+							{
+								if(a instanceof Helmet && Inventory.getInventoryItem(i) != a)
+								{
+									if(a.equipped)
+									{
+										Armor b = (Armor) Inventory.getInventoryItem(i);
+										if(b.equipped)b.unequip();
+									}
+								}
+							}
+							else if(Inventory.getInventoryItem(i) instanceof Chestplate)
+							{
+								if(a instanceof Chestplate && Inventory.getInventoryItem(i) != a)
+								{
+									if(a.equipped)
+									{
+										Armor b = (Armor) Inventory.getInventoryItem(i);
+										if(b.equipped)b.unequip();
+									}
+								}
+							}
+							else if(Inventory.getInventoryItem(i) instanceof Gauntlets)
+							{
+								if(a instanceof Gauntlets && Inventory.getInventoryItem(i) != a)
+								{
+									if(a.equipped)
+									{
+										Armor b = (Armor) Inventory.getInventoryItem(i);
+										if(b.equipped)b.unequip();
+									}
+								}
+							}
+							else if(Inventory.getInventoryItem(i) instanceof Pants)
+							{
+								if(a instanceof Pants && Inventory.getInventoryItem(i) != a)
+								{
+									if(a.equipped)
+									{
+										Armor b = (Armor) Inventory.getInventoryItem(i);
+										if(b.equipped)b.unequip();
+									}
+								}
+							}
+							else if(Inventory.getInventoryItem(i) instanceof Boots)
+							{
+								if(a instanceof Boots && Inventory.getInventoryItem(i) != a)
+								{
+									if(a.equipped)
+									{
+										Armor b = (Armor) Inventory.getInventoryItem(i);
+										if(b.equipped)b.unequip();
+									}
+								}
+							}
+							else if(Inventory.getInventoryItem(i) instanceof Ring)
+							{
+								if(a instanceof Ring && Inventory.getInventoryItem(i) != a)
+								{
+									if(a.equipped)
+									{
+										Armor b = (Armor) Inventory.getInventoryItem(i);
+										if(b.equipped)b.unequip();
+									}
+								}
+							}
+							
+						}
+					}
+					else if(Inventory.getInventoryItem(index2) instanceof Consumable)
+					{
+						Consumable c = (Consumable) Inventory.getInventoryItem(index2);
+						c.useItem();
+					}
+				}
+			}
+			
 			if(index == 5)
 			{
 				if(ShopState.sell)
 				{
+					index2 = 0;
+					index = 0;
 					ShopState.sell = false;
-					System.out.println("The boolean works");
 				}
 				else
 				{
+					if(items.length < 5)bottomindex = items.length-1;
+					else bottomindex = 5;
+					topindex = 0;
+					index2 = 0;
 					index = 0;
-					listIndex = 0;
 					GameHandler.switchState(States.GAME);
 				}
-				System.out.println("The index works");
 			}
 			else
 			{
@@ -134,34 +207,19 @@ public class InventoryState extends State
 				{
 					character = Map.currentPlayer();
 				    healths = Map.getPlayer().getCharacterHUD(character);
-				    healths.giveMoney(Inventory.getInventoryItem(index).getResalePrice());
-					Inventory.removeItem(Inventory.getInventoryItem(index));
-					System.out.println("Removing works");
+				    healths.giveMoney(Inventory.getInventoryItem(index2).getResalePrice());
+					Inventory.removeItem(Inventory.getInventoryItem(index2));
+					
+					//This needs to be fixed
+					//Conditional/Check for selling things to adjust bounds/indices
+					if(items.length>5 && Inventory.checkRemoved())
+					{
+						topindex--;
+						bottomindex--;
+					}
+					if(Inventory.checkRemoved())index2--;
 				}
 			}
-			/*if(index == 0) 
-				if(!item1.equipped)
-					item1.equip();
-				else
-					item1.unequip();
-			else if(index == 1) 
-				if(!item2.equipped)
-					item2.equip();
-				else
-					item2.unequip();
-			else if(index == 2) 
-				if(!item3.equipped)
-					item3.equip();
-				else
-					item3.unequip();*/
-			
-			/*if(index == 0)
-				items[0].useItem();
-			else if(index == 1)
-				items[1].useItem();
-			else if(index == 2)
-				items[2].useItem();*/
-			
 		}
 		
 		if(items.length<=5)
@@ -179,9 +237,28 @@ public class InventoryState extends State
 			}
 			//It prints it out in the correct order however it does not display in the correct order?!
 			//System.out.println(items[i].getName());
-			text.write(items[i].getName() + "   " + items[i].getQuantity() + "     " + items[i].getResalePrice(), count, count2, font);
+			text.write(String.valueOf(items[i].getName()), count, count2, font);
+			text.write(String.valueOf(items[i].getQuantity()), count+80, count2, font);
+			text.write(String.valueOf(items[i].getResalePrice()), count+90, count2, font);
 			count2-=10;
 		}	
+		//REVISION!!!!
+		for(int i=topindex; i<bottomindex-1; i++)
+		{
+			if(Inventory.getInventoryItem(i) instanceof Armor)
+			{
+				Armor a = (Armor) Inventory.getInventoryItem(i);
+				if(a.equipped)
+				{
+					if(i == topindex)text.write("E", count+105, count4=140, font);
+					else if(i == topindex+1)text.write("E", count+105, count4=130, font);
+					else if(i == topindex+2)text.write("E", count+105, count4=120, font);
+					else if(i == topindex+3)text.write("E", count+105, count4=110, font);
+					//This else if needs to be fixed
+					else if(i == topindex+4)text.write("E", count+105, count4=100, font);
+				}
+			}
+		}
 	}
 
 	
@@ -193,9 +270,6 @@ public class InventoryState extends State
 		
 		if(items.length < 5 && index == items.length)
 			index = 5;
-		//this needs to be modified to be an else if, but what's the condition?
-		
-		
 		if(index < 0)index = 0;
 		
 		if(bottomindex == items.length || items.length - 5 <= bottomindex)
@@ -214,5 +288,14 @@ public class InventoryState extends State
 		text.render();
 
 	}
-
+	public void refreshInventory()
+	{
+		count3=0;
+		items = new CharacterItem[Inventory.numOfItems];
+		for(CharacterItem item: Inventory.items)
+		{
+				items[count3] = item;
+				count3++;
+		}		
+	}
 }
