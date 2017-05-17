@@ -5,6 +5,7 @@ package komorebi.projsoul.attack.projectile;
 
 import komorebi.projsoul.attack.AttackInstance;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.CollisionDetector;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.states.Game;
@@ -100,7 +101,7 @@ public abstract class Projectile implements AttackInstance {
       destroyMe = true;
     }
 
-    boolean[] col = MapHandler.checkCollisions(x,y,dx,dy);
+    boolean[] col = CollisionDetector.checkCollisions(x,y,dx,dy);
 
     if(!col[0] || !col[2]){
       dy=0;

@@ -12,8 +12,8 @@ import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.gameplay.Item.Items;
-import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.MapHandler;
+import komorebi.projsoul.map.MapLoader;
 import komorebi.projsoul.map.TileList;
 import komorebi.projsoul.script.Task.TaskWithBoolean;
 import komorebi.projsoul.script.Task.TaskWithBranch;
@@ -24,7 +24,6 @@ import komorebi.projsoul.script.Task.TaskWithNumberAndLocation;
 import komorebi.projsoul.script.Task.TaskWithString;
 import komorebi.projsoul.script.Task.TaskWithStringArray;
 import komorebi.projsoul.script.Task.TaskWithTask;
-import komorebi.projsoul.states.Game;
 
 /**
  * 
@@ -292,7 +291,7 @@ public class Execution implements Runnable {
         break;
       case LOAD_MAP:
         taskStr = (TaskWithString) task;
-        MapHandler.loadMap(taskStr.getString() + ".map", 0, 0);
+        MapLoader.loadMap(taskStr.getString() + ".map", 0, 0);
         break;
       case RETILE:
         taskNumLoc = (TaskWithNumberAndLocation) task;

@@ -5,6 +5,7 @@ import komorebi.projsoul.ai.node.leaf.BehaviorStates;
 import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.CollisionDetector;
 import komorebi.projsoul.entities.Entity;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.XPObject;
@@ -381,7 +382,7 @@ public abstract class Enemy extends Entity {
       hittingPlayer = true;
     }
 
-    boolean[] col = MapHandler.checkCollisions(x,y,dx,dy);
+    boolean[] col = CollisionDetector.checkCollisions(x,y,dx,dy);
 
     if(!col[0] || !col[2]){
       dy=0;

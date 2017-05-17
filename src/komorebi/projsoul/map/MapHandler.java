@@ -3,27 +3,16 @@
  */
 package komorebi.projsoul.map;
 
-import static komorebi.projsoul.engine.Main.HEIGHT;
-import static komorebi.projsoul.engine.Main.WIDTH;
 import static komorebi.projsoul.map.Map.SIZE;
 
 import komorebi.projsoul.ai.Location;
-import komorebi.projsoul.audio.AudioHandler;
-import komorebi.projsoul.audio.Song;
+import komorebi.projsoul.engine.CollisionDetector;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Main;
-import komorebi.projsoul.entities.NPC;
-import komorebi.projsoul.entities.NPCType;
-import komorebi.projsoul.entities.SignPost;
 import komorebi.projsoul.entities.XPObject;
-import komorebi.projsoul.entities.enemy.Chaser;
-import komorebi.projsoul.entities.enemy.Dummy;
 import komorebi.projsoul.entities.enemy.Enemy;
-import komorebi.projsoul.entities.enemy.EnemyType;
-import komorebi.projsoul.entities.enemy.Shooter;
 import komorebi.projsoul.entities.enemy.SmartEnemy;
-import komorebi.projsoul.entities.enemy.Tackler;
 import komorebi.projsoul.entities.player.Bruno;
 import komorebi.projsoul.entities.player.Caspian;
 import komorebi.projsoul.entities.player.Characters;
@@ -32,30 +21,18 @@ import komorebi.projsoul.entities.player.Player;
 import komorebi.projsoul.entities.player.Sierra;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.script.AreaScript;
 import komorebi.projsoul.script.EarthboundFont;
-import komorebi.projsoul.script.Script;
-import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.TextHandler;
-import komorebi.projsoul.script.WalkingScript;
-import komorebi.projsoul.script.WarpScript;
 import komorebi.projsoul.script.Word;
-
-import org.junit.Ignore;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
 /**
- * Loads and Handles Maps
+ * Handles Maps
  *
  * @author Aaron Roy
  */
@@ -92,7 +69,7 @@ public class MapHandler {
   private static int highX, highY;
 
   
-  private static boolean isOutside;
+  static boolean isOutside;
   
   private static final float TOLERANCE = 0.5f;
   
@@ -104,7 +81,7 @@ public class MapHandler {
   private MapHandler(){}
   
   public static void initialize(String firstMap){
-    activeMap = loadMap(firstMap, 0, 0);
+    activeMap = MapLoader.loadMap(firstMap, 0, 0);
     
     caspian = new Caspian(0,0);
     flannery = new Flannery(0,0);
@@ -116,7 +93,8 @@ public class MapHandler {
     borderMaps = new ArrayList<Map>();
     
     for(Entry<String, Location> entry: activeMap.getBorders().entrySet()){
-      borderMaps.add(loadMap(entry.getKey(), entry.getValue().x, entry.getValue().y));
+      borderMaps.add(MapLoader.loadMap(entry.getKey(), entry.getValue().x, 
+                                                       entry.getValue().y));
     }
     
     Camera.center(play.getX(), play.getY(), 
@@ -171,6 +149,8 @@ public class MapHandler {
         ((SmartEnemy)e).initGrid();
       }
     }
+    
+    CollisionDetector.initialize(lowX, lowY, collision);
   }
 
   private static void addToCollision(Map map) {
@@ -189,222 +169,6 @@ public class MapHandler {
     }
   }
   
-  public static Map loadMap(String key, int offX, int offY){
-    try {
-      
-      //DEBUG Printing maps as they load
-      System.out.format("%s, %d, %d\n", key, offX, offY);
-      
-      int currOffX = 0; 
-      int currOffY = 0;
-           
-      BufferedReader reader = new BufferedReader(new FileReader(
-          new File("res/maps/" + key)));
-      int rows = Integer.parseInt(reader.readLine());
-      int cols = Integer.parseInt(reader.readLine());
-
-      
-      String title;                 //The in-game name of this map
-      Song song;                    //The song this map uses
-            
-      //instantiates the necessary arrays and arraylists
-      TileList[][] tiles = new TileList[rows][cols];
-      boolean[][] collision = new boolean[rows][cols];
-      ArrayList<NPC> npcs = new ArrayList<NPC>();
-      ArrayList<AreaScript> scripts = new ArrayList<AreaScript>();
-      ArrayList<SignPost> signs = new ArrayList<SignPost>();
-            
-      HashMap<String, Location> borderLocs = new HashMap<>();
-      
-      title = reader.readLine();
-      song = Song.getSong(reader.readLine());
-      if(song == null){
-        song = Song.NONE;
-      }
-      isOutside = Integer.parseInt(reader.readLine()) == 1?true : false;
-      
-      //DEBUG Text
-//      System.out.println("Title: " + title);
-//      System.out.println("Song: " + song);
-//      System.out.println(isOutside);
-      AudioHandler.play(song);
-      
-      for (int i = 0; i < tiles.length; i++) {
-        String[] str = reader.readLine().split(" ");
-        int index = 0;
-        for (int j = 0; j < cols; j++, index++) {
-          if(str[index].equals("")){
-            index++;  //pass this token, it's blank
-          }
-          //reads the tile makeup of the map
-          tiles[i][j] = TileList.getTile(Integer.parseInt(str[index]));
-        }
-      }
-      
-
-
-      String s = reader.readLine();
-
-      for (int i = 0; i < tiles.length; i++) {
-        if(s == null || s.startsWith("npc")){
-          break;
-        }
-        if(i != 0){
-          s = reader.readLine();
-        }
-        String[] str = s.split(" ");
-        int index = 0;
-        for (int j = 0; j < cols; j++, index++) {
-          if(str[index].equals("")){
-            index++;  //pass this token, it's blank
-          }
-          collision[i][j]=str[index].equals("0")?true : false;
-        }
-      }
-      
-      do {
-        if (s == null) {
-          break;
-        }
-        if (s.startsWith("npc")) {
-          s = s.replace("npc ", "");
-          
-          createNewNPC(npcs, s, currOffX + offX, currOffY + offY);
-          
-        } else if (s.startsWith("script")) {
-          s = s.replace("script ", "");
-          String[] split = s.split(" ");
-
-          int arg0 = Integer.parseInt(split[2]) + currOffX + offX;
-          int arg1 = Integer.parseInt(split[1]) + currOffY + offY;
-
-          scripts.add(new AreaScript(split[0], arg0, arg1, false,
-              findNPC(npcs, split[3])));
-        } else if (s.startsWith("warp")) {
-          s = s.replace("warp ", "");
-          String[] split = s.split(" ");
-
-          int arg0 = Integer.parseInt(split[2]) + currOffX + offX;
-          int arg1 = Integer.parseInt(split[1]) + currOffY + offY;
-
-          scripts.add(new WarpScript(split[0], arg1, arg0, false));
-        } else if (s.startsWith("enemy")) {
-          s = s.replace("enemy ", "");
-
-          createNewEnemy(s, currOffX + offX, currOffY + offY);
-
-        } else if (s.startsWith("sign")) {
-          s = s.replace("sign ", "");
-          String[] split = s.split(" ", 3);
-
-          int arg0 = Integer.parseInt(split[0]) + currOffX + offX;
-          int arg1 = Integer.parseInt(split[1]) + currOffY + offY;
-
-          signs.add(new SignPost(arg0 * 16, arg1 * 16, split[2]));
-
-        } else if (s.startsWith("connect")) {
-          s = s.replace("connect ", "");
-          String[] split = s.split(" ");
-
-          int offsetX = Integer.parseInt(split[2]);
-          int offsetY = Integer.parseInt(split[3]);
-          
-          borderLocs.put(split[0] + ".map", new Location(offsetX, offsetY));
-        }
-      } 
-      while ((s = reader.readLine()) != null);
-
-      
-      for (Script script : scripts) {
-        script.read();
-      }
-
-      for (NPC npc : npcs) {
-        npc.getWalkingScript().read();
-        npc.getTalkingScript().read();
-      }
-
-      reader.close();
-      
-      Map returnee = new Map(tiles, collision, npcs, scripts, signs, title, song);
-      returnee.setBorders(borderLocs);
-      returnee.setOffset(offX, offY);
-      returnee.setAddress(key);
-      
-      return returnee;
-
-    } catch (IOException | NumberFormatException e) {
-      e.printStackTrace();
-    }
-    
-    return null;
-  }
-
-  private static void createNewNPC(ArrayList<NPC> npcs, String s, int offX, int offY) {
-    String[] split = s.split(" ");
-
-    int arg0 = Integer.parseInt(split[1]) + offX;
-    int arg1 = Integer.parseInt(split[2]) + offY;
-    NPC n;
-    npcs.add(n = new NPC(split[0], arg0 * 16, arg1 * 16,
-        NPCType.toEnum(split[3])));
-
-    n.setWalkingScript(new WalkingScript(split[4], n));
-    n.setTalkingScript(new TalkingScript(split[5], n));
-  }
-
-  private static void createNewEnemy(String s, int offX, int offY) {
-    String[] split = s.split(" ");
-
-    int arg0 = Integer.parseInt(split[0]) + offX;
-    int arg1 = Integer.parseInt(split[1]) + offY;
-    
-    switch(split[3]){
-      case "none":
-        enemies.add(new Dummy(arg0*16, arg1*16, EnemyType.toEnum(split[2]), 1));
-        break;
-      case "chaser":
-        enemies.add(new Chaser(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
-            Integer.parseInt(split[4])));
-        break;
-      case "smart":
-        enemies.add(new SmartEnemy(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
-            Integer.parseInt(split[4])));
-        break;
-      case "shooter":
-        enemies.add(new Shooter(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
-            Integer.parseInt(split[4])));
-        break;
-      case "tackler":
-        enemies.add(new Tackler(arg0*16, arg1*16, EnemyType.toEnum(split[2]),
-            Integer.parseInt(split[4])));
-        break;
-
-      default:
-        System.out.format("Enemy %s is invalid\n", s);
-        break;
-    }
-  }
-  
-  /**
-   * Finds the npc with the specified name
-   * 
-   * @param npcs The list to search
-   * @param s The name of the NPC
-   * @return The NPC if found, null if not
-   */
-  private static NPC findNPC(ArrayList<NPC> npcs, String s) {
-
-    for (NPC npc : npcs) {
-      if (npc != null) {
-        if (npc.getName().equals(s)) {
-          return npc;
-        }
-      }
-    }
-
-    return null;
-  }
   
   public static void getInput() {
 
@@ -531,9 +295,10 @@ public class MapHandler {
             continue outer;
           }
         }
-        borderMaps.add(loadMap(entry.getKey(), currOffX + entry.getValue().x, 
-            currOffY + entry.getValue().y));
-        
+        borderMaps.add(MapLoader.loadMap(entry.getKey(),
+                                         currOffX + entry.getValue().x, 
+                                         currOffY + entry.getValue().y));
+                                    
         System.out.println("LOOK AT ME: " + entry.getKey());
       }
   }
@@ -673,161 +438,6 @@ public class MapHandler {
       }
     }
   }
-  
-  
-  //TODO Move to a Physics class
-  /**
-   * Checks the collisions between all four points of the character
-   * 
-   * @param x Player's X
-   * @param y Player's Y
-   * @param dx Delta x of Player
-   * @param dy Delta y of Player
-   * @return {Never, Eat, Slimy, Worms}
-   */
-  public static boolean[] checkCollisions(float x, float y, float dx, float dy){
-    //Speed affected
-    int x1 = (int)((x-16+dx)/SIZE)+1-lowX; //Left
-    int y1 = (int)((y-16+dy)/SIZE)+1-lowY; //Bottom
-
-    int bufX = Math.abs(x1*SIZE - (int) (x +dx));
-    int bufY = Math.abs(y1*SIZE - (int) (y +dy));   
-
-    int x2 = (int)((x-1+dx)/SIZE)+1-lowX;  //Right
-    int y2 = (int)((y-1+dy)/SIZE)+1-lowY;  //Top
-
-    //Speed Unaffected
-    int x3 = (int)((x-16)/SIZE)+1-lowX; //Left
-    int y3 = (int)((y-16)/SIZE)+1-lowY; //Bottom
-
-    int x4 = (int)((x-1)/SIZE)+1-lowX;  //Right
-    int y4 = (int)((y-1)/SIZE)+1-lowY;  //Top
-    
-    if(x < 0){
-      x1--;x2--;x3--;x4--;
-    }
-    if(y < 0){
-      y1--;y2--;y3--;y4--;
-    }
-
-    boolean[] ret = new boolean[4];
-        
-    ret[1] = x2 < collision[0].length-1; //East
-    ret[3] = x1-1 >= 0; //West
-    ret[0] = y2 < collision.length-1; //North
-    ret[2] = y1-1 >= 0; //South
-
-    ret[0] = ret[0] && collision[y2][x3] && collision[y2][x4];  //North
-    ret[2] = ret[2] && collision[y1][x3] && collision[y1][x4];  //South
-
-    ret[1] = ret[1] && collision[y3][x2] && collision[y4][x2];  //East
-    ret[3] = ret[3] && collision[y3][x1] && collision[y4][x1];  //West
-
-    //DEBUG Show collision values
-    if(KeyHandler.keyClick(Key.Q)){
-      System.out.println(x1 + ", " + x2 + ", " + y1 + ", " + y2);
-      System.out.println("dx: " + dx + ", dy: " + dy + "\n" + 
-          collision[y2][x1]+ ", " +collision[y2][x2]+ ", \n" +
-          collision[y1][x1]+ ", " +collision[y1][x2]);
-      System.out.println("Never: " + ret[0] + ", Eat: " + ret[1] + 
-          ", Slimy: " + ret[2] + ", Worms: " + ret[3]);
-    }
-
-    if (KeyHandler.keyClick(Key.B))
-    {
-      System.out.println(collision[y2][x3]);
-      System.out.println(collision[y2][x4]);
-      System.out.println(bufX);
-    }
-
-    return ret;
-  }
-  
-  public static void guidePlayer(float x, float y, float dx, float dy)
-  {
-    
-    //Speed affected
-    int x1 = (int)((x-16+dx)/SIZE)+1-lowX; //Left
-    int y1 = (int)((y-16+dy)/SIZE)+1-lowY; //Bottom
-
-    int bufX = Math.abs(x1*SIZE - (int) (x +dx));
-    int bufY = Math.abs(y1*SIZE - (int) (y +dy));   
-
-    int x2 = (int)((x-1+dx)/SIZE)+1-lowX;  //Right
-    int y2 = (int)((y-1+dy)/SIZE)+1-lowY;  //Top
-
-    //Speed Unaffected
-    int x3 = (int)((x-16)/SIZE)+1-lowX; //Left
-    int y3 = (int)((y-16)/SIZE)+1-lowY; //Bottom
-
-    int x4 = (int)((x-1)/SIZE)+1-lowX;  //Right
-    int y4 = (int)((y-1)/SIZE)+1-lowY;  //Top
-
-    if(x < 0){
-      x1--;x2--;x3--;x4--;
-    }
-    if(y < 0){
-      y1--;y2--;y3--;y4--;
-    }
-    
-    boolean[] ret = new boolean[4];
-
-    if(!MapHandler.isOutside()){
-      ret[1] = x2 < collision[0].length; //East
-      ret[3] = x1-1 >= 0; //West
-      ret[0] = y2 < collision.length; //North
-      ret[2] = y1-1 >= 0; //South
-    }else{
-      for (int i = 0; i < ret.length; i++) {
-        ret[i] = true;
-      }
-    }
-
-
-    if (ret[0] && (collision[y2][x3] ^ collision[y2][x4]))
-    {
-      //Player moving up
-      if (collision[y2][x3] && (16 - bufX) >= 10)
-      {
-        play.guide(-1, 0);
-      } else if (collision[y2][x4] && bufX >= 10) {
-        play.guide(1, 0);
-      }
-    } else if (ret[2] && (collision[y1][x3] ^ collision[y1][x4]))
-    {
-      //Player moving down
-      if (collision[y1][x3] && (16 - bufX) >= 10)
-      {
-        play.guide(-1, 0);
-      } else if (collision[y1][x4] && bufX >= 10)
-      {
-        play.guide(1, 0);
-      }
-    } else if (ret[1] && (collision[y3][x2] ^ collision[y4][x2]))
-    {
-      //Player moving right
-      if (collision[y3][x2] && (bufY <= 6))
-      {
-        play.guide(0, -1);
-      } else if (collision[y4][x2] && (16 - bufY) <= 6)
-      {
-        play.guide(0, 1);
-      }
-
-    } else if (ret[3] && (collision[y3][x1] ^ collision[y4][x1]))
-    {
-      //Player moving left
-      if (collision[y3][x1] && (bufY <= 6))
-      {
-        play.guide(0, -1);
-      } else if (collision[y4][x1] && (16 - bufY) <= 6)
-      {
-        play.guide(0, 1);
-      }
-    }
-     
-  }
-
   
   public static boolean[][] getCollision() {
     return collision;
@@ -992,8 +602,18 @@ public class MapHandler {
     return isOutside;
   }
   
-  public static void setCollision(boolean[][] collision){
-    MapHandler.collision = collision;
+//  /**
+//   * To only be used by the EditorMap
+//   * 
+//   * @param collision The new collision of the map
+//   */
+//  public static void setCollision(boolean[][] collision){
+//    MapHandler.collision = collision;
+//    CollisionDetector.initialize(lowX, lowY, collision);
+//  }
+  
+  static void addEnemy(Enemy e){
+    enemies.add(e);
   }
   
 }

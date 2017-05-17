@@ -11,6 +11,7 @@ import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.attack.WaterBarrier;
 import komorebi.projsoul.attack.projectile.ProjectileAttack;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.CollisionDetector;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.entities.Entity;
@@ -297,8 +298,12 @@ public abstract class Player extends Entity implements Playable{
 
       //DEBUG God Mode
       if(!KeyHandler.keyDown(Key.G)){
-        MapHandler.guidePlayer(x, y, dx, dy);
-        boolean[] col = MapHandler.checkCollisions(x,y,dx,dy);
+        
+        //Guide only if the player is not going diagonally
+        if((up || down) ^ (left || right)){
+          CollisionDetector.guidePlayer(x, y, dx, dy);
+        }
+        boolean[] col = CollisionDetector.checkCollisions(x,y,dx,dy);
 
         if(!col[0] || !col[2]){
           dy=0;

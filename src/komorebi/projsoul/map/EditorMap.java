@@ -238,7 +238,7 @@ public class EditorMap implements Playable, Serializable{
         }
       }
       
-      MapHandler.setCollision(collision);
+//      MapHandler.setCollision(collision);
 
 
       path = key;
