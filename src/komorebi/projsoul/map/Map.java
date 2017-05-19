@@ -48,7 +48,7 @@ import komorebi.projsoul.script.utils.AreaScript;
  */
 public class Map implements Playable{
 
-  private TileList[][] tiles;                //The Map itself
+  private int[][] tiles;                //The Map itself
   private boolean[][] collision;
 
   public static final int SIZE = 16;  //Width and height of a tile
@@ -85,13 +85,13 @@ public class Map implements Playable{
   @Deprecated
   public Map(int col, int row){
 
-    tiles = new TileList[row][col];
+    tiles = new int[row][col];
     //npcs = new NPC[row][col];
     //scripts = new AreaScript[row][col];
 
     for (int i = tiles.length-1; i >= 0; i--) {
       for (int j = 0; j < tiles[0].length; j++) {
-        tiles[i][j] = TileList.BLANK;
+        tiles[i][j] = Draw.BLANK_TILE;
       }
     }
 
@@ -126,7 +126,7 @@ public class Map implements Playable{
 
 
       //instantiates the necessary arrays and arraylists
-      tiles = new TileList[rows][cols];
+      tiles = new int[rows][cols];
       collision = new boolean[rows][cols];
       npcs = new ArrayList<NPC>();
       scripts = new ArrayList<AreaScript>();
@@ -163,7 +163,7 @@ public class Map implements Playable{
             index++;  //pass this token, it's blank
           }
           //reads the tile makeup of the map
-          tiles[i][j] = TileList.getTile(Integer.parseInt(str[index]));
+          tiles[i][j] = Integer.parseInt(str[index]);
         }
       }
 
@@ -438,8 +438,9 @@ public class Map implements Playable{
     for (int i = 0; i < tiles.length; i++) {
       for (int j = 0; j < tiles[0].length; j++) {
         if(checkTileInBounds(j*SIZE, i*SIZE)){
-          Draw.rectCam((int)j*SIZE, (int)i*SIZE, SIZE, SIZE, 
-              tiles[i][j].getX(), tiles[i][j].getY(), 1);
+          Draw.tileCam((int)j*SIZE, (int)i*SIZE,  
+              Draw.getTexX(tiles[i][j]), Draw.getTexY(tiles[i][j]), 
+              Draw.getTexture(tiles[i][j]));
 
           //DEBUG Grid
           if(isGrid){
@@ -725,7 +726,7 @@ public class Map implements Playable{
     return tiles.length;
   }
 
-  public void setTile(TileList tile, int x, int y)
+  public void setTile(int tile, int x, int y)
   {
     tiles[x][y] = tile;
   }

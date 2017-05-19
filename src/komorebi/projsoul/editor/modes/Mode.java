@@ -5,21 +5,17 @@ package komorebi.projsoul.editor.modes;
 
 import static komorebi.projsoul.engine.KeyHandler.controlDown;
 
+import org.lwjgl.input.Mouse;
+
+import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.editor.Palette;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MainE;
-import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.engine.Renderable;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.EditorMap;
-import komorebi.projsoul.map.TileList;
 import komorebi.projsoul.script.text.EarthboundFont;
 import komorebi.projsoul.script.text.TextHandler;
-
-import org.lwjgl.input.Mouse;
-import org.omg.CORBA.PRIVATE_MEMBER;
-
-import java.util.logging.Handler;
 
 /**
  * Represents one of the three modes for editing in Clyde's
@@ -32,7 +28,7 @@ public abstract class Mode implements Renderable{
   protected static boolean rButtonIsDown, rButtonWasDown;//Right Button Clicked
   protected static boolean mButtonIsDown, mButtonWasDown;//Middle Button Pressed
   
-  protected static TileList[][] tiles;
+  protected static int height, width;
 
   
   protected static boolean mouseSame;                    //Mouse is in same pos as last frame
@@ -52,12 +48,12 @@ public abstract class Mode implements Renderable{
 
   public static final int SIZE = 16;         //Width and height of a tile
   
-  protected static TextHandler status = new TextHandler();
-    
+  protected static TextHandler status = new TextHandler();    
   /**
    * Gets input in a static way
    */
   public static void getModeInput(){    
+        
     mouseSame = getMouseX() == mx && getMouseY() == my &&
         (lButtonIsDown || rButtonIsDown);
         
@@ -69,6 +65,8 @@ public abstract class Mode implements Renderable{
     
     status.clear();
     status.write("Mouse location: " + mx + ", " + my, 50, 1, new EarthboundFont(1));
+    status.write("Zoom: " + ((int) (100 * Editor.zoom())) + "%", 350, 1, 
+        new EarthboundFont(1));
 //    System.out.println("Mouse location: " + mx + ", " + my);
 //    System.out.println("P-Mouse location: " + pmx + ", " + pmy + ", " + mouseSame);
 
@@ -92,9 +90,7 @@ public abstract class Mode implements Renderable{
     if(clickTimer > 0){
       clickTimer--;
     }
-    
-
-        
+           
     rButtonWasDown = rButtonIsDown;
     rButtonIsDown = Mouse.isButtonDown(1) && !controlDown();
 
@@ -126,17 +122,41 @@ public abstract class Mode implements Renderable{
    * Converts Mouse X into a tile index, adjusting for map position
    * @return adjusted mouse x
    */
-  protected static int getMouseX(){
-    return ((Mouse.getX()/MainE.getScale())-(int)EditorMap.getX())/(16);
+  public static int getMouseX(){
+    return (int) ((Mouse.getX()/MainE.getScale() - 
+        EditorMap.getX()) / (Editor.zoom()*16));
   }
 
   /**
    * Converts Mouse Y into a tile index, adjusting for map position
    * @return adjusted mouse y
    */
-  protected static int getMouseY() {
-    return ((Mouse.getY()/MainE.getScale())-(int)EditorMap.getY())/(16);
+  public static int getMouseY() {   
+    
+    return (int) ((Mouse.getY()/MainE.getScale() - 
+        EditorMap.getY()) / (Editor.zoom()*16));
   }
+  
+  
+  /**
+   * Converts the mouse x into a tile index, ignoring map position
+   * @return tile x
+   */
+  protected static int getLiteralTileX()
+  {
+    return (int) getFloatMouseX() / 16;
+  }
+  
+  /**
+   * Converts the mouse y into a tile index, ignoring map position
+   * @return tile y
+   */
+  protected static int getLiteralTileY()
+  {
+    return (int) getFloatMouseY() / 16;
+  }
+  
+
 
   /**
    * Checks if the Mouse is in bounds of the map
@@ -146,13 +166,14 @@ public abstract class Mode implements Renderable{
     return (Mouse.getX()/MainE.getScale() < Palette.xOffset*16 ||
         Mouse.getY()/MainE.getScale() < Palette.yOffset*16) &&
         (getMouseY() >= 0 &&
-        getMouseY() < tiles.length &&
+        getMouseY() < height &&
         getMouseX() >= 0 &&
-        getMouseX() < tiles[0].length);
+        getMouseX() < width);
   }
   
-  public static void setMap(TileList[][] map){
-    tiles = map;
+  public static void setSize(int width, int height){
+    Mode.width = width;
+    Mode.height = height;
   }
   
   /**
@@ -164,10 +185,19 @@ public abstract class Mode implements Renderable{
    */
   protected boolean checkTileBounds(int tx, int ty) {
     return ty >= 0 &&           
-        ty < tiles.length && 
+        ty < height && 
         tx >= 0 &&           
-        tx < tiles[0].length;
+        tx < width;
+  }
+  
+  public static float getFloatMouseX()
+  {
+    return (float) Mouse.getX()/MainE.getScale();
   }
 
-
+  public static float getFloatMouseY()
+  {
+    return (float) Mouse.getY()/MainE.getScale();
+  }
+  
 }

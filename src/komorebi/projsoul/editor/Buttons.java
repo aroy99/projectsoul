@@ -5,6 +5,9 @@ package komorebi.projsoul.editor;
 
 import static komorebi.projsoul.engine.MainE.HEIGHT;
 
+import org.lwjgl.input.Mouse;
+
+import komorebi.projsoul.editor.World.FindWorldDialog;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MainE;
@@ -12,8 +15,6 @@ import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.EditorMap.Modes;
-
-import org.lwjgl.input.Mouse;
 
 /**
  * 
@@ -49,7 +50,8 @@ public class Buttons implements Playable{
         case 2:
           EditorMap.setMode(Modes.EVENT); break;
         case 3:
-          EditorMap.setMode(Modes.CONNECT); break;
+          findWorld();
+
         case 4: 
           EditorMap.editMapHeader();
           break;
@@ -89,6 +91,67 @@ public class Buttons implements Playable{
     }
 
   }
+
+  private void findWorld()
+  {   
+    Lock lock = new Lock();
+    
+    if (!Editor.getMap().doesConnectModeHaveWorld())
+    {
+      FindWorldDialog dialog = new FindWorldDialog()
+      {
+
+        @Override
+        public void terminateSuccess() {
+          EditorMap.setMode(Modes.CONNECT);
+          World world = getSelectedWorld();
+          
+          lock.unlock();
+          
+        }
+        
+        public void terminateFailure()
+        {
+          lock.unlock();
+
+        }
+      };
+    }
+    
+    lock.lock();
+  }
+  
+  private static class Lock {
+    
+    /**
+     * Pauses the current thread
+     */
+    public void lock()
+    {          
+      synchronized (this)
+      {        
+        try
+        {
+          wait();
+        } catch (InterruptedException e)
+        {
+          e.printStackTrace();
+        }
+      }
+    }
+    
+    /**
+     * Resumes the thread originally paused by this lock
+     */
+    public void unlock()
+    {          
+      synchronized (this)
+      {
+        notifyAll();
+      }
+    }
+  }
+
 
   @Override
   public void render() {

@@ -10,30 +10,8 @@ import static komorebi.projsoul.engine.KeyHandler.keyDown;
 import static komorebi.projsoul.engine.MainE.HEIGHT;
 import static komorebi.projsoul.engine.MainE.WIDTH;
 
-import komorebi.projsoul.editor.Editable;
-import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MainE;
-import komorebi.projsoul.entities.NPC;
-import komorebi.projsoul.entities.NPCType;
-import komorebi.projsoul.entities.SignPost;
-import komorebi.projsoul.entities.enemy.Chaser;
-import komorebi.projsoul.entities.enemy.Dummy;
-import komorebi.projsoul.entities.enemy.Enemy;
-import komorebi.projsoul.entities.enemy.EnemyType;
-import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.map.EditorMap;
-import komorebi.projsoul.script.TalkingScript;
-import komorebi.projsoul.script.WalkingScript;
-import komorebi.projsoul.script.WarpScript;
-import komorebi.projsoul.script.utils.AreaScript;
-
-import org.lwjgl.input.Mouse;
-
 import java.awt.Component;
 import java.awt.Desktop;
-import java.awt.Event;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,7 +21,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import javax.swing.Box;
@@ -55,6 +32,29 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+import org.lwjgl.input.Mouse;
+
+import komorebi.projsoul.editor.Editor;
+import komorebi.projsoul.editor.history.AddEventRevision;
+import komorebi.projsoul.editor.history.EventMovedRevision;
+import komorebi.projsoul.editor.history.EventRevision;
+import komorebi.projsoul.editor.history.RemoveEventRevision;
+import komorebi.projsoul.editor.modes.event.AreaScriptEvent;
+import komorebi.projsoul.editor.modes.event.EnemyEvent;
+import komorebi.projsoul.editor.modes.event.Event;
+import komorebi.projsoul.editor.modes.event.NPCEvent;
+import komorebi.projsoul.editor.modes.event.SignPostEvent;
+import komorebi.projsoul.editor.modes.event.WarpScriptEvent;
+import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.MainE;
+import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.enemy.EnemyAI;
+import komorebi.projsoul.entities.enemy.EnemyType;
+import komorebi.projsoul.gameplay.Key;
+import komorebi.projsoul.map.EditorMap;
+
 /**
  * The Event Editor
  * 
@@ -62,36 +62,64 @@ import javax.swing.JTextField;
  */
 public class EventMode extends Mode{
 
-  private static ArrayList<NPC> npcs;
-  private static ArrayList<AreaScript> scripts;
-  private static ArrayList<Enemy> enemies;
-  private static ArrayList<SignPost> signs;
+  private static ArrayList<NPCEvent> npcs;
+  private static ArrayList<AreaScriptEvent> scripts;
+  private static ArrayList<WarpScriptEvent> warps;
+  private static ArrayList<EnemyEvent> enemies;
+  private static ArrayList<SignPostEvent> signs;
 
-  private int selected = -1;
+  private static Event pre, current;
+
+  private static int selected = -1;
   private EventTypes selectedType;
-  
+
   private Animation selection;
 
-  private float selX=-16, selY=-16;
+  private int selX=-16, selY=-16;
+  private boolean anEventMoved = false;
 
   /**
    * The types of events that can be created
    *
    * @author Aaron Roy
    */
-  enum EventTypes{
+  public enum EventTypes{
     NPC, SIGN, ENEMY, SCRIPT, WARP;
 
-    ArrayList<? extends Editable> currEvents;
-        
-    public ArrayList<? extends Editable> getEvents(){
+    ArrayList<? extends Event> currEvents;
+
+    public ArrayList<? extends Event> getEvents(){
       return currEvents;
     }
-    
-    public void setEvents(ArrayList<? extends Editable> arr){
+
+    public void setEvents(ArrayList<? extends Event> arr){
       currEvents = arr;
     }
     
+    @SuppressWarnings("unchecked")
+    public <T> void addEvent(Class<T> classOfEvent, Event event) throws 
+      ClassCastException
+    {
+      
+      try {
+        ArrayList<T> events = (ArrayList<T>) currEvents;
+        events.add(classOfEvent.cast(event));
+      } catch (Exception e)
+      {
+        throw new ClassCastException("Incompatible type");
+      }
+      
+    }
+    
+    public void removeEvent(Event event)
+    {
+      currEvents.remove(event);
+      while (selected >= currEvents.size())
+      {
+        selected--;
+      }
+    }
+
     public String toString(){
       switch (this) {
         case NPC:    return "NPC";
@@ -110,13 +138,15 @@ public class EventMode extends Mode{
    * @param npcs The list of NPCs
    * @param scripts The list of Scripts
    */
-  public EventMode(ArrayList<NPC> npcs, ArrayList<AreaScript> scripts, 
-      ArrayList<Enemy> enemies, ArrayList<SignPost> signs) {
+  public EventMode(ArrayList<NPCEvent> npcs, ArrayList<AreaScriptEvent> scripts, 
+      ArrayList<WarpScriptEvent> warps, ArrayList<EnemyEvent> enemies,
+      ArrayList<SignPostEvent> signs) {
     EventMode.npcs = npcs;
     EventMode.scripts = scripts;
+    EventMode.warps = warps;
     EventMode.enemies = enemies;
     EventMode.signs = signs;
-    
+
     EventTypes.NPC.setEvents(npcs);
     EventTypes.SCRIPT.setEvents(scripts);
     EventTypes.WARP.setEvents(scripts);
@@ -131,55 +161,74 @@ public class EventMode extends Mode{
   }
 
   @Override
-  public void update() {    
+  public void update() {
     int index;
-    
+
     if(keyClick(Key.LBUTTON)){
       if((index = getSelectedEvent(npcs)) != -1){
         selectedType = EventTypes.NPC;
       }
 
       else if((index = getSelectedEvent(scripts)) != -1){
-        if(scripts.get(index) instanceof WarpScript){
-          selectedType = EventTypes.WARP;
-        }else{
-          selectedType = EventTypes.SCRIPT;
-        }     
+        selectedType = EventTypes.SCRIPT;
       }
-      
+
+      else if((index = getSelectedEvent(warps)) != -1){
+        selectedType = EventTypes.WARP;
+      }
+
       else if((index = getSelectedEvent(enemies)) != -1){
         selectedType = EventTypes.ENEMY;
       }
-      
+
       else if((index = getSelectedEvent(signs)) != -1){
         selectedType = EventTypes.SIGN;
       }
-      
+
       if(selectedType != null && index != -1){
-        selX = selectedType.getEvents().get(index).getX();
-        selY = selectedType.getEvents().get(index).getY();
+        selX = selectedType.getEvents().get(index).getTileX();
+        selY = selectedType.getEvents().get(index).getTileY();
         selected = index;
+
+        current = selectedType.getEvents().get(index);
       }
     }
-    
+
     if(keyDown(Key.LBUTTON) && !mouseSame){
       if(selectedType != null && mouseInEventBounds(selectedType.getEvents())){
-        selectedType.getEvents().get(selected).setTileLocation(getMouseX(), getMouseY());
+
+        if (getMouseX() != selectedType.getEvents().get(selected).getTileX()
+            || getMouseY() != selectedType.getEvents().get(selected).getTileY())
+        {
+          anEventMoved = true;
+          selectedType.getEvents().get(selected).setTileLocation(getMouseX(), getMouseY());
+        }
+
         EditorMap.setUnsaved();
       }
     }
 
+    if (KeyHandler.keyRelease(Key.LBUTTON) && anEventMoved)
+    {
+      Editor.getMap().addRevision(new EventMovedRevision(current, pre.getTileX(),
+          pre.getTileY(), current.getTileX(), current.getTileY()));
+      pre = current.duplicate();
+
+      anEventMoved = false;
+    }
+
+
     if(lButtonDoubleClicked && selectedType != null && 
         mouseInEventBounds(selectedType.getEvents())){
-      
+
       EditEventDialog dialog = new EditEventDialog(selectedType);
       dialog.pack();
       dialog.setVisible(true);
       EditorMap.setUnsaved();
     }
-        
+
     if(KeyHandler.keyClick(Key.LBUTTON) && checkButtonBounds()){
-      
+
       switch(Mouse.getX()/(32*MainE.scale)){
         case WIDTH/BUTTON_SIZE-3:
           NewEventDialog dialog = new NewEventDialog();
@@ -188,64 +237,68 @@ public class EventMode extends Mode{
           EditorMap.setUnsaved();
           break;
         case WIDTH/BUTTON_SIZE-2:
-          if(selected != -1){
-            selectedType.getEvents().remove(selected);
-            selectedType = null;
-            selected = -1;
-            selX = -16;
-            selY = -16;
-            EditorMap.setUnsaved();
-          }
+          deleteSelectedEvent();
           break;
         default:
           //DEBUG Button fail text
           System.out.println("Event mode button failure pls");
       }
     }
-
-
-
+    
     if(selected != -1){
-      selX = selectedType.getEvents().get(selected).getX();
-      selY = selectedType.getEvents().get(selected).getY();
+      selX = selectedType.getEvents().get(selected).getTileX();
+      selY = selectedType.getEvents().get(selected).getTileY();
     }
 
   }
 
+  private void deleteSelectedEvent()
+  {    
+    if(selected != -1){
+      Editor.getMap().addRevision(new RemoveEventRevision(
+          selectedType.getEvents().get(selected)));
+      selectedType.getEvents().remove(selected);
+      selectedType = null;
+      selected = -1;
+      selX = -16;
+      selY = -16;
+      EditorMap.setUnsaved();
+    }
+  }
 
   @Override
   public void render() {
-    for (NPC npc: npcs) {
+    for (NPCEvent npc: npcs) {
       if(EditorMap.checkTileInBounds(npc.getX(), npc.getY())){
-        npc.render();
+        npc.renderE();
       }
     }
 
-    for (AreaScript script: scripts) {
+    for (AreaScriptEvent script: scripts) {
       if(EditorMap.checkTileInBounds(script.getX(), script.getY())){
-        script.render();
+        script.renderE();
       }
     }
 
-    for(Enemy enemy: enemies){
+    for(EnemyEvent enemy: enemies){
       if(EditorMap.checkTileInBounds(enemy.getX(), enemy.getY())){
-        enemy.render();
+        enemy.renderE();
       }
     }
 
-    for(SignPost sign: signs){
+    for(SignPostEvent sign: signs){
       if(EditorMap.checkTileInBounds(sign.getX(), sign.getY())){
-        sign.render();
+        sign.renderE();
       }
     }
 
     EditorMap.renderGrid();
-    
-    if(EditorMap.checkTileInBounds(selX, selY)){
-      selection.play(selX, selY);
+
+    if(EditorMap.checkTileInBounds(selX, selY) && selected != -1){
+      selection.playZoom(selX*16+EditorMap.getX(), selY*16+EditorMap.getY());
     }
 
-    
+
     Draw.rect(WIDTH-BUTTON_SIZE*3, HEIGHT-BUTTON_SIZE, 64, 32, 32, 16, 64, 32, 2);
 
     if(checkButtonBounds()){
@@ -253,10 +306,8 @@ public class EventMode extends Mode{
       int y = HEIGHT - BUTTON_SIZE;
 
       Draw.rect(x, y, BUTTON_SIZE, BUTTON_SIZE, 64, 0, 2);
-
-
     }
-    
+
 
   }
 
@@ -279,12 +330,12 @@ public class EventMode extends Mode{
    * @param events The event array to check
    * @return the Event id if found, -1 if not
    */
-  public int getSelectedEvent(ArrayList<? extends Editable> events){
+  public int getSelectedEvent(ArrayList<? extends Event> events){
     for(int i = 0; i < events.size(); i++){
-      Editable edit = events.get(i);
+      Event edit = events.get(i);
 
-      if(getMouseX() == edit.getOrigTX() && 
-          getMouseY() == edit.getOrigTY()){
+      if(getMouseX() == edit.getTileX() && 
+          getMouseY() == edit.getTileY()){
         return i;
       }
     }
@@ -297,13 +348,13 @@ public class EventMode extends Mode{
    * 
    * @return The mouse is in bounds
    */
-  public boolean mouseInEventBounds(ArrayList<? extends Editable> events){
+  public boolean mouseInEventBounds(ArrayList<? extends Event> events){
     if(selected == -1){
       return false;
     }
 
-    if(pmx == events.get(selected).getOrigTX() &&
-        pmy == events.get(selected).getOrigTY()){
+    if(pmx == events.get(selected).getTileX() &&
+        pmy == events.get(selected).getTileY()){
       return true;
     }
 
@@ -318,7 +369,7 @@ public class EventMode extends Mode{
    * @author Aaron Roy
    */
   private abstract class EventDialog extends JDialog implements ActionListener,
-      PropertyChangeListener{
+  PropertyChangeListener{
 
     /** Still don't know what this does... */
     private static final long serialVersionUID = 6541401764689709898L;
@@ -367,9 +418,9 @@ public class EventMode extends Mode{
 
 
     //Enemy Items
-    protected EnemyType[] enemyPicArr = EnemyType.values();
-    protected JComboBox<EnemyType> enemyPics = new JComboBox<EnemyType>(enemyPicArr);
-    protected String[] aiTypesArr = {"none", "chaser"};
+    protected String[] enemyPicArr = EnemyType.valuesAsString();
+    protected JComboBox<String> enemyPics = new JComboBox<String>(enemyPicArr);
+    protected String[] aiTypesArr = EnemyAI.valuesAsString();
     protected JComboBox<String> aiType = new JComboBox<String>(aiTypesArr);
     protected JTextField radius = new JTextField();
 
@@ -383,15 +434,15 @@ public class EventMode extends Mode{
     protected JTextField scriptID = new JTextField(15);
     protected JButton editScriptText = new JButton("...");
     protected JCheckBox repeatable = new JCheckBox("Repeatable: ");
-    protected ArrayList<NPC> npcArr = new ArrayList<NPC>();
-    protected JComboBox<NPC> npcsCombo;
+    protected ArrayList<NPCEvent> npcArr = new ArrayList<NPCEvent>();
+    protected JComboBox<NPCEvent> npcsCombo;
 
     protected Box textBox;
 
     {
       npcArr.add(null);
       npcArr.addAll(npcs);
-      npcsCombo = new JComboBox<NPC>(npcArr.toArray(new NPC[] {}));
+      npcsCombo = new JComboBox<NPCEvent>(npcArr.toArray(new NPCEvent[] {}));
 
       textBox = Box.createHorizontalBox();
       textBox.add(scriptID);
@@ -479,7 +530,7 @@ public class EventMode extends Mode{
       }
       return true;
     }
-    
+
     protected boolean checkNum(JTextField text){
       return text.getText().matches("\\d{1,3}");
     }
@@ -494,7 +545,7 @@ public class EventMode extends Mode{
       JOptionPane.showMessageDialog(this, "Sorry, make sure every field is filled in", 
           "Please Try Again", JOptionPane.ERROR_MESSAGE);
     }
-    
+
     protected void editScript(JTextField script){
       if(Desktop.isDesktopSupported()){
         File file = new File("res/scripts/"+script.getText()+".txt");
@@ -580,7 +631,7 @@ public class EventMode extends Mode{
       options.addPropertyChangeListener(this);
 
       types.addActionListener(this);
-      
+
       editTalkScript.addActionListener(this);
       editWalkScript.addActionListener(this);
 
@@ -609,74 +660,95 @@ public class EventMode extends Mode{
         options.setValue(JOptionPane.UNINITIALIZED_VALUE);
 
         if(btnCreate.equals(value)){
+          Event event = null;
+          
           float x = EditorMap.getX();
           float y = EditorMap.getY();
 
           switch((EventTypes)types.getSelectedItem()){
             case NPC:
               if(checkText(name) && checkText(walking) && checkText(talking)){
-                NPC newNPC = new NPC(name.getText(), x, y, 
-                    (NPCType)npcPics.getSelectedItem());
-                newNPC.setWalkingScript(new WalkingScript(walking.getText(), newNPC));
-                newNPC.setTalkingScript(new TalkingScript(talking.getText(), newNPC));
+                NPCEvent newNPC = new NPCEvent((NPCType) 
+                    npcPics.getSelectedItem(), name.getText(), walking.getText(),
+                    talking.getText());
+                newNPC.setTileLocation(0,0);
                 npcs.add(newNPC);
-                selX = x;
-                selY = y;
+                selX = 0;
+                selY = 0;
+                
+                event = newNPC;
+
+                pre = newNPC.duplicate();
                 clearAndHide();
               }
               break;
             case SIGN:
-              //TODO Implement sign scripts
-              SignPost newSign = new SignPost(x, y, signID.getText());
+              SignPostEvent newSign = new SignPostEvent(signID.getText());
+              newSign.setTileLocation(0, 0);
               signs.add(newSign);
-              selX = x;
-              selY = y;
+              selX = 0;
+              selY = 0;
+              
+              event = newSign;
+
+              pre = newSign.duplicate();
               clearAndHide();
               break;
             case ENEMY:
-              Enemy newEnemy;
-              if(aiType.getSelectedItem().equals("chaser")){
-                if(checkNum(radius)){
-                  newEnemy = new Chaser(x, y, 
-                      (EnemyType)enemyPics.getSelectedItem(), Integer.parseInt(radius.getText()));
-                  enemies.add(newEnemy);
-                  selX = x;
-                  selY = y;
-                  clearAndHide();
-                }
-              }else{
-                newEnemy = new Dummy(x, y, (EnemyType)enemyPics.getSelectedItem(),1);
+              EnemyEvent newEnemy;
+
+              if(checkNum(radius)){
+                newEnemy = new EnemyEvent(EnemyType.toEnum(
+                    (String) enemyPics.getSelectedItem()), EnemyAI.toEnum(
+                        (String) aiType.getSelectedItem()), Integer.parseInt(
+                            radius.getText()));
                 enemies.add(newEnemy);
-                selX = x;
-                selY = y;
+                newEnemy.setTileLocation(0, 0);
+                selX = 0;
+                selY = 0;
+                
+                event = newEnemy;
+
+                pre = newEnemy.duplicate();
                 clearAndHide();
               }
+
               break;
             case SCRIPT:
               if(checkText(scriptID)){
-                AreaScript newScript;
+                AreaScriptEvent newScript;
                 if(npcsCombo.getSelectedItem() == null){
-                  newScript = new AreaScript(scriptID.getText(), x, y, false);
+                  newScript = new AreaScriptEvent(scriptID.getText(),
+                      repeatable.isSelected(), "");
                 }else{
-                  newScript = new AreaScript(scriptID.getText(), x, y, false, 
-                      npcs.get(npcsCombo.getSelectedIndex()));
+                  newScript = new AreaScriptEvent(scriptID.getText(),
+                      repeatable.isSelected(), 
+                      ((NPCEvent) npcsCombo.getSelectedItem()).getName());
                 }
-                newScript.setRepeatable(repeatable.isSelected());
-
+                newScript.setTileLocation(0, 0);
                 scripts.add(newScript);
-                selX = x;
-                selY = y;
+                selX = 0;
+                selY = 0;
+                
+                event = newScript;
+
+                pre = newScript.duplicate();
                 clearAndHide();
               }
               break;
             case WARP:
-              if(checkText(newMap)){
-                //TODO Add warping to a specific location
+              if(checkText(newMap) && checkNum(warpX) && checkNum(warpY)){
+                WarpScriptEvent newWarp = new WarpScriptEvent(
+                    newMap.getName(), Integer.parseInt(warpX.getText()),
+                    Integer.parseInt(warpY.getText()));
+                newWarp.setTileLocation(0, 0);
+                warps.add(newWarp);
+                selX = 0;
+                selY = 0;
+                
+                event = newWarp;
 
-                WarpScript newWarp = new WarpScript(newMap.getName(), x, y, true);
-                scripts.add(newWarp);
-                selX = x;
-                selY = y;
+                pre = newWarp.duplicate();
                 clearAndHide();
               }
               break;
@@ -686,6 +758,9 @@ public class EventMode extends Mode{
               System.out.println("How does this even happen?? (New Event fail)");
 
           }
+        
+          Editor.getMap().addRevision(new AddEventRevision(event));
+          
         }else{
           clearAndHide();
         }
@@ -736,11 +811,11 @@ public class EventMode extends Mode{
       if(e.getSource() == options){
         options.setValue(btnCreate);
       }
-      
+
       if(e.getSource() == editTalkScript && checkText(talking)){
         editScript(talking);
       }
-      
+
       if(e.getSource() == editWalkScript && checkText(walking)){
         editScript(walking);
       }
@@ -777,6 +852,14 @@ public class EventMode extends Mode{
 
       switch(type){
         case ENEMY:
+
+          EnemyEvent editEnemy = enemies.get(selected);
+
+          enemyPics.setSelectedItem(editEnemy.getSpriteType());
+          aiType.setSelectedItem(editEnemy.getAIType());
+          radius.setText(""+editEnemy.getRadius());
+
+
           options = new JOptionPane(enemyContents, JOptionPane.PLAIN_MESSAGE,
               JOptionPane.YES_NO_OPTION, null, buttons, buttons[0]);
           addComponentListener(new ComponentAdapter() {
@@ -784,13 +867,6 @@ public class EventMode extends Mode{
               enemyPics.requestFocusInWindow();
             }
           });
-
-          Enemy editEnemy = enemies.get(selected);
-          enemyPics.setSelectedItem(editEnemy.getType());
-          aiType.setSelectedItem(editEnemy.getBehavior());
-          if(editEnemy.getBehavior().equals("chaser")){
-            radius.setText(""+((Chaser)editEnemy).getOriginalRadius());
-          }
 
           break;
         case NPC:
@@ -802,13 +878,13 @@ public class EventMode extends Mode{
             }
           });
 
-          NPC editNPC = npcs.get(selected);
+          NPCEvent editNPC = npcs.get(selected);
 
-          npcPics.setSelectedItem(editNPC.getType());
-          
+          npcPics.setSelectedItem(editNPC.getSpriteType());
+
           name.setText(editNPC.getName());
-          walking.setText(editNPC.getWalkingScript().getScript());
-          talking.setText(editNPC.getTalkingScript().getScript());
+          walking.setText(editNPC.getWalkScript());
+          talking.setText(editNPC.getTalkScript());
 
           break;
         case SCRIPT:
@@ -820,8 +896,8 @@ public class EventMode extends Mode{
             }
           });
 
-          AreaScript editScript = scripts.get(selected);
-          scriptID.setText(editScript.getName());
+          AreaScriptEvent editScript = scripts.get(selected);
+          scriptID.setText(editScript.getScript());
           repeatable.setSelected(editScript.isRepeatable());
           npcsCombo.setSelectedItem(editScript.getNPC());
 
@@ -835,7 +911,7 @@ public class EventMode extends Mode{
             }
           });
 
-          SignPost editSign = signs.get(selected);
+          SignPostEvent editSign = signs.get(selected);
           signID.setText(editSign.getText());
 
           break;
@@ -848,8 +924,10 @@ public class EventMode extends Mode{
             }
           });
 
-          WarpScript editWarp = (WarpScript)scripts.get(selected);
+          WarpScriptEvent editWarp = warps.get(selected);
           newMap.setText(editWarp.getMap());
+          warpX.setText(""+editWarp.getWarpToX());
+          warpY.setText(""+editWarp.getWarpToY());
 
           break;
         default:
@@ -860,7 +938,7 @@ public class EventMode extends Mode{
       setContentPane(options);
 
       options.addPropertyChangeListener(this);
-      
+
       editTalkScript.addActionListener(this);
       editWalkScript.addActionListener(this);
 
@@ -892,59 +970,88 @@ public class EventMode extends Mode{
 
         if(btnCreate.equals(value)){
 
+          Event beforeOK;
+
           switch(type){
             case NPC:
+
               if(checkText(name) && checkText(walking) && checkText(talking)){
-                NPC editNPC = npcs.get(selected);
+                NPCEvent editNPC = npcs.get(selected);
+                beforeOK = editNPC.duplicate();
+
                 editNPC.setName(name.getText());
-                editNPC.setNPCType(NPCType.toEnum((String)npcPics.getSelectedItem()));
-                editNPC.setWalkingScript(new WalkingScript(walking.getText(), editNPC));
-                editNPC.setTalkingScript(new TalkingScript(talking.getText(), editNPC));
+                editNPC.setSpriteType((NPCType) npcPics.getSelectedItem());
+                editNPC.setWalkScript(walking.getText());
+                editNPC.setTalkScript(talking.getText());
+
+                Editor.getMap().addRevision(new EventRevision(editNPC, (NPCEvent) beforeOK, 
+                    editNPC));
+
                 clearAndHide();
               }
               break;
             case SIGN:
-              if(checkText(signID)){
-                SignPost editSign = signs.get(selected);
-                editSign.setText(signID.getText());
-                clearAndHide();
-              }
+              SignPostEvent editSign = signs.get(selected);
+              beforeOK = editSign.duplicate();
+
+              editSign.setText(signID.getText());
+
+              Editor.getMap().addRevision(new EventRevision(editSign, (SignPostEvent) beforeOK, 
+                  editSign));
+              clearAndHide();
+
               break;
             case ENEMY:
-              Enemy oldEnemy = enemies.get(selected);
-              Enemy newEnemy;
-              if(aiType.getSelectedItem().equals("chaser")){
-                if(checkNum(radius)){
-                  newEnemy = new Chaser(oldEnemy.getX(), oldEnemy.getY(), 
-                      (EnemyType)enemyPics.getSelectedItem(), Integer.parseInt(radius.getText()));
-                  enemies.set(selected, newEnemy);
-                  clearAndHide();
-                }
-              }else{
-                newEnemy = new Dummy(oldEnemy.getX(), oldEnemy.getY(), 
-                    (EnemyType)enemyPics.getSelectedItem(), 1);
-                enemies.set(selected, newEnemy);
-                clearAndHide();
+
+              if(checkNum(radius)){
+
+                EnemyEvent editEnemy = enemies.get(selected);
+                beforeOK = editEnemy.duplicate();
+
+                editEnemy.setAIType(
+                    EnemyAI.toEnum((String) aiType.getSelectedItem()));
+                editEnemy.setSpriteType(
+                    EnemyType.toEnum((String) enemyPics.getSelectedItem()));
+                editEnemy.setRadius(Integer.parseInt(radius.getText()));
+
+                Editor.getMap().addRevision(new EventRevision(enemies.get(selected),
+                    (EnemyEvent) beforeOK, enemies.get(selected)));
               }
+
               break;
             case SCRIPT:
               if(checkText(scriptID)){
-                AreaScript editScript = scripts.get(selected);
+                AreaScriptEvent editScript = scripts.get(selected);
+                beforeOK = editScript.duplicate();
+
                 if(npcsCombo.getSelectedItem() != null){
-                  editScript.setNPC((NPC)npcsCombo.getSelectedItem());
+                  editScript.setNPC(((NPCEvent) 
+                      (npcsCombo.getSelectedItem())).getName());
+                } else
+                {
+                  editScript.setNPC("");
                 }
                 editScript.setScript(scriptID.getText());
-                editScript.setRepeatable(repeatable.isSelected());
+                editScript.setIsRepeatable(repeatable.isSelected());
+
+                Editor.getMap().addRevision(new EventRevision(editScript, (AreaScriptEvent) 
+                    beforeOK, editScript));
 
                 clearAndHide();
               }
               break;
             case WARP:
-              if(checkText(newMap)){
-                //TODO Add warping to a specific location
+              if(checkText(newMap) && checkNum(warpX) && checkNum(warpY)){
+                WarpScriptEvent editWarp = warps.get(selected);
+                beforeOK = editWarp.duplicate();
 
-                WarpScript editWarp = (WarpScript)scripts.get(selected);
                 editWarp.setMap(newMap.getText());
+                editWarp.setWarpToX(Integer.parseInt(warpX.getText()));
+                editWarp.setWarpToY(Integer.parseInt(warpY.getText()));
+
+                Editor.getMap().addRevision(new EventRevision(editWarp, (WarpScriptEvent) 
+                    beforeOK, editWarp));
+
                 clearAndHide();
               }
               break;
@@ -957,6 +1064,8 @@ public class EventMode extends Mode{
         }else{
           clearAndHide();
         }
+
+        clearAndHide();
       }
 
     }
@@ -966,11 +1075,11 @@ public class EventMode extends Mode{
       if(e.getSource() == options){
         options.setValue(btnCreate);
       }
-      
+
       if(e.getSource() == editTalkScript && checkText(talking)){
         editScript(talking);
       }
-      
+
       if(e.getSource() == editWalkScript && checkText(walking)){
         editScript(walking);
       }

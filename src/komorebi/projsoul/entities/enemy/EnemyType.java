@@ -32,7 +32,7 @@ public enum EnemyType {
    */
   public static EnemyType toEnum(String s){
     switch (s){
-      case "SATURN":case "Mr. Saturn":
+      case "SATURN":case "Mr. Saturn":case "Saturn":
         return EnemyType.SATURN;
       default:
         return null;
@@ -42,9 +42,21 @@ public enum EnemyType {
   @Override
   public String toString(){
     switch(this){
-      case SATURN: return "SATURN";
+      case SATURN: return "Saturn";
       default:      return "bleh";
     }
+  }
+  
+  public static String[] valuesAsString()
+  {
+    String[] vals = new String[values().length];
+    
+    for (int i = 0; i < values().length; i++)
+    {
+      vals[i] = values()[i].toString();
+    }
+    
+    return vals;
   }
 
   /**

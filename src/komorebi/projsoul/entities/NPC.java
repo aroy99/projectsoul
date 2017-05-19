@@ -6,8 +6,6 @@ package komorebi.projsoul.entities;
 
 import java.awt.Rectangle;
 
-import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.map.Map;

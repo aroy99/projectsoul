@@ -14,14 +14,13 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -38,25 +37,35 @@ import org.lwjgl.opengl.Display;
 
 import komorebi.projsoul.audio.AudioHandler;
 import komorebi.projsoul.audio.Song;
+import komorebi.projsoul.editor.Editor;
+import komorebi.projsoul.editor.Layer;
+import komorebi.projsoul.editor.LayerControl;
+import komorebi.projsoul.editor.LayerType;
+import komorebi.projsoul.editor.Sublayer;
+import komorebi.projsoul.editor.World;
+import komorebi.projsoul.editor.controls.TabControl;
+import komorebi.projsoul.editor.history.HistoryTab;
+import komorebi.projsoul.editor.history.OpenRevision;
+import komorebi.projsoul.editor.history.Revision;
 import komorebi.projsoul.editor.modes.ConnectMode;
 import komorebi.projsoul.editor.modes.EventMode;
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.editor.modes.MoveMode;
+import komorebi.projsoul.editor.modes.MoveMode.Permission;
 import komorebi.projsoul.editor.modes.TileMode;
+import komorebi.projsoul.editor.modes.event.AreaScriptEvent;
+import komorebi.projsoul.editor.modes.event.EnemyEvent;
+import komorebi.projsoul.editor.modes.event.NPCEvent;
+import komorebi.projsoul.editor.modes.event.SignPostEvent;
+import komorebi.projsoul.editor.modes.event.WarpScriptEvent;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.KeyHandler.Control;
 import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
-import komorebi.projsoul.entities.SignPost;
-import komorebi.projsoul.entities.enemy.Chaser;
-import komorebi.projsoul.entities.enemy.Dummy;
-import komorebi.projsoul.entities.enemy.Enemy;
+import komorebi.projsoul.entities.enemy.EnemyAI;
 import komorebi.projsoul.entities.enemy.EnemyType;
 import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.map.ConnectMap.Side;
-import komorebi.projsoul.script.utils.AreaScript;
 
 /**
  * Represents a map of tiles for use by the Editor
@@ -67,7 +76,7 @@ public class EditorMap implements Playable, Serializable{
 
   /** I will probably never bother to understand what this does... */
   private static final long serialVersionUID = 3907867851725270089L;
-  
+
   //Arrow keys
   private transient boolean up, down, left, right;        //Directions for movement
 
@@ -86,8 +95,8 @@ public class EditorMap implements Playable, Serializable{
   private static boolean saved = true;
 
 
-  private static TileList[][] tiles;                //The Map itself
-  private static boolean[][] collision;
+  //private static int[][] tiles;                //The Map itself
+  private static Permission[][][] collision;
 
   private static String title;                 //The in-game name of this map
   private static Song song;                    //The song this map uses
@@ -95,12 +104,14 @@ public class EditorMap implements Playable, Serializable{
 
   public static final int SIZE = 16;         //Width and height of a tile
 
-  private static ArrayList<NPC> npcs;              //Events
-  private static ArrayList<AreaScript> scripts;    //^
-  private static ArrayList<Enemy> enemies;         //^
-  private static ArrayList<SignPost> signs;        //^
-  
+  private static ArrayList<NPCEvent> npcs;              //Events
+  private static ArrayList<AreaScriptEvent> scripts;    //^
+  private static ArrayList<EnemyEvent> enemies;         //^
+  private static ArrayList<SignPostEvent> signs;        //^
+  private static ArrayList<WarpScriptEvent> warps;      //^
+
   private static ArrayList<ConnectMap> maps;   //Maps that connect to this one
+  private ConnectMap myMap;
 
   private static float x, y;       //Current location
   private static float dx, dy;
@@ -111,11 +122,21 @@ public class EditorMap implements Playable, Serializable{
 
   public static final int WIDTH = Display.getWidth();
   public static final int HEIGHT = Display.getHeight();
-  
+
   private TileMode tileMode;
   private MoveMode moveMode;
   private EventMode eventMode;
   private ConnectMode connectMode;
+
+  private static boolean disableUpdate;
+
+  private TabControl tabs;
+  private LayerControl layers;
+  private HistoryTab history;
+  
+  private Sublayer curr;
+
+  private static int height, width;
 
   /**
    * The various modes this map can be in
@@ -135,29 +156,53 @@ public class EditorMap implements Playable, Serializable{
    */
   public EditorMap(int col, int row){
     saved = true;
-    tiles = new TileList[row][col];
-    collision = new boolean[row][col];
-    npcs = new ArrayList<NPC>();
-    scripts = new ArrayList<AreaScript>();
-    enemies = new ArrayList<Enemy>();
-    signs = new ArrayList<SignPost>();
+    //tiles = new int[row][col];
+    collision = new Permission[MoveMode.NUM_MOVEMENT_LAYERS][row][col];
+
+    for (int l = 0; l < collision.length; l++)
+      for (int i = 0; i < collision[l].length; i++)
+      {
+        for (int j = 0; j < collision[l][i].length; j++)
+        {
+          collision[l][i][j] = Permission.TRUE;
+        }
+      }
+
+    npcs = new ArrayList<NPCEvent>();
+    scripts = new ArrayList<AreaScriptEvent>();
+    enemies = new ArrayList<EnemyEvent>();
+    signs = new ArrayList<SignPostEvent>();
+    warps = new ArrayList<WarpScriptEvent>();
     maps = new ArrayList<ConnectMap>();
 
 
     Display.setTitle("Clyde\'s Editor - "+ "Untitled Map");
 
+    /*
     for (int i = tiles.length-1; i >= 0; i--) {
       for (int j = 0; j < tiles[0].length; j++) {
-        tiles[i][j] = TileList.BLANK;
+        tiles[i][j] = Draw.BLANK_TILE;
       }
-    }
+    }*/
 
-    tileMode = new TileMode();
+    tileMode = new TileMode(curr.getTiles());
     moveMode = new MoveMode(collision);
-    eventMode = new EventMode(npcs, scripts, enemies, signs);
-    connectMode = new ConnectMode(maps);
-    Mode.setMap(tiles);
+    eventMode = new EventMode(npcs, scripts, warps, enemies, signs);
+
+    layers = new LayerControl();
+    history = new HistoryTab();
+    tabs = new TabControl();
     
+    tabs.addTab(layers);
+    tabs.addTab(history);
+    tabs.setCurrTab(0);
+
+    curr = layers.getFirst();
+
+    //connectMode = new ConnectMode(World.getWorld());
+    //Mode.setMap(tiles);
+    history.addRevision(new OpenRevision(name));
+
   }
 
 
@@ -168,29 +213,53 @@ public class EditorMap implements Playable, Serializable{
    * @param name The name of the file
    */
   public EditorMap(String key, String name){
+
+    layers = new LayerControl();
+    history = new HistoryTab();
+    tabs = new TabControl();
     
+    tabs.addTab(layers);
+    tabs.addTab(history);
+    tabs.setCurrTab(0);
+
+
     saved = true;
+
+    npcs = new ArrayList<NPCEvent>();
+    scripts = new ArrayList<AreaScriptEvent>();
+    enemies = new ArrayList<EnemyEvent>();
+    signs = new ArrayList<SignPostEvent>();
+    warps = new ArrayList<WarpScriptEvent>();
+
+    maps = new ArrayList<ConnectMap>();
 
     try {
       BufferedReader reader = new BufferedReader(new FileReader(
           new File(key)));
 
+      BufferedReader subReader = new BufferedReader(new FileReader(
+          new File(key.substring(0, key.indexOf("maps/")+5) + 
+              "data/" + 
+              key.substring(key.indexOf("maps/")+5, key.indexOf(".map")) +
+              ".edt")));
+
       int rows = Integer.parseInt(reader.readLine());
       int cols = Integer.parseInt(reader.readLine());
 
-      tiles = new TileList[rows][cols];
-      collision = new boolean[rows][cols];
-      npcs = new ArrayList<NPC>();
-      scripts = new ArrayList<AreaScript>();
-      enemies = new ArrayList<Enemy>();
-      signs = new ArrayList<SignPost>();
-      
-      maps = new ArrayList<ConnectMap>();
-      
+      height = rows;
+      width = cols;
+
+      layers.clear();
+
+      //tiles = new int[rows][cols];
+      collision = new Permission[MoveMode.NUM_MOVEMENT_LAYERS]
+          [rows][cols];
+
+
       reader.mark(50);
-      
+
       String test = reader.readLine();
-      
+
       if(!test.substring(0, 1).matches("\\d")){
         title = test;
         song = Song.getSong(reader.readLine());
@@ -202,6 +271,55 @@ public class EditorMap implements Playable, Serializable{
         reader.reset();
       }
 
+      String read;
+      Sublayer edit = null;
+      int layerNum = -1;
+
+      while ((read = subReader.readLine())!=null)
+      {    
+        if (read.startsWith("#"))
+          layerNum++;
+        else if (read.startsWith("~"))
+        {
+          edit = new Sublayer(LayerType.layerNumber(layerNum), 
+              read.replace("~", ""));
+          edit.setTiles(new int[height][width]);
+          layers.getLayers()[layerNum].getSubs().add(edit);
+        } else
+        {
+          String[] split = read.split(" ");
+          int i = height - 1, j = 0;
+
+          for (String term: split)
+          {
+            if (term.isEmpty())
+              continue;
+
+            int times;
+            if (term.contains("^"))
+            {
+              times = Integer.valueOf(term.substring(term.indexOf("^") + 1));
+              term = term.substring(0, term.indexOf("^"));
+            }
+            else
+              times = 1;
+
+            for (int repeat = 0; repeat < times; repeat++)
+            {
+              edit.getTiles()[i][j] = Integer.valueOf(term);
+              j++;
+              if (j >= width)
+              {
+                j = 0;
+                i--;
+              }
+            }
+          }
+
+        }
+      }
+
+      /*
       for (int i = 0; i < tiles.length; i++) {
         String[] str = reader.readLine().split(" ");
         int index = 0;
@@ -209,128 +327,173 @@ public class EditorMap implements Playable, Serializable{
           if(str[index].equals("")){
             index++;  //pass this token, it's blank
           }
-          tiles[i][j] = TileList.getTile(Integer.parseInt(str[index]));
+          tiles[i][j] = Integer.parseInt(str[index]);
         }
+      }*/
+
+
+      while (!(read = reader.readLine()).equals("#movement permissions"))
+      {
       }
+      
+      read = reader.readLine();
 
-      String s = reader.readLine();
 
-      for (int i = 0; i < tiles.length; i++) {
-        if(s == null || s.startsWith("npc")){
-          break;
+      int i = height - 1, j = 0;
+
+      String[] terms = read.split(" ");
+
+      for (String term: terms)
+      {
+        int repetitions;
+
+        if (term.contains("^"))
+        {
+          repetitions = Integer.parseInt(term.substring(
+              term.indexOf("^")+1));
+          term = term.substring(0, term.indexOf("^"));
+        } else
+        {
+          repetitions = 1;
         }
-        if(i != 0){
-          s = reader.readLine();
-        }
-        String[] str = s.split(" ");
-        int index = 0;
-        for (int j = 0; j < cols; j++, index++) {
-          if(str[index].equals("")){
-            index++;  //pass this token, it's blank
+
+        for (int rep = 0; rep < repetitions; rep++)
+        {
+          char[] chars = term.toCharArray();
+
+          for (int l = 0; l < MoveMode.NUM_MOVEMENT_LAYERS; l++)
+          {
+            collision[l][i][j] = Permission.interpret(chars[l]);
           }
-          collision[i][j]=str[index].equals("1")?true : false;
+
+          j++;
+          if (j >= width)
+          {
+            j = 0;
+            i--;
+          }
+
         }
+
+
       }
+
+
+
+
 
 
       path = key;
       this.name = name;
 
-      Display.setTitle("Clyde\'s Editor - "+name);
+      Display.setTitle("Project Soul Editor - "+name);
 
       do
       {
-        if(s == null){
+        if(read == null){
           break;
         }
 
-        if (s.startsWith("npc"))
+        if (read.startsWith("npc"))
         {
-          s = s.replace("npc ", "");
-          String[] split = s.split(" ");
+          read = read.replace("npc ", "");
+          String[] split = read.split(" ");
 
-          int arg0 = Integer.parseInt(split[1]);
-          int arg1 = Integer.parseInt(split[2]);
+          /*split[0] = name     split[1] = x
+            split[2] = y        split[3] = sprite
+            split[4] = walking  split[5] = talking*/
 
-          NPC addee = new NPC(split[0], x+arg0*16, y+arg1*16, 
-              NPCType.toEnum(split[3]));
+          NPCEvent addee = new NPCEvent(NPCType.toEnum(split[3]), split[0],
+              split[4], split[5]);
 
-          addee.setWalkingScript(split[4]);
-          addee.setTalkingScript(split[5]);
-
+          addee.setTileLocation(Integer.parseInt(split[1]), 
+              Integer.parseInt(split[2]));
           npcs.add(addee);
 
-        } else if (s.startsWith("script"))
+        } else if (read.startsWith("script"))
         {
-          s = s.replace("script ", "");
-          String[] split = s.split(" ");
+          read = read.replace("script ", "");
+          String[] split = read.split(" ");
 
-          int arg0 = Integer.parseInt(split[1]);
-          int arg1 = Integer.parseInt(split[2]);
+          AreaScriptEvent addee;
 
-          AreaScript areaScript = new AreaScript(split[0], 
-              arg0, arg1);
-          areaScript.executeUpon(findNPC(split[3]));
-          
-          scripts.add(areaScript);
+          //split[0] = name   split[1] = x
+          //split[2] = y      split[3] = repeat
+          //split[4] = npc
 
-        } else if (s.startsWith("warp"))
-        {
-          s = s.replace("warp ", "");
-          String[] split = s.split(" ");
-
-          int arg0 = Integer.parseInt(split[1]);
-          int arg1 = Integer.parseInt(split[2]);
-
-          AreaScript areaScript = new AreaScript(split[0], 
-              arg0, arg1);
-          
-          scripts.add(areaScript);        
-         } else if (s.startsWith("enemy")){
-          s = s.replace("enemy ", "");
-          String[] split = s.split(" ");
-
-          int arg0 = Integer.parseInt(split[0]);
-          int arg1 = Integer.parseInt(split[1]);
-          
-          switch(split[3]){
-            case "none":
-              enemies.add(new Dummy(x+arg0*16, y+arg1*16, EnemyType.toEnum(split[2]), 1));
-              break;
-            case "chaser":
-              enemies.add(new Chaser(x+arg0*16, y+arg1*16, EnemyType.toEnum(split[2]),
-                  Integer.parseInt(split[4])));
-              break;
-            default:
-              System.out.println("This shouldn't happen!");
-              break;
+          if (split.length == 4) //no npc
+          {
+            addee = new AreaScriptEvent(split[0], Boolean.valueOf(split[3]),
+                "");
+          } else
+          {
+            addee = new AreaScriptEvent(split[0], Boolean.valueOf(split[3]),
+                split[4]);
           }
-        } else if (s.startsWith("sign")){
-          s = s.replace("sign ", "");
-          String[] split = s.split(" ", 3);
 
-          int arg0 = Integer.parseInt(split[0]);
-          int arg1 = Integer.parseInt(split[1]);
-          
-          signs.add(new SignPost(x+arg0*16, y+arg1*16, split[2]));
+          addee.setTileLocation(Integer.parseInt(split[1]), 
+              Integer.parseInt(split[2]));
 
-        } else if (s.startsWith("connect")){
+          scripts.add(addee);
+
+        } else if (read.startsWith("warp"))
+        {
+          read = read.replace("warp ", "");
+          String[] split = read.split(" ");
+
+          WarpScriptEvent addee = new WarpScriptEvent(split[0],
+              Integer.parseInt(split[3]), Integer.parseInt(split[4]));
+
+          addee.setTileLocation(Integer.parseInt(split[1]), 
+              Integer.parseInt(split[2]));
+
+
+          //split[0] = map    //split[1] = x
+          //split[2] = y      //split[3] = newX
+          //split[4] = newY
+
+          warps.add(addee);
+        } else if (read.startsWith("enemy")){
+          read = read.replace("enemy ", "");
+          String[] split = read.split(" ");
+
+          //enemy 16 16 SATURN chaser 3
+          //split[0] = x      split[1] = y
+          //split[2] = sprite split[3] = AI
+          //split[4] = radius
+
+          EnemyEvent addee = new EnemyEvent(EnemyType.toEnum(split[2]),
+              EnemyAI.toEnum(split[3]), Integer.parseInt(split[4]));
+          addee.setTileLocation(Integer.parseInt(split[0]), 
+              Integer.parseInt(split[1]));
+
+
+        } else if (read.startsWith("sign")){
+          read = read.replace("sign ", "");
+          String[] split = read.split(" ", 3);
+
+          //sign 2 18 This is a forest
+
+          SignPostEvent addee = new SignPostEvent(split[2]);
+          addee.setTileLocation(Integer.parseInt(split[0]), 
+              Integer.parseInt(split[1]));
+
+          signs.add(addee);
+
+        } /*else if (s.startsWith("connect")){
           s = s.replace("connect ", "");
           String[] split = s.split(" ");
-          
           ConnectMap newMap = (new ConnectMap("res/maps/"+split[0]+".map", split[0], 
               Side.toEnum(split[1])));
-          
           newMap.setLoc(x+Integer.parseInt(split[2])*SIZE, y+Integer.parseInt(split[3])*SIZE);
-          
           maps.add(newMap);
-        }
-        
-      } while ((s=reader.readLine()) != null);
+        }*/
+
+      } while ((read=reader.readLine()) != null);
 
 
       reader.close();
-      
+
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
       JOptionPane.showMessageDialog(null, 
@@ -338,13 +501,55 @@ public class EditorMap implements Playable, Serializable{
           "therefore, some things might not be right");
 
       KeyHandler.reloadKeyboard();
-    }         
+      collision = new Permission[3][10][10];
+      for (int l = 0; l < collision.length; l++)
+      {
+        for (int i = 0; i < collision[l].length; i++)
+        {
+          for (int j = 0; j < collision[l][i].length; j++)
+          {
+            collision[l][i][j] = Permission.TRUE;
+          }
+        }
+      }
+
+      height = width = 10;
+
+      for (Layer l: layers.getLayers())
+      {
+        for (Sublayer s: l.getSubs())
+        {
+          s.setTiles(new int[height][width]);
+        }
+      }
+
+    }
+    curr = layers.getFirst();
     
-    tileMode = new TileMode();
+    tileMode = new TileMode(curr.getTiles());
     moveMode = new MoveMode(collision);
-    eventMode = new EventMode(npcs, scripts, enemies, signs);
-    connectMode = new ConnectMode(maps);
-    Mode.setMap(tiles);
+    eventMode = new EventMode(npcs, scripts, warps, enemies, signs);
+
+    //myMap = new ConnectMap(key);
+
+
+    Mode.setSize(width, height);
+
+    for (Layer l: layers.getLayers())
+    {
+      l.alignSublayers();
+    }
+
+    try
+    {
+      connectMode = new ConnectMode(World.findWorldContainingMap(key));
+    } catch (NoSuchElementException e)
+    {
+      connectMode = new ConnectMode();
+    }
+    
+    history.addRevision(new OpenRevision(name));
+    //Mode.setMap(tiles);
   }
 
   @Override
@@ -369,14 +574,14 @@ public class EditorMap implements Playable, Serializable{
 
     //    System.out.println(isSave + ", " + isNewSave);
 
-    
+
     Mode.getModeInput();
     tileMode.getInput();
     isGrid = button(Control.GRID);
   }
 
   @Override
-  public void update(){
+  public void update(){    
     //Resets tiles to default position
     if(isSave){
       if(path == null){
@@ -408,7 +613,7 @@ public class EditorMap implements Playable, Serializable{
       dx = -SPEED;
     }
 
-     
+
     if(button(Control.TILE)){
       mode = Modes.TILE;
     }
@@ -421,7 +626,7 @@ public class EditorMap implements Playable, Serializable{
     if(button(Control.CONNECT)){
       mode = Modes.CONNECT;
     }
-    
+
     if(button(Control.HEADER)){
       editMapHeader();
     }
@@ -446,26 +651,45 @@ public class EditorMap implements Playable, Serializable{
       dx = -x;
       dy = -y;
     }
-    
-    move(dx, dy);
-    
+
+    if (!disableUpdate)
+    {
+      move(dx, dy);
+    }
+
     dx = 0;
     dy = 0;
+    
+    curr.getRadioButton().setChecked(true);
+    tabs.update();
+    
+    history.updateBackground();
 
   }
 
 
   @Override
   public void render() {
-    for (int i = 0; i < tiles.length; i++) {
-      for (int j = 0; j < tiles[0].length; j++) {
-        if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
-          Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, tiles[i][j].getX(), 
-              tiles[i][j].getY(), 1);
+    if (mode!=Modes.CONNECT)
+    {      
+      int widthInBounds = (Math.max((int) (Math.min(x+width*16, WIDTH) - x)/16, 0));
+      
+      Draw.rectZoom(x, y, widthInBounds*16, height*16, 98, 105, 99, 106, 2, 
+          Editor.zoom(), EditorMap.getX(), EditorMap.getY());
+
+      for (Layer l: layers.getLayers())
+      {
+        for (int i = l.getSubs().size() - 1; i >= 0; i--)
+        {
+          if (l.getSubs().get(i).getRadioButton().isChecked())
+          {
+            l.getSubs().get(i).showTiles();
+          }
         }
       }
+
     }
-          
+
     switch(mode){
       case MOVE:
         moveMode.render();
@@ -482,24 +706,32 @@ public class EditorMap implements Playable, Serializable{
       default:
         break;
     }
-  
+
+    tabs.render();
+
+    if (layers.isTabbed() && layers.layerContaining(curr)!=null && 
+        !layers.layerContaining(curr).getExpandArrow().pointsDown())
+      Draw.rect(6, curr.getY(), 8, 14, 27, 108, 31, 115, 2);
+
   }
-  
+
   /**
    * Renders the grid of the map
    */
   public static void renderGrid(){
     if(grid){
-      for (int i = 0; i < tiles.length; i++) {
-        for (int j = 0; j < tiles[0].length; j++) {
+
+      for (int i = 0; i < collision.length; i++) {
+        for (int j = 0; j < collision[0].length; j++) {
           if(checkTileInBounds(x+j*SIZE, y+i*SIZE)){
-            Draw.rect(x+j*SIZE, y+i*SIZE, SIZE, SIZE, 0, 16, SIZE, 16+SIZE, 2);
+            Draw.rectZoom(x+j*SIZE, y+i*SIZE, SIZE, SIZE, 0, 16, SIZE, 16+SIZE, 2,
+                Editor.zoom(), EditorMap.getX(), EditorMap.getY());
           }
         }
       }
     }
   }
-  
+
   /**
    * Creates a new map header dialog
    */
@@ -515,116 +747,111 @@ public class EditorMap implements Playable, Serializable{
    * Saves the map
    */
   public boolean save() {
-    PrintWriter writer;
 
-    try {
-      if(path.substring(path.length()-4).equals(".map")){
+    if (mode != Modes.CONNECT)
+    {
+      PrintWriter writer, subWriter;
+      String subpath;
+
+      try {
+        if(!path.substring(path.length()-4).equals(".map")){
+          path = path + ".map";
+        }
+
+        subpath = path.substring(0, path.indexOf("maps/")+5) + 
+            "data/" + 
+            path.substring(path.indexOf("maps/")+5, path.indexOf(".map")) +
+            ".edt";
+
         writer = new PrintWriter(path, "UTF-8");
-      }else{
-        writer = new PrintWriter(path+".map", "UTF-8");
-      }
-      
-      writer.println(tiles.length);
-      writer.println(tiles[0].length);
+        subWriter = new PrintWriter(subpath, "UTF-8");
 
-      writer.println(title);
-      writer.println(song);
-      writer.println(outside?1 : 0);
-      
-      //The map itself
-      for (TileList[] tile : tiles) {
-        for (TileList t : tile) {
-          writer.print(t.getID() + " ");
-        }
-        writer.println();
-      }
+        writer.println(width);
+        writer.println(height);
 
-      //The collision
-      for (boolean[] tile : collision) {
-        for (boolean t : tile) {
-          writer.print((t?1 : 0) + " ");
+        writer.println(title);
+        writer.println(song);
+        writer.println(outside?1 : 0);
+
+        Sublayer[] flats = layers.getFlattenedLayers();
+
+        for (int layer = 0; layer < flats.length; layer++)
+        {
+          writer.println("#" + LayerType.layerNumber(layer).toString());
+
+          if (flats[layer] == null)
+          {
+            writer.println("0^"+(height*width)+" ");
+          } else
+          {
+            writer.println(condenseData(flats[layer].getTiles()));
+          }
         }
-        writer.println();
-      }
-      
-      //The NPCs
-      for(NPC npc: npcs){
-        writer.println("npc " + npc.getName() + " " + npc.getOrigTX() + 
-            " " + npc.getOrigTY() + " " + npc.getType() + " " + 
-            npc.getWalkingScript() + " " + 
-            npc.getTalkingScript());
-      }
-      
-      //The Scripts and Warps
-      for(AreaScript script: scripts){
-        if(script instanceof WarpScript){
-          writer.println("warp " + ((WarpScript)script).getMap() + " " + 
-              script.getOrigTX() + " " + script.getOrigTY());
+
+
+
+        for (int layer = 0; layer < layers.getLayers().length; layer++)
+        {
+          subWriter.println("#" + LayerType.layerNumber(layer).toString());
+
+          for (Sublayer s: layers.getLayers()[layer].getSubs())
+          {
+            subWriter.println("~" + s.getTextField().getText());
+            subWriter.println(condenseData(s.getTiles()));
+          }
+        }
+
+        writer.println("#movement permissions\n" + 
+            condenseData(collision));
+
+        //The NPCs
+        for(NPCEvent npc: npcs){
+          writer.println(npc.toString());
+        }
+
+        //The Scripts and Warps
+        for(AreaScriptEvent script: scripts){
+          writer.println(script.toString());
+        }
+
+        for(WarpScriptEvent warp: warps)
+        {
+          writer.println(warp.toString());
+        }
+
+        for(EnemyEvent enemy: enemies){
+          writer.println(enemy.toString());
+        }
+
+        for(SignPostEvent sign:signs){
+          writer.println(sign.toString());
+        }
+
+        for(ConnectMap map: maps){
+          writer.println("connect " + map.getName() + " " + map.getSide() + " " +
+              map.getTileX() + " " + map.getTileY());
+        }
+
+        saved = true;
+        writer.close();
+        subWriter.close();
+        if(name.substring(name.length()-4).equals(".map")){
+          Display.setTitle("Clyde\'s Editor - " + name);
         }else{
-          writer.println("script " + script.getName() + " " + script.getOrigTX() + 
-              " " + script.getOrigTY() + 
-              (script.hasNPC()?" " + script.getNPC().getName() : ""));
+          Display.setTitle("Clyde\'s Editor - " + name + ".map");
         }
-      }
-      
-      for(Enemy enemy:enemies){
-        writer.println("enemy " + enemy.getOrigTX() + 
-            " " + enemy.getOrigTY() + " " + enemy.getType() + " " + 
-            enemy.getBehavior() + 
-            (enemy instanceof Chaser?" " +  ((Chaser)enemy).getOriginalRadius() : ""));
-      }
-      
-      for(SignPost sign:signs){
-        writer.println("sign " + sign.getOrigTX() + 
-            " " + sign.getOrigTY() + " " + sign.getText());
-      }
-      
-      for(ConnectMap map: maps){
-        writer.println("connect " + map.getName() + " " + map.getSide() + " " +
-            map.getTileX() + " " + map.getTileY());
-      }
-      
-      saved = true;
-      writer.close();
-      if(name.substring(name.length()-4).equals(".map")){
-        Display.setTitle("Clyde\'s Editor - " + name);
-      }else{
-        Display.setTitle("Clyde\'s Editor - " + name + ".map");
-      }
 
 
-      return true;
-    } catch (FileNotFoundException | UnsupportedEncodingException e) {
-      e.printStackTrace();
-      return false;
-    }
-
-  }
-
-  public boolean encryptedSave(String path, String name)
-  {
-    try
+        return true;
+      } catch (FileNotFoundException | UnsupportedEncodingException e) {
+        e.printStackTrace();
+        return false;
+      }
+    } else
     {
-      String loc = path;
-      if (!loc.substring(loc.length()-5).equals(".mapx"))
-      {
-        loc = loc + ".mapx";
-      }
-      FileOutputStream fileOut = new FileOutputStream(loc);
-      ObjectOutputStream objOut = new ObjectOutputStream(fileOut);
-      objOut.writeObject(this);
-      
-      objOut.close();
-      fileOut.close();
-      
-      return true;
-      
-    } catch (IOException e)
-    {
-      e.printStackTrace();
+      return connectMode.saveMyMaps();
+
     }
-    
-    return false;
   }
 
 
@@ -678,67 +905,13 @@ public class EditorMap implements Playable, Serializable{
 
     if(returnee == JFileChooser.APPROVE_OPTION){
 
-      path = chooser.getSelectedFile().getAbsolutePath();
+      path = chooser.getSelectedFile().getPath();
+      path = path.substring(path.indexOf("res\\")).replace("\\", "/");
       name = chooser.getSelectedFile().getName();
 
       return save();
     }
 
-    return false;
-  }
-  
-   public boolean newEncryptedSave() {
-
-    JFileChooser chooser = new JFileChooser("res/maps/"){
-      /**
-       * Don't feel too bad Aaron, I have no clue either
-       */
-      private static final long serialVersionUID = 3881189165152826430L;
-
-      @Override
-      public void approveSelection(){
-        File f = getSelectedFile();
-        if(f.exists() && getDialogType() == SAVE_DIALOG){
-          int result = JOptionPane.showConfirmDialog(this,
-              "The file exists, overwrite?","Existing file",JOptionPane.YES_NO_CANCEL_OPTION);
-          switch(result){
-            case JOptionPane.YES_OPTION:
-              super.approveSelection();
-              return;
-            case JOptionPane.NO_OPTION:
-              return;
-            case JOptionPane.CLOSED_OPTION:
-              return;
-            case JOptionPane.CANCEL_OPTION:
-              cancelSelection();
-              return;
-            default:
-              return;
-          }
-        }
-        super.approveSelection();
-      }
-    };
-
-    FileNameExtensionFilter filter = new FileNameExtensionFilter(
-        "Map Files", "mapx");
-    chooser.setFileFilter(filter);
-    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-    chooser.setDialogTitle("Enter the name of the map to save");
-    int returnee = chooser.showSaveDialog(null);
-/*
-    Editor.reloadKeyboard();
-
-    if(returnee == JFileChooser.APPROVE_OPTION){
-
-      savePath = chooser.getSelectedFile().getAbsolutePath();
-      saveName = chooser.getSelectedFile().getName();
-
-      return encryptedSave(savePath, saveName);
-    }
-
-    return false;
-      */
     return false;
   }
 
@@ -749,9 +922,9 @@ public class EditorMap implements Playable, Serializable{
    * @param s The name to find
    * @return The NPC in question, null if not found
    */
-  public NPC findNPC(String s)
+  public NPCEvent findNPC(String s)
   {
-    for (NPC npc: npcs) {
+    for (NPCEvent npc: npcs) {
       if (npc.getName().equals(s)){
         return npc;
       }
@@ -766,13 +939,11 @@ public class EditorMap implements Playable, Serializable{
    * @param s The name to find
    * @return The Script in question, null if not found
    */
-  public AreaScript getScript(String s)
+  public AreaScriptEvent getScript(String s)
   {
-    for (AreaScript scr: scripts)
+    for (AreaScriptEvent scr: scripts)
     {
-      //DEBUG Print out Script name
-      System.out.println(scr.getName());
-      if (scr.getName().equals(s)){
+      if (scr.getScript().equals(s)){
         return scr;
 
       }
@@ -788,12 +959,12 @@ public class EditorMap implements Playable, Serializable{
     grid = !grid;
   }  
 
-  public int getWidth(){
-    return tiles[0].length;
+  public static int getWidth(){
+    return width;
   }
 
-  public int getHeight(){
-    return tiles.length;
+  public static int getHeight(){
+    return height;
   }
 
   public static float getX() {
@@ -803,11 +974,11 @@ public class EditorMap implements Playable, Serializable{
   public static float getY() {
     return y;
   }
-  
-  public static void setLocation(float x, float y){
+
+  public void setLocation(float x, float y){
     move(x-EditorMap.x, y-EditorMap.y);
   }
-  
+
   public String getPath() {
     return path;
   }
@@ -821,23 +992,23 @@ public class EditorMap implements Playable, Serializable{
   public String getTitle(){
     return title;
   }
-  
+
   public void setTitle(String newTitle){
     title = newTitle;
   }
-  
+
   public Song getSong(){
     return song;
   }
-  
+
   public void setSong(Song newSong){
     song = newSong;
   }
-  
+
   public boolean isOutside(){
     return outside;
   }
-  
+
   public void setOutside(boolean isOutside){
     outside = isOutside;
   }
@@ -845,7 +1016,7 @@ public class EditorMap implements Playable, Serializable{
   public static boolean wasSaved(){
     return saved;
   }
-  
+
   /**
    * Creates the asterisk next to the name indicating the map has changed
    */
@@ -855,7 +1026,7 @@ public class EditorMap implements Playable, Serializable{
       Display.setTitle(Display.getTitle()+"*");
     }
   }
-  
+
   /**
    * Changes the mode of the editor
    * 
@@ -864,7 +1035,7 @@ public class EditorMap implements Playable, Serializable{
   public static void setMode(Modes newMode){
     mode = newMode;
   }
-  
+
   /**
    * @param x The x to check in pixels
    * @param y The y to check in pixels
@@ -874,71 +1045,80 @@ public class EditorMap implements Playable, Serializable{
   public static boolean checkTileInBounds(float x, float y) {
     switch (mode) {
       case TILE:
-        return x+SIZE > 0 && x < WIDTH-SIZE*8 && y+SIZE > 0 && y < HEIGHT;
+        return x+SIZE*Editor.zoom() > 0 && x < WIDTH-SIZE*8 && 
+            y+SIZE*Editor.zoom() > 0 && y < HEIGHT;
       default:
-        return x+SIZE > 0 && x < WIDTH+SIZE && y+SIZE > 0 && y < HEIGHT;
+        return x+SIZE*Editor.zoom() > 0 && x < WIDTH+SIZE && 
+            y+SIZE*Editor.zoom() > 0 && y < HEIGHT;
     }
   }
 
-  public static TileList[][] getMap(){
-    return tiles;
-  }
-  
+  /*
+  public static int[][] getMap(){
+    //return tiles;
+  }*/
+
   public static int getPxHeight(){
-    return tiles.length*SIZE;
-  }
-  
-  public static int getPxWidth(){
-    return tiles[0].length*SIZE;
+    return collision.length*SIZE;
   }
 
-  
+  public static int getPxWidth(){
+    return collision[0].length*SIZE;
+  }
+
+
   public static Modes getMode(){
     return mode;
   }
-    /**
+  /**
    * Moves the entire map and all entities contained by it by the specified amount
    * 
    * @param dx pixels to move left/right
    * @param dy pixels to move up/down
    */
-  public static void move(float dx, float dy) {
+  public void move(float dx, float dy) {
 
-    x+=dx;
-    y+=dy;
+    if (mode!=Modes.CONNECT)
+    {
+      x+=dx;
+      y+=dy;
 
-    for(NPC npc:npcs){
-      npc.setPixLocation((int)(npc.getX()+dx), (int)(npc.getY()+dy));
-      npc.update();
+
+      for(NPCEvent npc:npcs){
+        npc.setPixLocation((int)(npc.getX()+dx), (int)(npc.getY()+dy));
+      }
+
+      for(AreaScriptEvent script:scripts){
+        script.setPixLocation((int)(script.getX()+dx),(int)(script.getY()+dy));
+      }
+
+      for (EnemyEvent enemy:enemies) {
+        enemy.setPixLocation((int)(enemy.getX()+dx),(int)(enemy.getY()+dy));
+      }
+
+      for (SignPostEvent sign:signs) {
+        sign.setPixLocation((int)(sign.getX()+dx),(int)(sign.getY()+dy));
+      }
+
+      for(ConnectMap map:maps){
+        map.setLoc(map.getX()+dx, map.getY()+dy);
+      }
+    } else
+    {
+      connectMode.move(dx, dy);
     }
 
-    /*
-    for(AreaScript script:scripts){
-      script.setLocation((int)(script.getX()+dx),(int)(script.getY()+dy));
-    }*/
-    
-    for (Enemy enemy:enemies) {
-      enemy.setPixLocation((int)(enemy.getX()+dx),(int)(enemy.getY()+dy));
-    }
-    
-    for (SignPost sign:signs) {
-      sign.setPixLocation((int)(sign.getX()+dx),(int)(sign.getY()+dy));
-    }
-    
-    for(ConnectMap map:maps){
-      map.setLoc(map.getX()+dx, map.getY()+dy);
-    }
 
   }
-  
+
   /**
    * Allows the user to edit the width, height, title, and song of maps
    *
    * @author Aaron Roy
    */
   public static class EditMapHeader extends JDialog implements ActionListener,
-                                                        PropertyChangeListener{
-    
+  PropertyChangeListener{
+
     /** Not planning to know what this does... */
     private static final long serialVersionUID = 5657211675232029800L;
 
@@ -947,18 +1127,18 @@ public class EditorMap implements Playable, Serializable{
     String btnCancel = "Cancel";
 
     Object[] buttons = {btnCreate, btnCancel};
-        
+
     JTextField newTitle = new JTextField(10);
-    
+
     Box titleBox = Box.createHorizontalBox();
     {
       titleBox.add(new JLabel("Displayed Name:  "));
       titleBox.add(newTitle);
     }
-    
+
     JTextField newWidth = new JTextField(3);
     JTextField newHeight = new JTextField(3);
-    
+
     Box dimensions = Box.createHorizontalBox();
     {
       dimensions.add(new JLabel("Width:  "));
@@ -971,7 +1151,7 @@ public class EditorMap implements Playable, Serializable{
     JComboBox<Song> songs = new JComboBox<Song>(Song.values());
     JButton play = new JButton("Play");
     JButton stop = new JButton("Stop");
-    
+
     Box songBox = Box.createHorizontalBox();
     {
       songBox.add(new JLabel("Song: "));
@@ -981,14 +1161,14 @@ public class EditorMap implements Playable, Serializable{
       songBox.add(stop);
     }
     JCheckBox isOutside = new JCheckBox("Is this map outside?");
-    
+
     Object[] fullContent = {
         titleBox,   Box.createVerticalStrut(5),
         dimensions, Box.createVerticalStrut(5),
         songBox,    Box.createVerticalStrut(5),
         isOutside
     };
-    
+
     /**
      * Creates a new map header dialog
      */
@@ -997,22 +1177,22 @@ public class EditorMap implements Playable, Serializable{
       setLocationRelativeTo(null);
       setAlwaysOnTop(true);
       setResizable(false);
-      
+
       setTitle("Edit Map Header");
-      
-      newWidth.setText(Integer.toString(tiles[0].length));
-      newHeight.setText(Integer.toString(tiles.length));
+
+      newWidth.setText(Integer.toString(collision[0].length));
+      newHeight.setText(Integer.toString(collision.length));
       newTitle.setText(title);
       songs.setSelectedItem(song);
       isOutside.setSelected(outside);
 
       options = new JOptionPane(fullContent, JOptionPane.PLAIN_MESSAGE,
           JOptionPane.YES_NO_OPTION, null, buttons, buttons[0]);
-      
+
       setContentPane(options);
-      
+
       options.addPropertyChangeListener(this);
-      
+
       play.addActionListener(this);
       stop.addActionListener(this);
 
@@ -1022,7 +1202,7 @@ public class EditorMap implements Playable, Serializable{
     public void propertyChange(PropertyChangeEvent e) {
       String prop = e.getPropertyName();
 
-      
+
       if(e.getSource() == options && (JOptionPane.VALUE_PROPERTY.equals(prop) ||
           JOptionPane.INPUT_VALUE_PROPERTY.equals(prop))){
         Object value = options.getValue();
@@ -1047,28 +1227,33 @@ public class EditorMap implements Playable, Serializable{
             title = newTitle.getText();
             song = (Song)songs.getSelectedItem();
             outside = isOutside.isSelected();
-            
+
             int width = Integer.parseInt(newWidth.getText());
             int height = Integer.parseInt(newHeight.getText());
-            
-            TileList[][] newMap = new TileList[height][width];
-            boolean[][] newCol = new boolean[height][width];
-            for(int i = 0; i < height; i++){
-              for(int j = 0; j < width; j++){
-                if(i < tiles.length && j < tiles[0].length){
-                  newMap[i][j] = tiles[i][j];
-                  newCol[i][j] = collision[i][j];
-                }
-                else{
-                  newMap[i][j] = TileList.BLANK;
-                  newCol[i][j] = true;
+
+            int[][] newMap = new int[height][width];
+            Permission[][][] newCol = new Permission
+                [MoveMode.NUM_MOVEMENT_LAYERS][height][width];
+            for (int l = 0; l < MoveMode.NUM_MOVEMENT_LAYERS; l++)
+            {
+              for(int i = 0; i < height; i++){
+                for(int j = 0; j < width; j++){
+                  if(i < collision.length && j < collision[0].length){
+                    //newMap[i][j] = tiles[i][j];
+                    newCol[l][i][j] = collision[l][i][j];
+                  }
+                  else{
+                    newMap[i][j] = Draw.BLANK_TILE;
+                    newCol[l][i][j] = Permission.TRUE;
+                  }
                 }
               }
             }
-            
-            tiles = newMap;
+
+
+            //tiles = newMap;
             collision = newCol;
-                        
+
             clearAndHide();
           }
           else{
@@ -1079,7 +1264,7 @@ public class EditorMap implements Playable, Serializable{
         }
       }
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
       if(e.getSource() == options){
@@ -1092,7 +1277,7 @@ public class EditorMap implements Playable, Serializable{
         AudioHandler.stop();
       }
     }
-    
+
     /** This method clears the dialog and hides it. */
     public void clearAndHide() {
       newTitle.setText(null);
@@ -1100,15 +1285,15 @@ public class EditorMap implements Playable, Serializable{
       newHeight.setText(null);
       songs.setSelectedItem(null);
       isOutside.setSelected(false);
-      
+
       setVisible(false);
       dispose();
     }
-    
+
     public boolean checkNum(JTextField text){
       return text.getText().matches("[1-9]\\d{0,2}?");
     }
-    
+
     /**
      * Complains about problems in input
      */
@@ -1121,5 +1306,155 @@ public class EditorMap implements Playable, Serializable{
 
   }
 
-}
+  public int getUniqueTiles()
+  {
+    ArrayList<Integer> has = new ArrayList<Integer>();
 
+    /*
+    for (int[] row: tiles)
+    {
+      for (int i: row)
+      {
+        if (!has.contains(i))
+        {
+          has.add(i);
+        }
+      }
+    }*/
+
+    return has.size();
+  }
+
+  public ArrayList<ConnectMap> getConnectMaps()
+  {
+    return maps;
+  }
+
+  public static void canUpdate(boolean b)
+  {
+    disableUpdate = !b;
+  }
+
+  public LayerControl getLayerControl()
+  {
+    return layers;
+  }
+
+  public Sublayer currentSublayer()
+  {
+    return curr;
+  }
+
+  public void setCurrentSublayer(Sublayer s)
+  {
+    curr = s;
+  }
+
+  public static String condenseData(int[][] tiles)
+  {
+    String string = "";
+    int prev = -1, prevCount = 1;
+
+    for (int i = tiles.length - 1; i >= 0; i--)
+    {
+      for (int j = 0; j <tiles[i].length; j++)
+      {
+        if (prev != -1 && prev != tiles[i][j])
+        {
+          if (prevCount == 1)
+          {
+            string += prev + " ";
+          } else
+          {
+            string += prev + "^" + prevCount + " ";
+          }
+
+          prevCount=1;
+        }
+
+        if (prev == tiles[i][j])
+        {
+          prevCount++;
+        }
+
+        prev = tiles[i][j];
+
+      }
+    }
+
+    if (prevCount == 1)
+    {
+      string += prev + " ";
+    } else
+    {
+      string += prev + "^" + prevCount + " ";
+    }
+    return string;
+  }
+
+  public static String condenseData(Permission[][][] perms)
+  {
+    String string = "";
+    String prev = "", curr;
+    int prevCount = 1;
+
+    for (int i = perms[0].length - 1; i >= 0; i--)
+    {
+      for (int j = 0; j <perms[0][i].length; j++)
+      {
+        curr = "";
+
+        for (int l = 0; l < perms.length; l++)
+        {
+          curr+=perms[l][i][j].asChar();
+        }
+
+        if (!prev.equals("") && !prev.equals(curr))
+        {
+          if (prevCount == 1)
+          {
+            string += prev + " ";
+          } else
+          {
+            string += prev + "^" + prevCount + " ";
+          }
+
+          prevCount=1;
+        }
+
+        if (prev.equals(curr))
+        {
+          prevCount++;
+        }
+
+        prev = curr;
+
+      }
+    }
+
+    if (prevCount == 1)
+    {
+      string += prev + " ";
+    } else
+    {
+      string += prev + "^" + prevCount + " ";
+    }
+    return string;
+  }
+  
+  public void addRevision(Revision revision)
+  {
+    history.clearBelowCurrent();
+    history.addRevision(revision);
+  }
+  
+  public MoveMode getMoveMode()
+  {
+    return moveMode;
+  }
+  
+  public boolean doesConnectModeHaveWorld()
+  {
+    return connectMode.hasWorld();
+  }
+}

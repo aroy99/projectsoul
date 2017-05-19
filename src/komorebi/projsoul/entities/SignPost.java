@@ -1,13 +1,10 @@
 package komorebi.projsoul.entities;
 
-import komorebi.projsoul.engine.Draw;
+import java.awt.Rectangle;
+
 import komorebi.projsoul.engine.Main;
-import komorebi.projsoul.map.EditorMap;
-import komorebi.projsoul.map.EditorMap.Modes;
 import komorebi.projsoul.script.text.EarthboundFont;
 import komorebi.projsoul.script.text.SignHandler;
-
-import java.awt.Rectangle;
 
 public class SignPost extends Entity {
 
@@ -77,9 +74,5 @@ public class SignPost extends Entity {
       text.render();
     }
     
-    if(EditorMap.getMode() == Modes.EVENT){
-      Draw.rect(x, y, sx, sy, 96, 0, 2);
-    }
-  
   }
 }

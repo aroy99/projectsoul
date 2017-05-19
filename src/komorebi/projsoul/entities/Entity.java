@@ -6,6 +6,7 @@ package komorebi.projsoul.entities;
 import java.awt.Rectangle;
 
 import komorebi.projsoul.editor.Editable;
+import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.engine.Renderable;
 import komorebi.projsoul.map.EditorMap;
 
@@ -23,6 +24,8 @@ public abstract class Entity implements Renderable, Editable{
   
   protected int tx;           //Tile X and Y (accounting for Editor position)
   protected int ty;
+  
+  private static boolean inGame;
 
 
   protected Rectangle area;
@@ -109,6 +112,16 @@ public abstract class Entity implements Renderable, Editable{
   {
     this.x = x;
     this.y = y;
+  }
+  
+  public static boolean inGame()
+  {
+    return inGame;
+  }
+  
+  public static void setGameRunning(boolean isGame)
+  {
+    inGame = isGame;
   }
 
 

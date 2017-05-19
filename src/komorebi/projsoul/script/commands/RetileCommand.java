@@ -1,10 +1,7 @@
 package komorebi.projsoul.script.commands;
 
-import komorebi.projsoul.map.TileList;
 import komorebi.projsoul.script.commands.abstracts.CommandNoSubject;
-import komorebi.projsoul.script.commands.keywords.Keyword;
 import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
-import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
 import komorebi.projsoul.states.Game;
 
 public class RetileCommand extends CommandNoSubject {
@@ -28,7 +25,7 @@ public class RetileCommand extends CommandNoSubject {
 
   @Override
   public void execute() {
-    Game.getMap().setTile(TileList.getTile(newTile), 
+    Game.getMap().setTile(newTile, 
         x, y);
 
   }
