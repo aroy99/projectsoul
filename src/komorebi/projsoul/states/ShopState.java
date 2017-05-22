@@ -20,7 +20,7 @@ public class ShopState extends State
 	static boolean sell = false;
 	private int index = 0;
 	private int index2 = 0;
-	Shop armorShop = new Shop("Armor Shop", 12);
+	Shop armorShop = new Shop("Armor Shop", 14);
 	int count2 = 50;
 	int count3 = 140;
 	int topindex;
@@ -30,9 +30,9 @@ public class ShopState extends State
 
 	public ShopState()
 	{
-		
+
 	}
-	
+
 	@Override
 	public void getInput() 
 	{
@@ -41,6 +41,8 @@ public class ShopState extends State
 			armorShop.addShopItem("Health Potion");
 			armorShop.addShopItem("Mana Potion");
 			armorShop.addShopItem("MaxHealth Boost");
+			armorShop.addShopItem("XP Boost");
+			armorShop.addShopItem("Level Up Potion");
 			armorShop.addShopItem("Iron Helmet");
 			armorShop.addShopItem("Boots");
 			armorShop.addShopItem("Chestplate");
@@ -58,7 +60,7 @@ public class ShopState extends State
 	@Override
 	public void update() 
 	{
-		
+
 		if(KeyHandler.keyClick(Key.ENTER))
 		{
 			if(buy)
@@ -72,7 +74,7 @@ public class ShopState extends State
 				}
 				else armorShop.sellItem(armorShop.getShopItem(index2), 1);
 			}
-			
+
 			if(!buy && !sell)
 			{
 				switch(index)
@@ -104,19 +106,19 @@ public class ShopState extends State
 			text.write("Sell", 170, 110, font);
 			text.write("Exit", 117, 90, font);
 		}
-		
+
 		if(buy)
 		{
 			text.write("General Shop", 100, 155, font);
 			text.write("Exit", 150, 90, font);
-			
+
 			if(armorShop.items.length<=5)
 			{
 				topindex = 0;
 				bottomindex = armorShop.items.length;
 				count3 = 140;
 			}
-			
+
 			for(int i=topindex; i<bottomindex; i++)
 			{
 				if(count3 == 90)
@@ -127,13 +129,13 @@ public class ShopState extends State
 				count3-=10;
 			}
 		}
-		
+
 		if(sell)
 		{
 			inventory.refreshInventory();
 			inventory.update();
 		}
-		
+
 		if(KeyHandler.keyClick(Key.RIGHT))
 		{
 			if(!buy && !sell)
@@ -141,7 +143,7 @@ public class ShopState extends State
 				index++;
 			}
 		}
-		
+
 		if(KeyHandler.keyClick(Key.LEFT))
 		{
 			if(!buy && !sell)
@@ -149,7 +151,7 @@ public class ShopState extends State
 				index--;
 			}
 		}
-		
+
 		if(KeyHandler.keyClick(Key.DOWN))
 		{
 			if(buy)
@@ -170,7 +172,7 @@ public class ShopState extends State
 						bottomindex = armorShop.items.length;
 					}
 				}
-				
+
 			}
 		}
 		if(KeyHandler.keyClick(Key.UP))
@@ -190,24 +192,21 @@ public class ShopState extends State
 					topindex = 0;
 					bottomindex = 5;
 				}
-				
+
 			}
 		}
-		
+
 		if(KeyHandler.keyClick(Key.V))
 		{
 			GameHandler.switchState(States.GAME);
 		}
-		//Perhaps make it so each shop has its own render and update method?
-		//So the shop state is universal?
-		
 	}
 
 	@Override
 	public void render() 
 	{
 		Draw.rect(10, 75, 240, 100, 0, 0, 220, 59, 6);
-		
+
 		if(!buy && !sell)
 		{
 			//Index marker
@@ -219,36 +218,36 @@ public class ShopState extends State
 			if(index > 2)index = 0;
 			else if(index < 0) index = 2;
 		}
-		
+
 		if(buy)
 		{
 			if(index > 5)index = 5;
-			
+
 			if(armorShop.items.length > 4 && index > 4)
 				index = 5;
 			else
 				if(index > armorShop.items.length)index = armorShop.items.length;
-			
+
 			if(index < 0)index = 0;
-			
+
 			if(index <= 0)Draw.rect(27, 142, 2, 2, 48, 3, 50, 5, 5);
 			else if(index == 1)Draw.rect(27, 132, 2, 2, 48, 3, 50, 5, 5);
 			else if(index == 2)Draw.rect(27, 122, 2, 2, 48, 3, 50, 5,5);
 			else if(index == 3)Draw.rect(27, 112, 2, 2, 48, 3, 50, 5, 5);
 			else if(index == 4)Draw.rect(27, 102, 2, 2, 48, 3, 50, 5,5);
 			else if(index == 5)Draw.rect(147, 92, 2, 2, 48, 3, 50, 5,5);
-			
+
 			if(index2 < 0)index2 = 0;
 			if(index2 > armorShop.items.length-1)index2 = armorShop.items.length-1;
 		}
-		
+
 		if(sell)
 		{
 			inventory.render();
 		}
-		
-		
-		
+
+
+
 		text.render();
 
 	}

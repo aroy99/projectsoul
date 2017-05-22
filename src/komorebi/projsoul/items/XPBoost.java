@@ -1,13 +1,10 @@
 package komorebi.projsoul.items;
 
 import komorebi.projsoul.engine.Inventory;
-import komorebi.projsoul.entities.Bruno;
-import komorebi.projsoul.entities.Caspian;
+import komorebi.projsoul.entities.BaseXPObject;
 import komorebi.projsoul.entities.Characters;
-import komorebi.projsoul.entities.Flannery;
-import komorebi.projsoul.entities.Player;
-import komorebi.projsoul.entities.Sierra;
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.states.Game;
 
 public class XPBoost extends Potion 
 {
@@ -21,21 +18,10 @@ public class XPBoost extends Potion
 	
 	public void useItem() 
 	{
-		/*character = Map.currentPlayer();
-		switch (character)
-		{
-		//Wants me to change the method to static
-		case CASPIAN:
-			Caspian.giveXP(5);
-			Player.this.giveXP(5);
-			Map.getPlayer().giveXP(5);
-		case FLANNERY:
-			
-		case SIERRA:
-			
-		case BRUNO:
-			
-		}*/
+		Game.getMap().addXPObject(new BaseXPObject(Map.getPlayer().getX()+25, Map.getPlayer().getY(), effect));
+		Game.getMap().addXPObject(new BaseXPObject(Map.getPlayer().getX()+30, Map.getPlayer().getY(), effect));
+		Game.getMap().addXPObject(new BaseXPObject(Map.getPlayer().getX()+35, Map.getPlayer().getY(), effect));
+		
 		Inventory.removeItem(this);
 		
 	}

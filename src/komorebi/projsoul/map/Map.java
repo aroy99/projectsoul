@@ -20,6 +20,7 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.entities.BaseXPObject;
 import komorebi.projsoul.entities.Bruno;
 import komorebi.projsoul.entities.Caspian;
 import komorebi.projsoul.entities.Characters;
@@ -57,7 +58,7 @@ public class Map implements Playable{
   private ArrayList<NPC> npcs;
   private ArrayList<AreaScript> scripts;
   private ArrayList<SignPost> signs;
-  private ArrayList<XPObject> xpObj;
+  private ArrayList<BaseXPObject> xpObj;
   
   private static Player play;
   
@@ -117,7 +118,7 @@ public class Map implements Playable{
       npcs = new ArrayList<NPC>();
       scripts = new ArrayList<AreaScript>();
       signs = new ArrayList<SignPost>();
-      xpObj = new ArrayList<XPObject>();
+      xpObj = new ArrayList<BaseXPObject>();
       
       for (int i = 0; i < tiles.length; i++) {
         String[] str = reader.readLine().split(" ");
@@ -310,7 +311,7 @@ public class Map implements Playable{
       switchPlayer();
     }
     
-    for (XPObject xp: xpObj)
+    for (BaseXPObject xp: xpObj)
     {
       if (xp.withinRadius(play.getHitBox()))
       {
@@ -330,9 +331,9 @@ public class Map implements Playable{
       
     }
     
-    for (Iterator<XPObject> it = xpObj.iterator(); it.hasNext();)
+    for (Iterator<BaseXPObject> it = xpObj.iterator(); it.hasNext();)
     {      
-      XPObject xp = it.next();
+      BaseXPObject xp = it.next();
       if (xp.destroyed())
       {
         it.remove();
@@ -401,7 +402,7 @@ public class Map implements Playable{
       sign.render();
     }
     
-    for (XPObject xp: xpObj)
+    for (BaseXPObject xp: xpObj)
     {
       xp.render();
     }
@@ -710,7 +711,7 @@ public static void switchPlayer()
     return play.getCharacter();
   }
   
-  public void addXPObject(XPObject xp)
+  public void addXPObject(BaseXPObject xp)
   {
     xpObj.add(xp);
   }

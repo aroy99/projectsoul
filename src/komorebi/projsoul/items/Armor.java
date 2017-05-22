@@ -21,6 +21,7 @@ public abstract class Armor extends CharacterItem
 		super(name, salePrice, quantity, description);
 		this.defense = defense;
 		this.durability = durability;
+		equipped = false;
 	}
 	
 	public void equip() 

@@ -6,9 +6,11 @@ import komorebi.projsoul.items.Chestplate;
 import komorebi.projsoul.items.Gauntlets;
 import komorebi.projsoul.items.HealthPotion;
 import komorebi.projsoul.items.Helmet;
+import komorebi.projsoul.items.LevelUpPotion;
 import komorebi.projsoul.items.ManaPotion;
 import komorebi.projsoul.items.MaxHealthBoost;
 import komorebi.projsoul.items.Pants;
+import komorebi.projsoul.items.XPBoost;
 import komorebi.projsoul.map.Map;
 
 public class Shop 
@@ -18,7 +20,7 @@ public class Shop
 	public int numOfItems;
 	public int count;
 	Characters character;
-	
+
 	public Shop(String name, int numOfItems)
 	{
 		this.name = name;
@@ -26,23 +28,23 @@ public class Shop
 		items = new String[numOfItems];
 		count = 0;
 	}
-	
+
 	public void addShopItem(String item)
 	{
 		items[count]=(item);
 		count++;
 	}
-	
+
 	public String getShopItem(int index)
 	{
 		return items[index];
 	}
-	
+
 	public int getNumItems()
 	{
 		return numOfItems;
 	}
-	
+
 	public void sellItem(String item, int numSold)
 	{
 		for(String myItem: items)
@@ -148,8 +150,30 @@ public class Shop
 						System.out.println(numSold + " Shitty Helmet(s) were added to your inventory");
 					}
 				}
+				else if(myItem.indexOf("XP Boost")!=-1)
+				{
+					XPBoost boost = new XPBoost("XPBoost",30,numSold, "Drops 3 boosts with 15 XP", 15);
+					character = Map.currentPlayer();
+					if(Map.getPlayer().getCharacterHUD(character).hasEnoughMoney(30))
+					{
+						Inventory.addItem(boost);
+						Map.getPlayer().getCharacterHUD(character).takeMoney(numSold*30);
+						System.out.println(numSold + " XP Boost(s) were added to your inventory");
+					}
+				}
+				else if(myItem.indexOf("Level Up Potion")!=-1)
+				{
+					LevelUpPotion level = new LevelUpPotion("Level Up Potion",70,numSold, "Drops 1 boost with enough XP to level up your character once", 0);
+					character = Map.currentPlayer();
+					if(Map.getPlayer().getCharacterHUD(character).hasEnoughMoney(70))
+					{
+						Inventory.addItem(level);
+						Map.getPlayer().getCharacterHUD(character).takeMoney(numSold*70);
+						System.out.println(numSold + " Level Up Potion(s) were added to your inventory");
+					}
+				}
 			}
 		}
-		
+
 	}
 }

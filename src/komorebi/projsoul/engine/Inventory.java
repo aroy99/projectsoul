@@ -1,6 +1,8 @@
 package komorebi.projsoul.engine;
 
 import java.util.ArrayList;
+
+import komorebi.projsoul.items.Armor;
 import komorebi.projsoul.items.CharacterItem;
 
 public abstract class Inventory 
@@ -38,7 +40,6 @@ public abstract class Inventory
 		
 	}
 	
-	//Specifically for the Sell part of the shop
 	public static void removeItem(CharacterItem item)
 	{
 		for(int i=0; i<items.size(); i++)
@@ -50,12 +51,18 @@ public abstract class Inventory
 					items.remove(item);
 					numOfItems--;
 					removed = true;
+					if(item instanceof Armor)
+					{
+						Armor a = (Armor)item;
+						if(a.equipped)a.unequip();
+					}
 				}
 				else
 				{
 					item.subQuantity();
 					removed = false;
 				}
+				System.out.println("1 " + item.getName() + "(s) were removed from your inventory");
 			}
 		}
 	}

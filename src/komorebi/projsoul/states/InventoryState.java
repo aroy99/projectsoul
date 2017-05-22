@@ -19,7 +19,6 @@ import komorebi.projsoul.items.Ring;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
-import komorebi.projsoul.states.State.States;
 
 public class InventoryState extends State 
 {
@@ -36,11 +35,11 @@ public class InventoryState extends State
 	private static CharacterItem[] items;
 	public Characters character;
 	public HUD healths = new HUD(0,0,0);
-	
+
 	public void getInput() 
 	{
 	}
-	
+
 	public void update() 
 	{	
 		refreshInventory();
@@ -52,13 +51,10 @@ public class InventoryState extends State
 			index2++;
 			topindex++;
 			bottomindex++;
-			
+
 			if(bottomindex>items.length)
 			{
-				if(bottomindex == 0)
-				{
-					index = 5;
-				}
+				if(bottomindex == 0)index = 5;
 				else
 				{
 					index++;
@@ -67,7 +63,7 @@ public class InventoryState extends State
 				}
 			}
 			if(index2 > items.length)index2 = items.length-1;
-			
+
 		}
 		if(KeyHandler.keyClick(Key.UP))
 		{
@@ -87,11 +83,11 @@ public class InventoryState extends State
 			}
 			if(index2 < 0)index2 = 0;
 		}
-		
+
 		if(KeyHandler.keyClick(Key.U))
 			GameHandler.switchState(States.GAME);
-		
-		
+
+
 		if(KeyHandler.keyClick(Key.E))
 		{
 			if(!ShopState.sell)
@@ -172,7 +168,7 @@ public class InventoryState extends State
 									}
 								}
 							}
-							
+
 						}
 					}
 					else if(Inventory.getInventoryItem(index2) instanceof Consumable)
@@ -182,7 +178,7 @@ public class InventoryState extends State
 					}
 				}
 			}
-			
+
 			if(index == 5)
 			{
 				if(ShopState.sell)
@@ -206,96 +202,91 @@ public class InventoryState extends State
 				if(ShopState.sell)
 				{
 					character = Map.currentPlayer();
-				    healths = Map.getPlayer().getCharacterHUD(character);
-				    healths.giveMoney(Inventory.getInventoryItem(index2).getResalePrice());
+					healths = Map.getPlayer().getCharacterHUD(character);
+					healths.giveMoney(Inventory.getInventoryItem(index2).getResalePrice());
 					Inventory.removeItem(Inventory.getInventoryItem(index2));
-					
-					//This needs to be fixed
-					//Conditional/Check for selling things to adjust bounds/indices
-					if(items.length>5 && Inventory.checkRemoved())
+					refreshInventory();
+					if(Inventory.checkRemoved())
 					{
-						topindex--;
-						bottomindex--;
+						if(index!=index2)index2--;
+						if(topindex!=0)
+						{
+							topindex--;
+							bottomindex--;
+						}
+					
 					}
-					if(Inventory.checkRemoved())index2--;
+
 				}
 			}
+			refreshInventory();
 		}
-		
+
 		if(items.length<=5)
 		{
 			topindex = 0;
 			bottomindex = items.length;
 			count2 = 140;
 		}
-		
+
 		for(int i=topindex; i<bottomindex; i++)
 		{
-			if(count2 == 90)
-			{
-				count2 = 140;
-			}
+			if(count2 == 90)count2 = 140;
 			//It prints it out in the correct order however it does not display in the correct order?!
+			//(Specific situation: less than 5 come back more than 5, explosions/spazzes)
 			//System.out.println(items[i].getName());
 			text.write(String.valueOf(items[i].getName()), count, count2, font);
 			text.write(String.valueOf(items[i].getQuantity()), count+80, count2, font);
 			text.write(String.valueOf(items[i].getResalePrice()), count+90, count2, font);
 			count2-=10;
 		}	
-		//REVISION!!!!
-		for(int i=topindex; i<bottomindex-1; i++)
+		if(items.length>=1)
 		{
-			if(Inventory.getInventoryItem(i) instanceof Armor)
+			for(int i=topindex; i<bottomindex; i++)
 			{
-				Armor a = (Armor) Inventory.getInventoryItem(i);
-				if(a.equipped)
+				if(Inventory.getInventoryItem(i) instanceof Armor)
 				{
-					if(i == topindex)text.write("E", count+105, count4=140, font);
-					else if(i == topindex+1)text.write("E", count+105, count4=130, font);
-					else if(i == topindex+2)text.write("E", count+105, count4=120, font);
-					else if(i == topindex+3)text.write("E", count+105, count4=110, font);
-					//This else if needs to be fixed
-					else if(i == topindex+4)text.write("E", count+105, count4=100, font);
+					Armor a = (Armor) Inventory.getInventoryItem(i);
+					if(a.equipped)
+					{
+						if(i == topindex)text.write("E", count+105, count4=140, font);
+						else if(i == topindex+1)text.write("E", count+105, count4=130, font);
+						else if(i == topindex+2)text.write("E", count+105, count4=120, font);
+						else if(i == topindex+3)text.write("E", count+105, count4=110, font);
+						else text.write("E", count+105, count4=100, font);
+					}
 				}
 			}
-		}
+		}				
 	}
 
-	
+
 	public void render() 
 	{
 		Draw.rect(10, 75, 240, 100, 0, 0, 220, 59, 6);
-		
+
 		if(index > 5)index = 5;
-		
-		if(items.length < 5 && index == items.length)
-			index = 5;
+		if(items.length < 5 && index == items.length)index = 5;
 		if(index < 0)index = 0;
-		
-		if(bottomindex == items.length || items.length - 5 <= bottomindex)
-		{
-			if(bottomindex == 0)
-				index = 5;
-			if(index == 0)Draw.rect(27, 142, 2, 2, 48, 3, 50, 5, 5);
-			else if(index == 1)Draw.rect(27, 132, 2, 2, 48, 3, 50, 5, 5);
-			else if(index == 2)Draw.rect(27, 122, 2, 2, 48, 3, 50, 5,5);
-			else if(index == 3)Draw.rect(27, 112, 2, 2, 48, 3, 50, 5, 5);
-			else if(index == 4)Draw.rect(27, 102, 2, 2, 48, 3, 50, 5,5);
-			else if(index == 5)Draw.rect(147, 92, 2, 2, 48, 3, 50, 5,5);
-		}
-		else Draw.rect(27, 142, 2, 2, 48, 3, 50, 5, 5);
-		
+
+		if(index == 0)Draw.rect(27, 142, 2, 2, 48, 3, 50, 5, 5);
+		else if(index == 1)Draw.rect(27, 132, 2, 2, 48, 3, 50, 5, 5);
+		else if(index == 2)Draw.rect(27, 122, 2, 2, 48, 3, 50, 5,5);
+		else if(index == 3)Draw.rect(27, 112, 2, 2, 48, 3, 50, 5, 5);
+		else if(index == 4)Draw.rect(27, 102, 2, 2, 48, 3, 50, 5,5);
+		else if(index == 5)Draw.rect(147, 92, 2, 2, 48, 3, 50, 5,5);
+
 		text.render();
 
 	}
 	public void refreshInventory()
 	{
-		count3=0;
+		count3 = 0;
 		items = new CharacterItem[Inventory.numOfItems];
 		for(CharacterItem item: Inventory.items)
 		{
-				items[count3] = item;
-				count3++;
+			items[count3] = item;
+			count3++;
 		}		
 	}
 }
