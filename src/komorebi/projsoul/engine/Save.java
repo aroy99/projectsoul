@@ -36,7 +36,7 @@ public class Save {
 		  		gameWriter = new PrintWriter(gamePath + ".kom", "UTF-8");
 		  	}
 		  	
-		  	String lastUsedPlayer = Map.play.getCharacter().toString();
+		  	String lastUsedPlayer = Map.getPlayer().getCharacter().toString();
 		  	gameWriter.println("Current Character: "+ lastUsedPlayer);
 		  	//gameWriter.println("Available Characters: " + Capsian.dead + Flannery.dead + Sierra.dead + Bruno.dead);
 		  	gameWriter.println("Current Coordinates: " + Map.getPlayer().getX() + "," + Map.getPlayer().getY());
