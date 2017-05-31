@@ -2,7 +2,9 @@ package komorebi.projsoul.script.utils;
 
 import komorebi.projsoul.entities.NPC;
 
-public class AreaScript {
+import java.io.File;
+
+public class AreaScript{
 
   private String script;
   private int tx, ty;

@@ -1,12 +1,12 @@
 package komorebi.projsoul.editor.history;
 
-import java.awt.Rectangle;
-
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.script.text.TextHandler;
+
+import java.awt.Rectangle;
 
 public abstract class Revision {
   

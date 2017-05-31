@@ -3,17 +3,17 @@
  */
 package komorebi.projsoul.entities.player;
 
-import java.awt.Rectangle;
-
-import org.lwjgl.input.Keyboard;
-
 import komorebi.projsoul.attack.Attack;
 import komorebi.projsoul.attack.AttackInstance;
+import komorebi.projsoul.attack.CircleStrike;
 import komorebi.projsoul.attack.FireRingInstance;
-import komorebi.projsoul.attack.ProjectileAttack;
 import komorebi.projsoul.attack.RingOfFire;
+import komorebi.projsoul.attack.WaterBarrier;
+import komorebi.projsoul.attack.projectile.ProjectileAttack;
 import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Arithmetic;
+import komorebi.projsoul.engine.CollisionDetector;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.engine.ThreadHandler;
@@ -25,10 +25,13 @@ import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.sprites.SpriteSet;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.gameplay.MagicBar;
-import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.states.Game;
+
+import org.lwjgl.input.Keyboard;
+
+import java.awt.Rectangle;
 
 /**
  * @author Aaron Roy
@@ -55,11 +58,15 @@ public abstract class Player extends Person implements Playable{
 
   private int framesToGo;
   private boolean hasInstructions;
+  
+  private static final int ANI_SPEED = 8;
+  int aniSpeed = ANI_SPEED;
 
   public SpriteSet hurtSprites;
   public Animation deathAni;
 
   private int hurtCount;
+  public static int INVINCIBILITY = 60;
 
   protected boolean invincible;
   private boolean restoreMvmtX;
@@ -84,7 +91,7 @@ public abstract class Player extends Person implements Playable{
    */
   public Player(float x, float y) {
     super(x, y, 16, 24);
-
+    
     restoreMvmtX = true;
     restoreMvmtY = true;
 
@@ -106,7 +113,6 @@ public abstract class Player extends Person implements Playable{
     hurtSprites = character.getNewHurtSprites();
   }
   
-  public abstract void levelUp();
 
   /**
    * @see komorebi.projsoul.engine.Playable#update()
@@ -189,7 +195,9 @@ public abstract class Player extends Person implements Playable{
         if(run){
           dx *=2;
           dy *=2;
-          aniSpeed /=2;
+          aniSpeed = ANI_SPEED/2;
+        }else{
+          aniSpeed = ANI_SPEED;
         }
         
         if (!moving())
@@ -226,7 +234,7 @@ public abstract class Player extends Person implements Playable{
 
         if (!restoreMvmtX)
         {
-          if (Math.abs(dx)<=0.5 && Math.abs(dx)>=0)
+          if (Math.abs(dx) <= 0.5 && Math.abs(dx) >= 0)
           {
             dx = 0;
             restoreMvmtX = true;
@@ -262,10 +270,14 @@ public abstract class Player extends Person implements Playable{
         }
       }
 
-      //TODO Debug
+      //DEBUG God Mode
       if(!KeyHandler.keyDown(Key.G)){
-        Game.getMap().guidePlayer(x, y, dx, dy);
-        boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
+        
+        //Guide only if the player is not going diagonally
+        if((up || down) ^ (left || right)){
+          CollisionDetector.guidePlayer(x, y, dx, dy);
+        }
+        boolean[] col = CollisionDetector.checkCollisions(x,y,dx,dy);
 
         if(!col[0] || !col[2]){
           dy=0;
@@ -277,6 +289,7 @@ public abstract class Player extends Person implements Playable{
         }
       }
 
+      //DEBUG Reset location R
       if(KeyHandler.keyClick(Key.R)){
         x = 100;
         y = 100;
@@ -310,7 +323,7 @@ public abstract class Player extends Person implements Playable{
       }
     }
 
-    //TODO Debug
+    //DEBUG Print Location L
     if(KeyHandler.keyClick(Key.L)){
       System.out.println("x: "+x+", y: "+y);
     }
@@ -327,27 +340,27 @@ public abstract class Player extends Person implements Playable{
 
     ProjectileAttack.update();
     RingOfFire.updateAll();
+    
+    CircleStrike aoe = Sierra.aoe.getAttackInstance();
+    if(aoe != null && aoe.playing()){
+      aoe.update();
+    }
+    
+    WaterBarrier barr = Caspian.support.getAttackInstance();
+    if(barr != null && barr.playing()){
+      barr.update();
+    }
 
-    //TODO: Auto-level up
+    //DEBUG: Manual-level up
     if (KeyHandler.controlDown() && KeyHandler.keyClick(Key.PLUS))
     {
       levelUp();
     }
 
-    //TODO Stat Dump
+    //DEBUG Stat Dump
     if (KeyHandler.controlDown() && KeyHandler.keyClick(Key.S))
     {
-      for (Characters c: Characters.values())
-      {
-        System.out.println(c + ": ");
-        System.out.println("Att: " + Player.getAttack(c)
-        + "\tDef: " + Player.getDefense(c));
-        System.out.println("Mag: " + Player.getMaxMagic(c)
-        + "\tHth: " + Player.getMaxHealth(c));
-        System.out.println("XP: " + Player.getXP(c) + " / " + 
-            Player.getXPToNextLevel(c) + "\tLevel " + Player.getLevel(c)
-            + "\n");
-      }
+      dumpStats();
     }
 
     if (KeyHandler.keyClick(Key.A))
@@ -371,6 +384,21 @@ public abstract class Player extends Person implements Playable{
     }
   }
 
+  
+  //TODO Use inheritance with this, since doing this with static variables is a drag
+  public abstract void levelUp();
+
+  private void dumpStats() {
+    for (Characters c: Characters.values()){
+      System.out.println(c + ": ");
+      System.out.println("Att: " + Player.getAttack(c) + 
+                       "\tDef: " + Player.getDefense(c));
+      System.out.println("Mag: " + Player.getMaxMagic(c)+ 
+                       "\tHth: " + Player.getMaxHealth(c));
+      System.out.println("XP: " + Player.getXP(c) + " / " + 
+          Player.getXPToNextLevel(c) + "\tLevel " + Player.getLevel(c) + "\n");
+    }
+  }
 
   /**
    * @see komorebi.projsoul.engine.Renderable#render()
@@ -393,6 +421,16 @@ public abstract class Player extends Person implements Playable{
 
     ProjectileAttack.play();
     RingOfFire.play();
+    
+    CircleStrike aoe = Sierra.aoe.getAttackInstance();
+    if(aoe != null && aoe.playing()){
+      aoe.play();
+    }
+    
+    WaterBarrier barr = Caspian.support.getAttackInstance();
+    if(barr != null && barr.playing()){
+      barr.play();
+    }
   }
 
  
@@ -461,7 +499,7 @@ public abstract class Player extends Person implements Playable{
 
     future.x += dx;
 
-    for (NPC npc: Game.getMap().getNPCs())
+    for (NPC npc: MapHandler.getActiveMap().getNPCs())
     {
       if (npc.getArea().intersects(future))
       {
@@ -472,7 +510,7 @@ public abstract class Player extends Person implements Playable{
     future.x -= dx;
     future.y += dy;
 
-    for (NPC npc: Game.getMap().getNPCs())
+    for (NPC npc: MapHandler.getActiveMap().getNPCs())
     {
       if (npc.getArea().intersects(future))
       {
@@ -492,7 +530,7 @@ public abstract class Player extends Person implements Playable{
 
     future.x += dx;
 
-    for (Enemy enemy: Game.getMap().getEnemies())
+    for (Enemy enemy: MapHandler.getEnemies())
     {
       if (enemy.getHitBox().intersects(future))
       {
@@ -503,7 +541,7 @@ public abstract class Player extends Person implements Playable{
     future.x -= dx;
     future.y += dy;
 
-    for (Enemy enemy: Game.getMap().getEnemies())
+    for (Enemy enemy: MapHandler.getEnemies())
     {
       if (enemy.getHitBox().intersects(future))
       {
@@ -539,24 +577,22 @@ public abstract class Player extends Person implements Playable{
 
   public void overrideImproperMovements()
   {
-    if (x+dx<0)
-    {
-      x = 0;
-      dx = 0;
-    } else if (x+dx>Game.getMap().getWidth()*16 - sx)
-    {
-      dx = 0;
-      x = Game.getMap().getHeight() * 16 - sx;
-    }
+    if(!MapHandler.isOutside()){
+      if (x + dx < 0) {
+        x = 0;
+        dx = 0;
+      } else if (x + dx > MapHandler.getActiveMap().getTileWidth() * 16 - sx) {
+        dx = 0;
+        x = MapHandler.getActiveMap().getTileHeight() * 16 - sx;
+      }
 
-    if (y+dy<0)
-    {
-      dy = 0;
-      y = 0;
-    } else if (y+dy>Game.getMap().getHeight()*16 - sy)
-    {
-      dy = 0;
-      y = Game.getMap().getHeight() * 16 - sy;
+      if (y + dy < 0) {
+        dy = 0;
+        y = 0;
+      } else if (y + dy > MapHandler.getActiveMap().getTileHeight() * 16 - sy) {
+        dy = 0;
+        y = MapHandler.getActiveMap().getTileHeight() * 16 - sy;
+      }
     }
 
     for (FireRingInstance ring: RingOfFire.allInstances())
@@ -564,7 +600,7 @@ public abstract class Player extends Person implements Playable{
       if (ring.intersectsCirc(new Rectangle((int)(x+dx),(int)(y+dy),sx,sy)))
       {
         float[] center = ring.getCenter();
-        double ang = Map.angleOf(x, y, center[0], center[1]);
+        double ang = Arithmetic.angleOf(x, y, center[0], center[1]);
 
         if (ring.inRing(new Rectangle((int)(x+dx),(int)(y+dy),sx,sy)))
         {
@@ -573,10 +609,11 @@ public abstract class Player extends Person implements Playable{
         float chgx = (float) Math.cos(ang * (Math.PI/180)) * 5;
         float chgy = (float) Math.sin(ang * (Math.PI/180)) * 5;
 
-        if (this instanceof Flannery)
+        if (this instanceof Flannery) {
           inflictPain(0, chgx, chgy);
-        else
+        } else {
           inflictPain(ring.getDamage(), chgx, chgy);
+        }
       }
     }
   }
@@ -592,20 +629,29 @@ public abstract class Player extends Person implements Playable{
     restoreMvmtX = false;
     restoreMvmtY = false;
 
-    hurtCount = 40;
+    hurtCount = INVINCIBILITY;
 
     hurtSprites.turn(dir);
     hurtSprites.resumeCurrent();
+    
+    //DEBUG Velocity
+    System.out.format("Velocity = %f, %f\n", dx, dy);
 
     if (attack - getDefense(character)/2 > 0)
     {
       health.health -= (int) (attack - (getDefense(character)/2));
+    }else if(attack < 0){
+      health.health--;
     }
-    //Kills the enemy
-    if (health.health<=0)
+    
+    //Kills the player
+    if (health.health <= 0)
     {
       deathAni.resume();
       dying = true;
+      
+      //DEBUG Kill teh player
+      System.out.println(character.getNameFormatted() + " ded");
     }
 
     this.dx = dx;
@@ -653,6 +699,8 @@ public abstract class Player extends Person implements Playable{
         return Sierra.attack;
       case BRUNO:
         return Bruno.attack;
+      default:
+        break;
     }
 
     return 0;
@@ -670,6 +718,8 @@ public abstract class Player extends Person implements Playable{
         return Sierra.defense;
       case BRUNO:
         return Bruno.defense;
+      default:
+        break;
     }
 
     return 0;
@@ -687,6 +737,8 @@ public abstract class Player extends Person implements Playable{
         return Sierra.maxMagic;
       case BRUNO:
         return Bruno.maxMagic;
+      default:
+        break;
     }
 
     return 0;  
@@ -704,6 +756,8 @@ public abstract class Player extends Person implements Playable{
         return Sierra.maxHealth;
       case BRUNO:
         return Bruno.maxHealth;
+      default:
+        break;
     }
 
     return 0;  
@@ -721,6 +775,8 @@ public abstract class Player extends Person implements Playable{
         return Sierra.xp;
       case BRUNO:
         return Bruno.xp;
+      default:
+        break;
     }
 
     return 0;  
@@ -738,6 +794,8 @@ public abstract class Player extends Person implements Playable{
         return Sierra.nextLevelUp;
       case BRUNO:
         return Bruno.nextLevelUp;
+      default:
+        break;
     }
 
     return 0;  
@@ -755,6 +813,8 @@ public abstract class Player extends Person implements Playable{
         return Sierra.level;
       case BRUNO:
         return Bruno.level;
+      default:
+        break;
     }
 
     return 0;  
@@ -789,12 +849,17 @@ public abstract class Player extends Person implements Playable{
     return health.getHealth();
   }
   
+    public int getRequiredExp(int level){
+    return (int)(level*level + 10*level + 10);
+  }
+  
+  
   public boolean canMove(float dx, float dy)
   {
     future = new Rectangle((int) (x + dx), (int) (y + dy), 
         sx, sy);
         
-    return !Game.getMap().willIntersectNPCs(future);
+    return !MapHandler.getActiveMap().willIntersectNPCs(future);
   }
   
   public boolean isLocked()

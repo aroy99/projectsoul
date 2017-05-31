@@ -1,8 +1,8 @@
 package komorebi.projsoul.editor.controls;
 
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.script.text.EarthboundFont;
 import komorebi.projsoul.script.text.TextHandler;
 

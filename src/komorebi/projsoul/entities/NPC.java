@@ -4,14 +4,15 @@
  **/
 package komorebi.projsoul.entities;
 
-import java.awt.Rectangle;
-
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.engine.ThreadHandler;
-import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.script.tasks.Task.Precedence;
-import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.Font;
+import komorebi.projsoul.script.text.MenuFont;
 import komorebi.projsoul.script.text.SpeechHandler;
+
+import java.awt.Rectangle;
 
 
 /**
@@ -37,11 +38,13 @@ public class NPC extends Person {
   private boolean isTalking, isWalking;
 
   private String walkScript, talkScript;
-  
+
   private static final int TOP = 0, RIGHT = 1, BOTTOM = 2, LEFT = 3;
 
   boolean hangOn;
   boolean interruptWalking;
+  private static Font font = new MenuFont(1);
+
 
   /**
    * @param x The x location (in pixels) of the bottom left corner of the NPC
@@ -70,7 +73,7 @@ public class NPC extends Person {
     names[1] = "Right";
     names[2] = "Bottom";
     names[3] = "Left";
-  
+
     sprites.turn(Face.DOWN);
   }
 
@@ -88,16 +91,16 @@ public class NPC extends Person {
     super.update();
 
     refreshSurroundingRectangles();
-    
+
   }
-  
+
   private void refreshSurroundingRectangles()
   {
     surround[TOP].setLocation((int) this.x, (int) this.y+24);
     surround[RIGHT].setLocation((int) this.x + 16, (int) this.y);
     surround[BOTTOM].setLocation((int) this.x, (int) this.y - 24);
     surround[LEFT].setLocation((int) this.x - 16, (int) this.y);
-    
+
     future.setLocation((int) x, (int) y);
   }
 
@@ -146,18 +149,28 @@ public class NPC extends Person {
   public String ask(String[] args)
   {
     text.clear();
-    text.write(args[0], 20, 58, new EarthboundFont(1));
-    if (args.length>1) text.write(args[1], 30, 40, new EarthboundFont(1));
-    if (args.length>2) text.write(args[2], 100, 40, new EarthboundFont(1));
-    if (args.length>3) text.write(args[3], 30, 22, new EarthboundFont(1));
-    if (args.length>4) text.write(args[4], 100, 22, new EarthboundFont(1));
+    text.write(args[0], 20, 58, font);
+
+    if (args.length > 1){
+      text.write(args[1], 30, 40, font);
+    }
+    if (args.length > 2){
+      text.write(args[2], 100, 40,font);
+    }
+    if (args.length > 3){
+      text.write(args[3], 30, 22, font);
+    }
+    if (args.length > 4){
+      text.write(args[4], 100, 22,font);
+    }
+
 
     //options = args;
     text.setOptions(args);
-    
+
     Main.getGame().setAsker(text);
 
-   return text.getAnswer();
+    return text.getAnswer();
   }
 
   public int getTileX()
@@ -187,7 +200,7 @@ public class NPC extends Person {
   public void approach()
   {
     isTalking = true;
-    
+
     interrupt();
     runTalkingScript();
   }
@@ -208,7 +221,7 @@ public class NPC extends Person {
   {
     walkScript = nScript;
   }
- 
+
   public String getTalkingScript()
   {
     return talkScript;
@@ -238,28 +251,28 @@ public class NPC extends Person {
   {
     isWalking = b;
   }
-  
+
   public void runWalkingScript()
   {
     isWalking = true;
     started = true;
-    
-    ThreadHandler.newLoop(walkScript, this, Map.getPlayer());
+
+    ThreadHandler.newLoop(walkScript, this, MapHandler.getPlayer());
   }
-  
+
   public void runTalkingScript()
   {
     isWalking = false;
     started = true;
-    
-    ThreadHandler.newThread(talkScript, this, Map.getPlayer());
+
+    ThreadHandler.newThread(talkScript, this, MapHandler.getPlayer());
   }
 
   public void move(float dx, float dy)
   {
     x+=dx;
     y+=dy;
-    
+
     surround[0].setLocation((int) x, (int) y+24);
     surround[1].setLocation((int) x+16, (int) y);
     surround[2].setLocation((int) x, (int) y-24);
@@ -345,20 +358,20 @@ public class NPC extends Person {
   {
     future.x += dx;
     future.y += dy;
-    
-    if (future.intersects(Map.getPlayer().getArea()))
+
+    if (future.intersects(MapHandler.getPlayer().getArea()))
     {
       future.x -= dx;
       future.y -= dy;
-      
+
       return false;
     }
-    
+
     future.x -= dx;
     future.y -= dy;
-    
+
     return true; 
-    
+
   }
 
   public Rectangle getArea()
@@ -384,7 +397,7 @@ public class NPC extends Person {
   public void setName(String newName){
     name = newName;
   }
-  
+
   public Rectangle getSurroundingRectangle(Face dir)
   {
     switch (dir)
@@ -398,5 +411,13 @@ public class NPC extends Person {
       default:
         return surround[TOP];
     }
+  }
+
+  /**
+   * Destroys all outstanding threads that this NPC has running
+   */
+  public void cleanUp(){
+    //    talkScript.close();
+    //    walkScript.close();
   }
 }

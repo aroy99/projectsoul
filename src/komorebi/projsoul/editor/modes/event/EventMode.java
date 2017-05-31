@@ -10,6 +10,24 @@ import static komorebi.projsoul.engine.KeyHandler.keyDown;
 import static komorebi.projsoul.engine.MainE.HEIGHT;
 import static komorebi.projsoul.engine.MainE.WIDTH;
 
+import komorebi.projsoul.editor.Editor;
+import komorebi.projsoul.editor.history.AddEventRevision;
+import komorebi.projsoul.editor.history.EventMovedRevision;
+import komorebi.projsoul.editor.history.EventRevision;
+import komorebi.projsoul.editor.history.RemoveEventRevision;
+import komorebi.projsoul.editor.modes.Mode;
+import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
+import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.MainE;
+import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.enemy.EnemyAI;
+import komorebi.projsoul.entities.enemy.EnemyType;
+import komorebi.projsoul.map.EditorMap;
+
+import org.lwjgl.input.Mouse;
+
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Frame;
@@ -31,24 +49,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-
-import org.lwjgl.input.Mouse;
-
-import komorebi.projsoul.editor.Editor;
-import komorebi.projsoul.editor.history.AddEventRevision;
-import komorebi.projsoul.editor.history.EventMovedRevision;
-import komorebi.projsoul.editor.history.EventRevision;
-import komorebi.projsoul.editor.history.RemoveEventRevision;
-import komorebi.projsoul.editor.modes.Mode;
-import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MainE;
-import komorebi.projsoul.entities.NPCType;
-import komorebi.projsoul.entities.enemy.EnemyAI;
-import komorebi.projsoul.entities.enemy.EnemyType;
-import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.map.EditorMap;
 
 /**
  * The Event Editor

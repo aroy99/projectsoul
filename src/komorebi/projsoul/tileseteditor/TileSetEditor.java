@@ -20,9 +20,9 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.gameplay.Key;
 
 /**
  * 
@@ -656,18 +656,16 @@ public class TileSetEditor implements Playable {
         (getMouseTy()-clipTiles[0].length+1)>swapY-clipTiles[0].length) 
       return false;
     //Bottom left corner intersects
-    if ((getMouseTx()+clipTiles.length-1)>=swapX && 
-        (getMouseTx()+clipTiles.length-1)<swapX+clipTiles.length &&
-        (getMouseTy()-clipTiles[0].length+1)<=swapY &&
-        (getMouseTy()-clipTiles[0].length+1)>swapY-clipTiles[0].length) 
+    if ((getMouseTx()+clipTiles.length-1) >= swapX && 
+        (getMouseTx()+clipTiles.length-1) <  swapX+clipTiles.length &&
+        (getMouseTy()-clipTiles[0].length+1) <= swapY &&
+        (getMouseTy()-clipTiles[0].length+1) >  swapY-clipTiles[0].length){
       return false;
+    }
     //Bottom right corner intersects
     return true;
   }
 
-  /* (non-Javadoc)
-   * @see komorebi.clyde.engine.Playable#getInput()
-   */
   @Override
   public void getInput() {
     // TODO Auto-generated method stub

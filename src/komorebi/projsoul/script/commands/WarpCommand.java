@@ -51,12 +51,12 @@ public class WarpCommand extends CommandOnPlayerOnly {
 
   @Override
   public void execute(Player player) {
+    //TODO FIX
+//    Map oldMap = Game.getMap();
+//    Map newMap = Map.createMapAndTransferPlayers(
+//        "res/maps/" + map, oldMap);
     
-    Map oldMap = Game.getMap();
-    Map newMap = Map.createMapAndTransferPlayers(
-        "res/maps/" + map, oldMap);
-    
-    Game.setMap(newMap);
+//    Game.setMap(newMap);
        
     player.setTileLocation(x, y);
   }

@@ -1,13 +1,17 @@
 package komorebi.projsoul.entities;
 
-import java.awt.Rectangle;
-
+import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Main;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.script.text.EarthboundFont;
 import komorebi.projsoul.script.text.SignHandler;
 
+import java.awt.Rectangle;
+
 public class SignPost extends Entity {
 
+  private static final EarthboundFont FONT = new EarthboundFont(1);
+  
   SignHandler text;
   public boolean shown;
   String message;
@@ -32,7 +36,7 @@ public class SignPost extends Entity {
   public void show()
   {
     shown = true;
-    text.write(message, 20, 58, new EarthboundFont(1));
+    text.write(message, FONT);
     Main.getGame().setSpeaker(text);
   }
 
@@ -68,10 +72,14 @@ public class SignPost extends Entity {
     return message;
   }
   
-    @Override
+  @Override
   public void render() {
     if (shown){
       text.render();
+    }
+    
+    if(MapHandler.isHitBox){
+      Draw.rectCam(x, y, 16, 16, 96, 0, 2);
     }
     
   }

@@ -1,8 +1,8 @@
 package komorebi.projsoul.script.commands;
 
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.script.commands.abstracts.CommandNoSubject;
 import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
-import komorebi.projsoul.states.Game;
 
 public class UnblockCommand extends CommandNoSubject {
   
@@ -28,7 +28,7 @@ public class UnblockCommand extends CommandNoSubject {
 
   @Override
   public void execute() {
-    Game.getMap().setCollision(x, y, true);
+    MapHandler.getActiveMap().setCollision(x, y, true);
     
   }
 

@@ -1,23 +1,29 @@
 package komorebi.projsoul.attack;
 
-import java.awt.Rectangle;
-
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.CollisionDetector;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.player.Characters;
+import komorebi.projsoul.gameplay.Camera;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.states.Game;
 
+import java.awt.Rectangle;
+
+/**
+ * A charge attack for Bruno
+ * 
+ * @author Andrew Faulkenberry
+ * @author Aaron Roy
+ */
 public class Charge extends Melee {
  
   private Rectangle future;
   
   private int attackIndex;
   
-  public Charge()
-  {
-    
-  }
+  public Charge(){}
   
   private Charge(float x, float y, float dx, float dy, Face dir, int attack)
   {
@@ -56,10 +62,21 @@ public class Charge extends Melee {
   @Override
   public void update() {
     
+    boolean[] col = CollisionDetector.checkCollisions(x,y,dx,dy);
+
+    if(!col[0] || !col[2]){
+      Camera.shake(8, 2, 1);
+      dy=0;
+    }
+    if(!col[1] || !col[3]){
+      Camera.shake(8, 2, 1);
+      dx=0;
+    }
+    
     future.x += dx;
     future.y += dy;
     
-    for (Enemy enemy: Game.getMap().getEnemies())
+    for (Enemy enemy: MapHandler.getEnemies())
     {
       if (enemy.getHitBox().intersects(future))
       {
@@ -75,10 +92,18 @@ public class Charge extends Melee {
     hitBox.x = (int) x;
     hitBox.y = (int) y;
     
-    if (dy > 0) dy -= 0.25;
-    if (dy < 0) dy += 0.25;
-    if (dx > 0) dx -= 0.25;
-    if (dx < 0) dx += 0.25;
+    if (dy > 0){ 
+      dy -= 0.25;
+    }
+    if (dy < 0){ 
+      dy += 0.25;
+    }
+    if (dx > 0){ 
+      dx -= 0.25;
+    }
+    if (dx < 0){ 
+      dx += 0.25;
+    }
     
     attackIndex++;
    

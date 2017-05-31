@@ -7,21 +7,21 @@ import static komorebi.projsoul.editor.Buttons.BUTTON_SIZE;
 import static komorebi.projsoul.engine.MainE.HEIGHT;
 import static komorebi.projsoul.engine.MainE.WIDTH;
 
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
-
 import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.editor.Palette;
 import komorebi.projsoul.editor.history.TileRevision;
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MainE;
 import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.EditorMap;
+
+import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
+
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * The tile editing part of the editor

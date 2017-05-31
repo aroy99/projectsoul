@@ -114,7 +114,7 @@ public class MainE {
     //create display
     try {
       Display.setDisplayMode(new DisplayMode(WIDTH * scale, HEIGHT * scale));
-      Display.setTitle("Clyde\'s Editor");
+      Display.setTitle("Project Soul Editor");
       //    Display.setResizable(true);
       Display.create();
       Display.setVSyncEnabled(true);

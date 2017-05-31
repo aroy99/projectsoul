@@ -14,10 +14,10 @@ import komorebi.projsoul.editor.modes.connect.CreateNewWorld;
 import komorebi.projsoul.editor.modes.connect.FindExistingWorld;
 import komorebi.projsoul.editor.modes.connect.World;
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MainE;
 import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.EditorMap.Modes;
 

@@ -14,8 +14,6 @@ import komorebi.projsoul.map.Map;
  */
 
 public abstract class State{
-	
-  protected static Map map;
 
   /**
    * Represents all of the states in the game

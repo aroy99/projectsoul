@@ -16,8 +16,8 @@ import komorebi.projsoul.script.tasks.Task.Precedence;
 
 /**
  * 
- * @author Aaron Roy
- * @version 
+ * 
+ * @author Andrew Faulkenberry
  */
 public class ThreadHandler {
     

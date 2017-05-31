@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import komorebi.projsoul.map.Map;
 
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
@@ -45,22 +46,22 @@ public class Draw {
 
   /** To ensure rotations can only happen in multiples of 90 degrees.*/
   private static final int RIGHT_ANGLE = 90;
-  
+
   /** The roundness of the circle */
   private static final int NUM_PIZZA_SLICES = 30;
-  
+
   public static final int BLANK_TILE = 0;
   public static final Rectangle LAYER_MANAGER = new Rectangle(0, 0, 12*16, 
       34*16-8);
   public static final Rectangle FULL_SCREEN =
       new Rectangle(0, 0, MainE.WIDTH*MainE.scale, MainE.HEIGHT*MainE.scale);
-  
+
   private static final int SPREADSHEET_SIZE = 256;
   private static final int SPREADSHEET_ROW = 16;
-  
+
   /** Holds all of the textures for this class.*/
-  private static Texture[] tex = new Texture[14];
-  
+  private static Texture[] tex = new Texture[16];
+
   private static ArrayList<Texture> sheets = new ArrayList<Texture>();
 
   /** Determines whether textures are loaded.*/
@@ -70,22 +71,26 @@ public class Draw {
    * Loads textures
    * 
    * <p><u>Current:</u><br>
-   *    0: Terra<br>
-   *    1: Pokemon Tiles<br>
-   *    2: Selector/Grid<br>
-   *    3: Ash Ketchum<br>
-   *    4: Ness<br>
-   *    5: Earthbound Font<br>
-   *    6: Textbox<br>
-   *    7: Picker<br>
-   *    8: Fader<br>
-   *    9: Clyde's Tiles<br>
+   *    0:  Terra<br>
+   *    1:  Pokemon Tiles<br>
+   *    2:  Selector/Grid/Debug<br>
+   *    3:  Ash Ketchum<br>
+   *    4:  Ness<br>
+   *    5:  Earthbound Font<br>
+   *    6:  Textbox<br>
+   *    7:  Picker<br>
+   *    8:  Fader<br>
+   *    9:  Clyde's Tiles<br>
    *    10: Miscellaneous Items<br>
    *    11: Fillers for Project Soul<br>
+   *    12: Other Filler Characters<br>
+   *    13: You Ded Screen
+   *    14: Menu Font
+   *    15: Portraits
    */
   public static void loadTextures() {
     try {
-      
+
       tex[0] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/Terra.png")));
       tex[1] = TextureLoader.getTexture("PNG", new FileInputStream(
@@ -114,6 +119,10 @@ public class Draw {
           new File("res/Shadow.png")));
       tex[13] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/Death.png")));
+      tex[14] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/MenuFont.png")));
+      tex[15] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/Portraits.png")));
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -176,17 +185,23 @@ public class Draw {
       if (!texLoaded) {
         loadTextures();
         texLoaded = true;
+        tex[texID].bind();
       }
-      //This keeps messing up my shit
-      //TODO Change Death png that has to be 256 by 256
+
       int imgX = tex[texID].getImageWidth();
       int imgY = tex[texID].getImageHeight();
+
+      //TODO Investigate performance benefits
+      //      if(prevTexID != texID){
+      tex[texID].bind();
+      //      }
+
+      //      prevTexID = texID;
 
       glTranslatef((int)x, (int)y, 0);
       glRotatef(angle * RIGHT_ANGLE, 0.0f, 0.0f, 1.0f);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      tex[texID].bind();
 
       glBegin(GL_QUADS);
       {
@@ -208,7 +223,21 @@ public class Draw {
     glPopMatrix();
 
   }
-  
+
+  /**
+   * Draws a sprite on the screen from the specified image, with rotation.
+   * 
+   * @param x the X position on the screen, starting from the left           
+   * @param y the Y position on the screen, starting from the <i>bottom</i>  
+   * @param sx the width                                                     
+   * @param sy the height                                                    
+   * @param texx X position on the picture, starting from the left           
+   * @param texy Y position on the picture, starting from the <i>top</i>     
+   * @param texsx end X position on the picture, starting from the left      
+   * @param texsy end Y position on the picture, starting from the <i>top</i>
+   * @param angle the rotation of the tile / 90 degrees
+   * @param texture Some custom texture
+   */
   public static void rect(float x, float y, float sx, float sy, int texx, 
       int texy, int texsx, int texsy, int angle, Texture texture) {
     glPushMatrix();
@@ -217,8 +246,7 @@ public class Draw {
         loadTextures();
         texLoaded = true;
       }
-      //This keeps messing up my shit
-      //TODO Change Death png that has to be 256 by 256
+
       int imgX = texture.getImageWidth();
       int imgY = texture.getImageHeight();
 
@@ -248,7 +276,7 @@ public class Draw {
     glPopMatrix();
 
   }
-  
+
   /**
    * Draws a camera fixed sprite on the screen from the specified image, with rotation.
    * 
@@ -268,21 +296,21 @@ public class Draw {
     rect(x-Camera.getX(), y-Camera.getY(), 
         sx, sy, texx, texy, texsx, texsy, angle, tex[texID]);
   }
-  
+
   public static void rectCam(float x, float y, float sx, float sy, int texx,
       int texy, int texsx, int texsy, Texture texture)
   {
     rect(x-Camera.getX(), y-Camera.getY(), sx, sy, texx, texy, texsx, texsy,
         0, texture);
   }
-  
+
   public static void rect(float x, float y, float sx, float sy, int texx,
       int texy, int texsx, int texsy, Texture texture)
   {
     rect(x, y, sx, sy, texx, texy, texsx, texsy,
         0, texture);
   }
-  
+
   /**
    * Draws a camera fixed sprite on the screen from the specified image, assumed the texsx
    * and texsy are the same as sx and sy
@@ -317,39 +345,74 @@ public class Draw {
       int texy, int texsx, int texsy, int texID) {
     rectCam(x, y, sx, sy, texx, texy, texsx, texsy, 0, texID);
   }
-  
+  /**
+   * Draws a sprite that loops around the screen (good for map border tiles).
+   * 
+   * @param x the X position on the screen, starting from the left           
+   * @param y the Y position on the screen, starting from the <i>bottom</i>  
+   * @param sx the width                                                     
+   * @param sy the height                                                    
+   * @param texx X position on the picture, starting from the left           
+   * @param texy Y position on the picture, starting from the <i>top</i>     
+   * @param texID see {@link Draw#loadTextures() loadTextures}
+   */
+  public static void rectScroll(float x, float y, float sx, float sy, int texx, 
+      int texy, int texID) {
+    rect(x-Camera.getX()%Map.SIZE, y-Camera.getY()%Map.SIZE, 
+        sx, sy, texx, texy, texID);
+  }
+
+
+  public static void addSpreadsheetTexture(int png) throws IOException
+  {
+    try
+    {
+      Texture t = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/spreadsheets/"+png+".png")));
+      sheets.add(t);
+    } catch (IOException e)
+    {
+      throw new IOException();
+    }
+  }
   public static void tile(float x, float y, int texX, int texY, int texID)
   {
-      Draw.rect(x, y, 16, 16, texX, texY, texX+16, texY+16, sheets.get(texID));
+    Draw.rect(x, y, 16, 16, texX, texY, texX+16, texY+16, sheets.get(texID));
   }
-  
+
   public static void tileCam(float x, float y, int texX, int texY, int texID)
   {
     Draw.tile(x-Camera.getX(), y-Camera.getY(), texX, texY, texID);
   }
-  
+
   public static int getTexX(int id)
   {    
     return (id % (SPREADSHEET_SIZE) % SPREADSHEET_ROW) * SPREADSHEET_ROW;
   }
-  
+
   public static int getTexY(int id)
   {
     return ((id % SPREADSHEET_SIZE) / SPREADSHEET_ROW) * SPREADSHEET_ROW;
   }
-  
+
+  /**
+   * @param id The number of the spreadsheet
+   * @return The correct texture for the spreadsheet
+   */
   public static int getTexture(int id)
   {
-    if (id==-1) return -1;
+    if (id == -1) {
+      return -1;
+    }
     return id / SPREADSHEET_SIZE;
   }
-  
- 
-  
+
+
+
   /**
    * Creates an approximated circle at the specified point
    * 
-   * @param x the X position on the screen, starting from the left         
+   * @param x the X position on the screen, starting from the left
    * @param y the Y position on the screen, starting from the <i>bottom</i>
    * @param radius The radius of the circle in pixels
    * @param r Red, max 255
@@ -365,7 +428,7 @@ public class Draw {
       glScalef((int)radius, (int)radius, 0);
       glDisable(GL_TEXTURE_2D);
 
-      
+
       glBegin(GL_TRIANGLE_FAN);
       {
         glColor4f(r/255,g/255,b/255,a/255);
@@ -378,18 +441,18 @@ public class Draw {
 
       }
       glEnd();
-      
+
       glEnable(GL_TEXTURE_2D);
 
     }
     glPopMatrix();
   }
-  
+
   public static void circCam(float x, float y, float radius, 
       float r, float g, float b, float a){
     circ(x-Camera.getX(), y-Camera.getY(), radius, r, g, b, a);
   }
-  
+
   public static void readSpreadsheets()
   {
     int texNum = 0;
@@ -407,7 +470,7 @@ public class Draw {
       }
     }
   }
-  
+
   public static void addTexture(int png) throws IOException
   {
     try
@@ -420,12 +483,12 @@ public class Draw {
       throw new IOException();
     }
   }
-  
+
   public static int getNumberOfSpreadsheets()
   {
     return sheets.size();
   }
-  
+
   public static void drawIfInBounds(Rectangle r, float x, float y, 
       float sx, float sy, int texx, int texy, int texsx, int texsy,
       int rot, int texId)
@@ -437,12 +500,12 @@ public class Draw {
     } else if (r.intersects(obj))
     {
       int scale = (int) sx / (texsx - texx);
-      
+
       float drawX = Math.max(r.x, x);
       float drawY = Math.max(r.y, y);
       float drawMaxX = Math.min(r.x+r.width, x+sx);
       float drawMaxY = Math.min(r.y+r.height, y+sy);
-      
+
       if ((int) drawY % 2 != 0 && (int) drawMaxY % 2 == 0)
       {
         drawY--;
@@ -450,7 +513,7 @@ public class Draw {
       {
         drawMaxY++;
       }
-      
+
       if ((int) drawX % 2 != 0 && (int) drawMaxX % 2 == 0)
       {
         drawX--;
@@ -460,45 +523,45 @@ public class Draw {
       }      
       float drawSx = (drawMaxX - drawX);
       float drawSy = (drawMaxY - drawY);
-                  
+
       int topOff = (int) ((y+sy-drawMaxY) / scale);
       int botOff = (int) ((drawY - y) / scale);
       int rightOff = (int) ((x+sx-drawMaxX) / scale);
       int leftOff = (int) ((drawX - x) / scale);
-      
+
       Draw.rect(drawX, drawY, drawSx, drawSy, texx + leftOff,
-        texy + topOff, texsx - rightOff, texsy -
-        botOff, rot, texId);
-      
+          texy + topOff, texsx - rightOff, texsy -
+          botOff, rot, texId);
+
     }
   }
-  
+
   public static void drawIfInBounds(Rectangle r, float x, float y, 
       float sx, float sy, int texx, int texy, int texsx, int texsy,
       int texId)
   {
     drawIfInBounds(r, x, y, sx, sy, texx, texy, texsx, texsy, 0, texId);
   }
-  
+
   public static void tileZoom(float x, float y, int texx, int texy, 
       int texID, float zoom, float pivx, float pivy)
   {
     rect((x-pivx)*zoom+pivx, (y-pivy)*zoom+pivy, 16*zoom, 16*zoom, texx, texy, 
         texx+16, texy+16, sheets.get(texID));
   }
-  
+
   public static void rectZoom(float x, float y, float sx, float sy,
       int texx, int texy, int texsx, int texsy, int texID, float zoom,
       float ex, float ey)
   { 
     rect((x-ex)*zoom+ex, (y-ey)*zoom+ey, sx*zoom, sy*zoom, 
         texx, texy, texsx, texsy, texID);
-    
+
     /*rectZoom(x, y, sx, sy, texx, texy, texsx, texsy, 0, texID, zoom,
         ex, ey);*/
-    
+
   }
-  
+
   public static void rectZoom(float x, float y, float sx, float sy,
       int texx, int texy, int texsx, int texsy, int rot, int texID, float zoom,
       float ex, float ey)

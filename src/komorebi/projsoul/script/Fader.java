@@ -10,9 +10,9 @@ import komorebi.projsoul.engine.ThreadHandler.TrackableThread;
 
 
 /**
+ * Use this to fade the screen out, static only
  * 
- * @author Aaron Roy
- * @version 
+ * @author Andrew Faulkenberry
  */
 public class Fader {
 
@@ -21,11 +21,14 @@ public class Fader {
 
   private static TrackableThread waiting;
   
+  //Makes it impossible to instantiate this class
+  private Fader(){}
+  
   /**
    * Gradually fades out the screen by rendering a black rectangle that 
    * gradually becomes opaque
    * @param lock The lock that pauses the thread waiting for the screen to fade
-   * out
+   *         out
    */
   public static void fadeOut()
   {
@@ -38,7 +41,7 @@ public class Fader {
    * Gradually fades in the screen by rendering a black rectangle that gradually
    * becomes transparent
    * @param lock The lock that pauses the thread waiting for the screen to fade
-   * in
+   *         in
    */
   public static void fadeIn()
   {

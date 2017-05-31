@@ -5,6 +5,17 @@ package komorebi.projsoul.editor;
 
 import static komorebi.projsoul.engine.KeyHandler.button;
 
+import komorebi.projsoul.audio.Song;
+import komorebi.projsoul.editor.modes.Mode;
+import komorebi.projsoul.engine.Key;
+import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.engine.MainE;
+import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.map.EditorMap;
+
+import org.lwjgl.input.Mouse;
+
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,17 +34,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
-import org.lwjgl.input.Mouse;
-
-import komorebi.projsoul.audio.Song;
-import komorebi.projsoul.editor.modes.Mode;
-import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.KeyHandler.Control;
-import komorebi.projsoul.engine.MainE;
-import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.map.EditorMap;
 
 
 /**

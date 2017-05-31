@@ -1,10 +1,8 @@
 package komorebi.projsoul.script.commands;
 
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.script.commands.abstracts.CommandNoSubject;
-import komorebi.projsoul.script.commands.keywords.Keyword;
 import komorebi.projsoul.script.exceptions.InvalidScriptSyntaxExceptionWithLine;
-import komorebi.projsoul.script.exceptions.UndefinedConstructorException;
-import komorebi.projsoul.states.Game;
 
 public class BlockCommand extends CommandNoSubject {
 
@@ -31,6 +29,6 @@ public class BlockCommand extends CommandNoSubject {
 
   @Override
   public void execute() {
-    Game.getMap().setCollision(x, y, false);
+    MapHandler.getActiveMap().setCollision(x, y, false);
   }
 }

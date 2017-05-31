@@ -1,56 +1,90 @@
 package komorebi.projsoul.entities.enemy;
 
-import java.awt.Rectangle;
-
 import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Arithmetic;
+import komorebi.projsoul.engine.CollisionDetector;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.Entity;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.XPObject;
 import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.map.EditorMap;
-import komorebi.projsoul.map.Map;
-import komorebi.projsoul.states.Game;
+import komorebi.projsoul.map.MapHandler;
 
+import java.awt.Rectangle;
+
+/**
+ * Represents an Enemy in the game
+ * 
+ * @author Andrew Faulkenberry
+ * @author Aaron Roy
+ */
 public abstract class Enemy extends Entity {
 
-  private int attack, defense;
-  private int health;
+  protected int attack, defense;
+  protected int health;
+  protected int level;
+  
+  protected float targetX, targetY; //Location of the player
+  
+  protected boolean hittingWall, hittingPlayer;
+  
   public Rectangle hitBox;
 
+  public boolean hurt;
   public boolean invincible;
   private boolean dying;
   private boolean dead;
   private int hitCounter;
 
+  //Animations
+  protected final Animation regAni;
+  protected final Animation hitAni;
+  protected final Animation deathAni;
+
   private boolean editor;
 
-  private Animation hitAni;
-  private Animation deathAni;
-
-  public static final int KNOCKBACK = 6;
+  public static final int DEFAULT_KNOCK = 6;
+  public static final int INVINCIBILITY = 15;
 
   public float dx, dy;
 
-  private boolean[] hitBy;
+  protected boolean[] hitBy;
 
-  private int level;
 
-  public abstract int xpPerLevel();
-  public abstract int baseAttack();
-  public abstract int baseDefense();
-  public abstract int baseHealth();
-
+  protected Face direction = Face.DOWN;
 
   private Face hitDirection;
-
+  
+  //Sprite of this enemy
   private EnemyType type;
 
   /**
+   * @return The amount of exp this enemy gives per level
+   */
+  public abstract int xpPerLevel();
+  
+  /**
+   * @return The base attack of this enemy
+   */
+  public abstract int baseAttack();
+  
+  /**
+   * @return The base defense of this enemy
+   */
+  public abstract int baseDefense();
+  
+  /**
+   * @return The base health of this enemy
+   */
+  public abstract int baseHealth();
+
+  /**
    * Creates a standard enemy
+   * 
    * @param x The x location (in the map) of the enemy
    * @param y The y location (in the map) of the enemy
    * @param type The sprite of this enemy
@@ -60,6 +94,15 @@ public abstract class Enemy extends Entity {
   }
 
 
+
+  /**
+   * Creates a standard enemy
+   * 
+   * @param x The x location (in the map) of the enemy
+   * @param y The y location (in the map) of the enemy
+   * @param type The sprite of this enemy
+   * @param level The level of this enemy
+   */
   public Enemy(float x, float y, EnemyType type, int level) {
     super(x, y, type.getSX(), type.getSY());
 
@@ -74,6 +117,8 @@ public abstract class Enemy extends Entity {
     health = baseHealth() + level;
     defense = baseDefense() + level;
 
+    regAni = EnemyType.getRegularAnimation(type);
+    
     hitAni = new Animation(2,8,16,21,11);
     hitAni.add(0, 0);
     hitAni.add(0, 22);
@@ -93,45 +138,39 @@ public abstract class Enemy extends Entity {
     if (dying && deathAni.lastFrame())
     {
       dead = true;
-      Game.getMap().addXPObject(new XPObject(x, y, xpPerLevel()*level, hitBy));
+      MapHandler.addXPObject(new XPObject(x, y, xpPerLevel()*level, hitBy));
     } else if (dying)
     {
       dx = 0;
       dy = 0;
     }
 
-    if (invincible)
+    if (hurt)
     {
       hitCounter--;
-      if (dx > 0){
-        dx--;
-      }
-      if (dx < 0){
-        dx++;
-      }
-      if (dy > 0){
-        dy--;
-      }
-      if (dy < 0){
-        dy++;
-      }
+      dx *= 0.9;
+      dy *= 0.9;
     }
 
-    if (hitCounter<=0)
+    if (hurt && hitCounter <= 0)
     {
       hitAni.hStop();
+      hurt = false;
       invincible = false;
     }
 
+    hittingWall = false;
+    hittingPlayer = false;
+    
     //Stops the enemy from moving places it shouldn't
     overrideImproperMovements();
 
     for (FireRingInstance ring: RingOfFire.allInstances())
     {
-      if (ring.intersects(new Rectangle((int) (x+dx),(int) (y+dy),sx,sy)) && !invincible)
+      if (ring.intersects(new Rectangle((int) (x+dx),(int) (y+dy),sx,sy)) && !hurt)
       {          
         float[] coords = ring.getCenter();
-        inflictPain(ring.getDamage(), Map.angleOf(x, y, coords[0], coords[1]), 
+        inflictPain(ring.getDamage(), Arithmetic.angleOf(x, y, coords[0], coords[1]), 
             Characters.FLANNERY);
       }
     }
@@ -144,6 +183,14 @@ public abstract class Enemy extends Entity {
 
   }
 
+
+  /**
+   * Hits the enemy in one direction
+   * 
+   * @param attack The damage done to the enemy
+   * @param dir The direction to whack the enemy
+   * @param c The character that hit the enemy (used for exp)
+   */
   public void inflictPain(int attack, Face dir, Characters c)
   {
     int chgx = 0, chgy = 0;
@@ -174,40 +221,68 @@ public abstract class Enemy extends Entity {
   }
 
 
-
-
-  private void inflictPain(int attack, float dx, float dy, Characters c)
-  {
-    health -= attack - (defense/2);
-    hitBy[c.ordinal()] = true;
-    
-    //Kills the enemy
-    if (health<=0)
-    {
-      deathAni.resume();
-      dying = true;
-    } else
-    {
-      //Knocks back the enemy
-      invincible = true;
-      hitCounter = 50;
-      hitAni.resume();
-            
-      this.dx = dx;
-      this.dy = dy;
-    }
-  }
-      
-
   /**
-   * Updates whether the enemy is being hit
+   * Updates whether the enemy is being hit with default knockback
+   * 
+   * @param attack The damage done to the enemy
+   * @param ang The angle to knock the enemy back (in degrees)
+   * @param c The character that hit the enemy (used for exp)
    */
   public void inflictPain(int attack, double ang, Characters c)
   {
-    float chgx = (float) Math.cos(ang * (Math.PI/180)) * 5;
-    float chgy = (float) Math.sin(ang * (Math.PI/180)) * 5;
+    inflictPain(attack, ang, c, DEFAULT_KNOCK);
+  }
+  
+  /**
+   * Updates whether the enemy is being hit, and gives extra knockback
+   * 
+   * @param attack The damage done to the enemy
+   * @param ang The angle to knock the enemy back (in degrees)
+   * @param c The character that hit the enemy (used for exp)
+   * @param knock The custom knockback
+   */
+  public void inflictPain(int attack, double ang, Characters c, int knock)
+  {
+    float chgx = (float) Math.cos(ang * (Math.PI/180)) * knock;
+    float chgy = (float) Math.sin(ang * (Math.PI/180)) * knock;
 
     inflictPain(attack, chgx, chgy, c);
+  }
+
+  /**
+   * Whacks the enemy and kills it if his health is low enough
+   * 
+   * @param attack The damage done to the enemy
+   * @param dx The new x velocity of the target
+   * @param dy The new y velocity of the target
+   * @param c The character that hit the enemy (used for exp)
+   */
+  public void inflictPain(int attack, float dx, float dy, Characters c)
+  {
+    if(!invincible){
+      health -= attack - (defense/2);
+      hitBy[c.ordinal()] = true;
+
+      //Kills the enemy
+      if (health <= 0)
+      {
+        deathAni.resume();
+        dying = true;
+      } else
+      {
+        //Knocks back the enemy
+        hurt = true;
+        invincible = true;
+        hitCounter = INVINCIBILITY;
+        hitAni.resume();
+
+        //DEBUG Enemy movement speed
+        System.out.println("----ENEMY MOVEMENT----\n"+dx + " " + dy + "\nHealth: " + health);
+
+        this.dx = dx;
+        this.dy = dy;
+      }
+    }
   }
 
  
@@ -216,7 +291,7 @@ public abstract class Enemy extends Entity {
 
   @Override
   public void render() {
-    if (invincible)
+    if (hurt)
     {
       hitAni.playCam(x, y);
     } else if (dying)
@@ -224,7 +299,7 @@ public abstract class Enemy extends Entity {
       deathAni.playCam(x, y);
     } else
     {
-      Draw.rectCam(x, y, sx, sy, 0, 0, 16, 21, 0, 11);
+      regAni.playCam(x, y);
     }
   }
 
@@ -258,62 +333,153 @@ public abstract class Enemy extends Entity {
     return dead;
   }
 
+  
+  public void kill(){
+    dead = true;
+  }
+
   /**
    * Stops the enemy from moving where it shouldn't 
    */
   public void overrideImproperMovements()
   {
-    if (x+dx<0)
-    {
-      x = 0;
-      dx = 0;
-    } else if (x+dx>Game.getMap().getWidth()*16 - sx)
-    {
-      dx = 0;
-      x = Game.getMap().getHeight() * 16 - sx;
-    }
-
-    if (y+dy<0)
-    {
-      dy = 0;
-      y = 0;
-    } else if (y+dy>Game.getMap().getHeight()*16 - sy)
-    {
-      dy = 0;
-      y = Game.getMap().getHeight() * 16 - sy;
+    if(!MapHandler.isOutside()){
+      if (x+dx < 0)
+      {
+        x = 0;
+        dx = 0;
+        hittingWall = true;
+      } else if (x+dx > MapHandler.getActiveMap().getTileWidth()*16 - sx)
+      {
+        dx = 0;
+        x = MapHandler.getActiveMap().getTileHeight() * 16 - sx;
+        hittingWall = true;
+      }
+  
+      if (y+dy < 0)
+      {
+        dy = 0;
+        y = 0;
+        hittingWall = true;
+      } else if (y+dy > MapHandler.getActiveMap().getTileHeight()*16 - sy)
+      {
+        dy = 0;
+        y = MapHandler.getActiveMap().getTileHeight() * 16 - sy;
+        hittingWall = true;
+      }
     }
 
     Rectangle hypothetical = new Rectangle((int) (x+dx), (int) (y+dy),
         sx, sy);
 
-    if (hypothetical.intersects(Map.getPlayer().getHitBox()))
+    if (hypothetical.intersects(MapHandler.getPlayer().getHitBox()))
     { 
 
-      if (!Map.getPlayer().invincible())
+      if (!MapHandler.getPlayer().invincible())
       {
-        Map.getPlayer().inflictPain(30, KNOCKBACK*Math.signum(dx)*(float)Math.sqrt(Math.abs(dx)), 
-            KNOCKBACK*Math.signum(dy)*(float)Math.sqrt(Math.abs(dy)));
-
+        //DEBUG Enemy movements Part II
+        System.out.println(dx + ", " + dy);
+        MapHandler.getPlayer().inflictPain(attack, 
+            DEFAULT_KNOCK*Math.signum(dx)*(float)Math.sqrt(Math.abs(dx)), 
+            DEFAULT_KNOCK*Math.signum(dy)*(float)Math.sqrt(Math.abs(dy)));
+        hittingPlayer = true;
+        
       }
 
       dx = 0;
       dy = 0;
+      hittingPlayer = true;
     }
-    
-    boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
+
+    boolean[] col = CollisionDetector.checkCollisions(x,y,dx,dy);
 
     if(!col[0] || !col[2]){
       dy=0;
       dx*=.75f;
+      hittingWall = true;
     }
     if(!col[1] || !col[3]){
       dx=0;
       dy*=.75f;
+      hittingWall = true;
+    }
+    
+  }
+
+  public boolean isHittingWall() {
+    return hittingWall;
+  }
+
+  public boolean isHittingPlayer() {
+    return hittingPlayer;
+  }
+  
+  public boolean isHittingSomething() {
+    return hittingPlayer || hittingWall;
+  }
+
+
+  public boolean invincible() {
+    return invincible;
+  }
+  
+  public void setInvincible(boolean value){
+    invincible = value;
+  }
+  
+  public void randomizeDirection(){
+    direction = Face.random();
+  }
+
+  public Face getDirection() {
+    return direction;
+  }
+  
+  public float getTargetX() {
+    return targetX;
+  }
+
+  public float getTargetY() {
+    return targetY;
+  }
+
+  public void setTarget(float targetX, float targetY) {
+    this.targetX = targetX;
+    this.targetY = targetY;
+  }
+
+  
+  public void move(float dx, float dy){
+    this.dx = dx;
+    this.dy = dy;
+    animateWalk();
+  }
+  
+  /**
+   * Figures out walking automatically
+   */
+  private void animateWalk() {
+    float ddx = (float)Math.abs(dx);
+    float ddy = (float)Math.abs(dy);
+    
+    
+    if(ddx == 0 && ddy == 0){
+      regAni.stop();
+      return;
+    }
+    
+    if(ddx >= ddy){
+      regAni.setSpeed(15/(int)(ddx+1));
+    }else{
+      regAni.setSpeed(15/(int)(ddy+1));
+    }
+    
+    if(!regAni.playing()){
+      regAni.resume();
     }
   }
 
-  public boolean invincible()
-  {    
-    return invincible;
+  public void switchDirection(Face newDir){
+    direction = newDir;
   }
 }

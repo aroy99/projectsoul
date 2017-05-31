@@ -18,16 +18,17 @@ public class WarpTogetherCommand extends CommandOnNPCAndPlayer {
   
   @Override
   public void execute(NPC npc, Player player) {
-    Map oldMap = Game.getMap();
-    Map newMap = Map.createMapAndTransferPlayers(
-        "res/maps/" + map, oldMap);
+    //TODO FIX
+//    Map oldMap = Game.getMap();
+//    Map newMap = Map.createMapAndTransferPlayers(
+//        "res/maps/" + map, oldMap);
     
-    Game.setMap(newMap);
+//    Game.setMap(newMap);
        
     player.setTileLocation(playerTo.x, playerTo.y);
     npc.setTileLocation(npcTo.x, npcTo.y);
     
-    newMap.addNPC(npc);
+//    newMap.addNPC(npc);
 
   }
 

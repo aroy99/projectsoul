@@ -1,15 +1,26 @@
 package komorebi.projsoul.attack;
 
-import java.awt.Rectangle;
-
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.entities.Face;
+import komorebi.projsoul.entities.enemy.Enemy;
+import komorebi.projsoul.entities.player.Characters;
+import komorebi.projsoul.entities.player.Player;
+import komorebi.projsoul.map.MapHandler;
 
+import java.awt.Rectangle;
+
+/**
+ * Caspian's Water Sword attack
+ * 
+ * @author Andrew Faulkenberry
+ */
 public class WaterSword extends Melee {
 
-  public WaterSword(float x, float y, Face dir, int attack)
+  private WaterSword(float x, float y, Face dir, int attack)
   {
     super(x,y,dir,attack);
+    
+    character = Characters.CASPIAN;
     
     downAttack = new Animation(5, 4, 11, false);
     downAttack.add(24, 0, 16, 46, 0, 0);
@@ -79,6 +90,17 @@ public class WaterSword extends Melee {
         break;
       
     }
+    
+    for (Enemy enemy: MapHandler.getEnemies())
+    {
+      if (hitBox.intersects(enemy.getHitBox()) && !enemy.invincible())
+      {
+        enemy.inflictPain((int) (Player.getAttack(Characters.CASPIAN)), currentDir,
+            Characters.CASPIAN);
+      }
+
+    }
+
   }
 
   @Override

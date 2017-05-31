@@ -1,5 +1,5 @@
 /**
- * Dummy.java	   Nov 18, 2016, 9:46:48 PM
+ * Dummy.java   Nov 18, 2016, 9:46:48 PM
  */
 package komorebi.projsoul.entities.enemy;
 
@@ -11,44 +11,44 @@ package komorebi.projsoul.entities.enemy;
 public class Dummy extends Enemy {
 
   /**
-   * @param x
-   * @param y
-   * @param type
+   * Creates a dummy that does nothing
+   * 
+   * @param x The x location (in the map) of the enemy
+   * @param y The y location (in the map) of the enemy
+   * @param type The sprite of this enemy
+   * @param level The level of this enemy
    */
   public Dummy(float x, float y, EnemyType type, int level) {
     super(x, y, type, level);
   }
-
-  /**
-   * @see komorebi.projsoul.entities.enemy.Enemy#xpPerLevel()
-   */
+  
+  @Override
+  public void update() {
+    super.update();
+    if(!hurt){
+      dx *= 0.9;
+      dy *= 0.9;
+    }
+  }
+  
   @Override
   public int xpPerLevel() {
-    return 0;
+    return 10000;
   }
 
-  /**
-   * @see komorebi.projsoul.entities.enemy.Enemy#baseAttack()
-   */
   @Override
   public int baseAttack() {
     return 0;
   }
 
-  /**
-   * @see komorebi.projsoul.entities.enemy.Enemy#baseDefense()
-   */
   @Override
   public int baseDefense() {
     return 0;
   }
 
-  /**
-   * @see komorebi.projsoul.entities.enemy.Enemy#baseHealth()
-   */
   @Override
   public int baseHealth() {
-    return 100;
+    return 500;
   }
 
 }

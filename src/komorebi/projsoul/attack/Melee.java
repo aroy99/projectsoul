@@ -23,10 +23,7 @@ public abstract class Melee implements AttackInstance {
   public Face currentDir;
   public Characters character;
 
-  public Melee()
-  {
-  
-  }
+  public Melee(){}
   
   public Melee(float x, float y, Face dir, int attack)
   {
@@ -90,6 +87,7 @@ public abstract class Melee implements AttackInstance {
     {
       case DOWN:
         downAttack.resume();
+        break;
       case LEFT:
         leftAttack.resume();
         break;
@@ -109,20 +107,19 @@ public abstract class Melee implements AttackInstance {
     return hitBox;
   }
   
-  public void update(int x, int y)
+  public void update(int x, int y){}
+  
+  public void update()
   {
     
   }
+
   
   public void setDirection(Face dir)
   {
     this.currentDir = dir;
   }
   
-  public void update()
-  {
-    
-  }
   
   public float getX()
   {

@@ -1,26 +1,42 @@
 package komorebi.projsoul.entities.enemy;
 
+import komorebi.projsoul.ai.node.composite.MemSequence;
+import komorebi.projsoul.ai.node.composite.Priority;
+import komorebi.projsoul.ai.node.composite.Sequence;
+import komorebi.projsoul.ai.node.leaf.IdleBehavior;
+import komorebi.projsoul.ai.node.leaf.MoveToTarget;
+import komorebi.projsoul.ai.node.leaf.SetTargetToPlayer;
+import komorebi.projsoul.ai.node.leaf.WalkBehavior;
+import komorebi.projsoul.ai.node.leaf.conditions.IsPlayerInRange;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.map.EditorMap;
-import komorebi.projsoul.map.Map;
-import komorebi.projsoul.states.Death;
 import komorebi.projsoul.map.EditorMap.Modes;
-import komorebi.projsoul.states.Game;
+import komorebi.projsoul.map.MapHandler;
+import komorebi.projsoul.states.Death;
 
-public class Chaser extends Enemy {
+/**
+ * An enemy that chases the player
+ *
+ * @author Aaron Roy
+ */
+public class Chaser extends Enemy{
 
-  float targetX, targetY;
+  float dist;             //Calculated distance between this enemy and the player
 
-  private final float speed = 2f;
+  protected static final float SPEED = 1.5f;
+  
+  private static final int MAX_IDLE = 60;
+  private static final int MAX_WALK = 120;
 
-  private int maxClydeDist;
+  protected int maxPlayDist;
 
-  private int red, green, blue;
+  protected int red, green, blue;
 
-
-  public static final int baseAttack = 35;
+  public static final int baseAttack = 50;
   public static final int baseDefense = 50;
-  public static final int baseHealth = 50;
+  public static final int baseHealth = 100;
+  
+  private Priority root;
 
   /**
    * Creates an enemy that will chase the player within a certain range
@@ -37,11 +53,24 @@ public class Chaser extends Enemy {
   public Chaser(float x, float y, EnemyType type, int distanceFromPlay, int level) {
     super(x, y, type, level);
 
-    maxClydeDist = 16*distanceFromPlay;
+    maxPlayDist = 16*distanceFromPlay;
 
-    red = (int)(Math.random()*255);
-    green = (int)(Math.random()*255);
-    blue = (int)(Math.random()*255);  
+    regAni.setSpeed((int)(6/(SPEED/2)));
+    System.out.println(1);
+    
+    generateHitboxColors();
+    
+    root = new Priority(
+        new Sequence(
+            new IsPlayerInRange(this, maxPlayDist),
+            new SetTargetToPlayer(this),
+            new MoveToTarget(this, SPEED, 0)
+            ),
+        new MemSequence(                             //Walk around
+            new IdleBehavior(this, MAX_IDLE),
+            new WalkBehavior(this, MAX_WALK, SPEED/2)
+            )
+        );
   }
 
   /**
@@ -49,42 +78,19 @@ public class Chaser extends Enemy {
    */
   public void update()
   {   
-    super.update();
-
-    targetX = Map.getPlayer().getX();
-    targetY = Map.getPlayer().getY();
     if(Death.playable)
     {
-
-      if (Map.distanceBetween(x,y,targetX,targetY)>maxClydeDist && (dx!=0 || dy!=0))
-      {
-        dx = 0;
-        dy = 0;
-      }
-
-      if (!invincible && Map.distanceBetween(x,y,targetX,targetY)<=maxClydeDist)
-      {
-        float triX = Math.abs(targetX-x);
-        float triY = Math.abs(targetY-y);
-        float theta = (float)Math.atan(triY/triX);
-
-        if (targetX > x && triX > 12)
-        {
-          dx = speed*(float)Math.cos(theta);
-        } else if (targetX < x)
-        {
-          dx = -speed*(float)Math.cos(theta);
-        }
-
-        if (targetY > y && triY > 12)
-        {
-          dy = speed*(float)Math.sin(theta);
-        } else if (targetY < y)
-        {
-          dy = -speed*(float)Math.sin(theta);
-        }
-      }
+      dx = 0;
+      dy = 0;
+      
+      root.update();
     }
+    
+    super.update();
+  }
+  
+  protected void enemyUpdate(){
+    super.update();
   }
 
   @Override
@@ -105,19 +111,16 @@ public class Chaser extends Enemy {
   @Override
   public int baseHealth() {
     return baseHealth;
-
   }
-
-
-
+  
   @Override
   public void render() {
     //TODO Better implementation
     if(EditorMap.getMode() == Modes.EVENT){
-      Draw.circ(x, y, maxClydeDist, red, blue, green, 64);
+      Draw.circ(x, y, maxPlayDist, red, blue, green, 64);
     }
-    if(Map.isHitBox){
-      Draw.circCam(x, y, maxClydeDist, red, blue, green, 64);
+    if(MapHandler.isHitBox){
+      Draw.circCam(x, y, maxPlayDist, red, blue, green, 64);
     }
 
     super.render();
@@ -129,7 +132,13 @@ public class Chaser extends Enemy {
   }
 
   public int getOriginalRadius(){
-    return maxClydeDist/16;
+    return maxPlayDist/16;
+  }
+
+  private void generateHitboxColors() {
+    red = (int)(Math.random()*255);
+    green = (int)(Math.random()*255);
+    blue = (int)(Math.random()*255);
   }
 
 }

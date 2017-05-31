@@ -5,17 +5,17 @@ package komorebi.projsoul.editor.modes;
 
 import static komorebi.projsoul.engine.KeyHandler.controlDown;
 
-import org.lwjgl.input.Mouse;
-
 import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.editor.Palette;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MainE;
 import komorebi.projsoul.engine.Renderable;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.script.text.EarthboundFont;
 import komorebi.projsoul.script.text.TextHandler;
+
+import org.lwjgl.input.Mouse;
 
 /**
  * Represents one of the three modes for editing in Clyde's

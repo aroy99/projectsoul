@@ -9,44 +9,33 @@ import static komorebi.projsoul.engine.KeyHandler.keyDown;
 import static komorebi.projsoul.engine.MainE.HEIGHT;
 import static komorebi.projsoul.engine.MainE.WIDTH;
 
+import komorebi.projsoul.editor.Editor;
+import komorebi.projsoul.editor.modes.Mode;
+import komorebi.projsoul.editor.modes.connect.World.TerminableActionListener;
+import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
+import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.MainE;
+import komorebi.projsoul.map.ConnectMap;
+import komorebi.projsoul.map.EditorMap;
+
+import org.lwjgl.input.Mouse;
+
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import org.lwjgl.input.Mouse;
-
-import komorebi.projsoul.editor.Editor;
-import komorebi.projsoul.editor.modes.Mode;
-import komorebi.projsoul.editor.modes.connect.World.FindWorldDialog;
-import komorebi.projsoul.editor.modes.connect.World.TerminableActionListener;
-import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.MainE;
-import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.map.ConnectMap;
-import komorebi.projsoul.map.ConnectMap.Side;
-import komorebi.projsoul.map.EditorMap;
 
 /**
  * Deals with Map connections, only to be used in the editor

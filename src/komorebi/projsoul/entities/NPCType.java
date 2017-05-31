@@ -3,10 +3,10 @@
  */
 package komorebi.projsoul.entities;
 
-import java.util.ArrayList;
-
 import komorebi.projsoul.engine.InitializableAnimation;
 import komorebi.projsoul.entities.sprites.SpriteSet;
+
+import java.util.ArrayList;
 
 /**
  * 

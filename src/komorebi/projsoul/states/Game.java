@@ -4,27 +4,21 @@
  */
 package komorebi.projsoul.states;
 
-import java.io.BufferedReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.engine.ThreadHandler.TrackableThread;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Item;
 import komorebi.projsoul.gameplay.Item.Items;
-import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.map.Map;
+import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.script.Fader;
 import komorebi.projsoul.script.text.DialogueBox;
-import komorebi.projsoul.script.text.EarthboundFont;
 import komorebi.projsoul.script.text.SpeechHandler;
-import komorebi.projsoul.script.text.TextHandler;
-import komorebi.projsoul.script.text.Word;
+
+import java.io.BufferedReader;
+import java.util.ArrayList;
 
 /**
  * Represents the game
@@ -32,17 +26,11 @@ import komorebi.projsoul.script.text.Word;
  * @author Aaron Roy
  * @version 
  */
-@SuppressWarnings("unused")
 public class Game extends State{
 
   public ArrayList<Item> items = new ArrayList<Item>();
-  
+
   private DialogueBox dialogue;
-
-  private TextHandler currMap;
-
-  private int mapDisplayCount = 120;
-  private int displayY = 15;
 
   private BufferedReader read;
 
@@ -61,10 +49,8 @@ public class Game extends State{
    * Creates the player and loads the map
    */
   public Game(){
-    map = new Map("res/maps/"+testLoc);
+    MapHandler.initialize(testLoc);
 
-    currMap = new TextHandler();
-    currMap.write(map.getTitle(), 5, Main.HEIGHT-13);
 
     confidence = 0;
     money = 15;
@@ -75,37 +61,14 @@ public class Game extends State{
     dialogue = new DialogueBox();
 
   }
-  
-  public Game(String absolutePath)
-  {
-    map = new Map(absolutePath);
-    
-    currMap = new TextHandler();
-    currMap.write(map.getTitle(), 5, Main.HEIGHT-13);
 
-    confidence = 0;
-    money = 15;
-
-    hud = new HUD(confidence); //TODO WHY KEVIN
-    death = new Death();
-
-    dialogue = new DialogueBox();
-  }
-
-
-  /* (non-Javadoc)
-   * @see komorebi.clyde.states.State#getInput()
-   */
   @Override
   public void getInput() {      
-    
+
     if (dialogue.hasDialogue() && KeyHandler.firstKeyClick(Key.C))
     {
       dialogue.next();
     } 
-
-    //TODO Remove map debug features
-    map.getInput();
 
     if (KeyHandler.keyClick(Key.LEFT) && dialogue.hasQuestion())
     {
@@ -130,12 +93,8 @@ public class Game extends State{
 
   }
 
-  /* (non-Javadoc)
-   * @see komorebi.clyde.states.State#update()
-   */
   @Override
   public void update() {
-    // TODO Auto-generated method stub  
     hud.update();
     death.update();
 
@@ -144,55 +103,30 @@ public class Game extends State{
     {
       framesToGo--;
 
-      if (framesToGo<=0)
+      if (framesToGo <= 0)
       {
         isPaused = false;
         waiting.unlock();
       }
     }
 
-    map.update();
+    MapHandler.update();
     Fader.update();
 
   }
 
-  /* (non-Javadoc)
-   * @see komorebi.clyde.states.State#render()
-   */
   @Override
   public void render() {
-    map.render();
-    Map.getPlayer().renderHUD();
-    if(mapDisplayCount > 0 || displayY > 0){
-      Draw.rect(2, Main.HEIGHT-displayY, 100, 12, 1, 1, 2, 2, 6);
-      currMap.render(new Word(map.getTitle(), 5, Main.HEIGHT-displayY+2, new EarthboundFont(1)));
-      mapDisplayCount--;
+    MapHandler.render();
 
-      if(mapDisplayCount < 0){
-        displayY--;
-      }
-    }
-    
+
     if (dialogue.hasDialogue())
     {
       dialogue.render();
     }
-    
+
     Fader.render();
 
-  }
-
-
-  /**
-   * @return The current map
-   */
-  public static Map getMap(){
-    return map;
-  }
-
-  public static void setMap(Map m)
-  {
-    map = m;
   }
 
   public void setSpeaker(SpeechHandler talk)
@@ -261,11 +195,11 @@ public class Game extends State{
     confidence += add;
   }
 
-public BufferedReader getRead() {
-	return read;
-}
+  public BufferedReader getRead() {
+    return read;
+  }
 
-public void setRead(BufferedReader read) {
-	this.read = read;
-}
+  public void setRead(BufferedReader read) {
+    this.read = read;
+  }
 }

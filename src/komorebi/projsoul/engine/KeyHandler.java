@@ -7,8 +7,6 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
-import komorebi.projsoul.gameplay.Key;
-
 /**
  * Handles key input
  * 

@@ -1,19 +1,19 @@
 package komorebi.projsoul.editor;
 
-import java.awt.Point;
-import java.awt.Rectangle;
-
-import javax.swing.JOptionPane;
-
 import komorebi.projsoul.editor.controls.CheckBox;
 import komorebi.projsoul.editor.controls.RadioButton;
 import komorebi.projsoul.editor.controls.TextField;
 import komorebi.projsoul.editor.history.SublayerNameChangedRevision;
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.EditorMap;
+
+import java.awt.Point;
+import java.awt.Rectangle;
+
+import javax.swing.JOptionPane;
 
 public class Sublayer {
 

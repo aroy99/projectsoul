@@ -1,11 +1,8 @@
 package komorebi.projsoul.editor.controls;
 
-import java.awt.Rectangle;
-
-import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.gameplay.Key;
+
+import java.awt.Rectangle;
 
 public class RadioButton extends Switch {
   

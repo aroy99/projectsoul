@@ -6,6 +6,40 @@ package komorebi.projsoul.map;
 
 import static komorebi.projsoul.engine.KeyHandler.button;
 
+import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.audio.Song;
+import komorebi.projsoul.editor.Editor;
+import komorebi.projsoul.editor.Layer;
+import komorebi.projsoul.editor.LayerControl;
+import komorebi.projsoul.editor.LayerType;
+import komorebi.projsoul.editor.Sublayer;
+import komorebi.projsoul.editor.controls.TabControl;
+import komorebi.projsoul.editor.history.HistoryTab;
+import komorebi.projsoul.editor.history.OpenRevision;
+import komorebi.projsoul.editor.history.Revision;
+import komorebi.projsoul.editor.modes.Mode;
+import komorebi.projsoul.editor.modes.MoveMode;
+import komorebi.projsoul.editor.modes.MoveMode.Permission;
+import komorebi.projsoul.editor.modes.TileMode;
+import komorebi.projsoul.editor.modes.connect.ConnectMode;
+import komorebi.projsoul.editor.modes.event.AreaScriptEvent;
+import komorebi.projsoul.editor.modes.event.EnemyEvent;
+import komorebi.projsoul.editor.modes.event.EventMode;
+import komorebi.projsoul.editor.modes.event.NPCEvent;
+import komorebi.projsoul.editor.modes.event.SignPostEvent;
+import komorebi.projsoul.editor.modes.event.WarpScriptEvent;
+import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
+import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.enemy.EnemyAI;
+import komorebi.projsoul.entities.enemy.EnemyType;
+import komorebi.projsoul.script.utils.ClassUtils;
+
+import org.lwjgl.opengl.Display;
+
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,40 +64,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
-import org.lwjgl.opengl.Display;
-
-import komorebi.projsoul.audio.AudioHandler;
-import komorebi.projsoul.audio.Song;
-import komorebi.projsoul.editor.Editor;
-import komorebi.projsoul.editor.Layer;
-import komorebi.projsoul.editor.LayerControl;
-import komorebi.projsoul.editor.LayerType;
-import komorebi.projsoul.editor.Sublayer;
-import komorebi.projsoul.editor.controls.TabControl;
-import komorebi.projsoul.editor.history.HistoryTab;
-import komorebi.projsoul.editor.history.OpenRevision;
-import komorebi.projsoul.editor.history.Revision;
-import komorebi.projsoul.editor.modes.Mode;
-import komorebi.projsoul.editor.modes.MoveMode;
-import komorebi.projsoul.editor.modes.MoveMode.Permission;
-import komorebi.projsoul.editor.modes.TileMode;
-import komorebi.projsoul.editor.modes.connect.ConnectMode;
-import komorebi.projsoul.editor.modes.event.AreaScriptEvent;
-import komorebi.projsoul.editor.modes.event.EnemyEvent;
-import komorebi.projsoul.editor.modes.event.EventMode;
-import komorebi.projsoul.editor.modes.event.NPCEvent;
-import komorebi.projsoul.editor.modes.event.SignPostEvent;
-import komorebi.projsoul.editor.modes.event.WarpScriptEvent;
-import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.KeyHandler.Control;
-import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.entities.NPCType;
-import komorebi.projsoul.entities.enemy.EnemyAI;
-import komorebi.projsoul.entities.enemy.EnemyType;
-import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.script.utils.ClassUtils;
 
 /**
  * Represents a map of tiles for use by the Editor

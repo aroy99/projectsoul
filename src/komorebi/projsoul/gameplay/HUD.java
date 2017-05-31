@@ -80,6 +80,10 @@ public class HUD implements Renderable
     {
       Draw.rect(7, 207, 8, 7, 96, 16, 101, 24, 5);
     }
+    else if (hundreds == 3)
+    {
+      Draw.rect(7, 207, 8, 7, 112, 16, 117, 24, 5);
+    }
     if (tens == 0)
     {
       Draw.rect(14, 207, 8, 7, 64, 16, 69, 24, 5);

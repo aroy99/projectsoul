@@ -1,10 +1,5 @@
 package komorebi.projsoul.editor;
 
-import java.awt.Rectangle;
-import java.util.ArrayList;
-
-import javax.swing.JOptionPane;
-
 import komorebi.projsoul.editor.controls.ExpandArrow;
 import komorebi.projsoul.editor.controls.RadioButton;
 import komorebi.projsoul.editor.history.AddSublayerRevision;
@@ -12,10 +7,15 @@ import komorebi.projsoul.editor.history.MergeRevision;
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.editor.modes.TileMode;
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.script.text.EarthboundFont;
 import komorebi.projsoul.script.text.TextHandler;
+
+import java.awt.Rectangle;
+import java.util.ArrayList;
+
+import javax.swing.JOptionPane;
 
 public class Layer {
   

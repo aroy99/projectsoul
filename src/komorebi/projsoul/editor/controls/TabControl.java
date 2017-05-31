@@ -1,15 +1,15 @@
 package komorebi.projsoul.editor.controls;
 
+import komorebi.projsoul.editor.modes.Mode;
+import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
+import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.TextHandler;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-
-import komorebi.projsoul.editor.modes.Mode;
-import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.script.text.EarthboundFont;
-import komorebi.projsoul.script.text.TextHandler;
 
 public class TabControl {
   

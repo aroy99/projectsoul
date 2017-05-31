@@ -20,23 +20,26 @@ import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glOrtho;
+import static org.lwjgl.opengl.GL11.glViewport;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.script.commands.keywords.Keywords;
+import komorebi.projsoul.script.decision.Flags;
+import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.TextHandler;
+import komorebi.projsoul.states.Game;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.openal.AL;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+import org.newdawn.slick.openal.SoundStore;
 
-import komorebi.projsoul.audio.AudioHandler;
-import komorebi.projsoul.script.commands.keywords.Keywords;
-import komorebi.projsoul.script.decision.Flags;
-import komorebi.projsoul.states.Game;
-//import komorebi.projsoul.engine.Save;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 
 
@@ -54,8 +57,17 @@ public class Main {
   private BufferedReader read;
   private static BufferedReader readSave;
   
+  private static TextHandler handler;
+  private static long lastFrame, lastFPS;
+  private static int fps;
+  
   public static final int WIDTH = 256;
   public static final int HEIGHT = 224;
+  
+  public static final float ASPECT = (float)WIDTH/HEIGHT;
+  
+  public static int oldWidth = WIDTH, oldHeight = HEIGHT;
+  public static int renderWidth, renderHeight;
   
 
   public static void main(String[] args){
@@ -125,10 +137,13 @@ public class Main {
   public void initDisplay(){
     //create display
     try {
+      renderWidth = WIDTH*scale;
+      renderHeight = HEIGHT*scale;
       Display.setDisplayMode(new DisplayMode(WIDTH*scale,HEIGHT*scale));
       Display.setTitle("Project Soul");
       Display.create();
       Display.setVSyncEnabled(true);
+//      Display.setResizable(true);
 
     } catch (LWJGLException e) {
       e.printStackTrace();
@@ -147,6 +162,11 @@ public class Main {
 
     gamehandler = new GameHandler();
     AudioHandler.init();
+    
+    getDelta();          // call once before loop to initialise lastFrame
+    lastFPS = getTime(); // call before loop to initialise fps timer
+    
+    handler = new TextHandler();
   }
   
   private void initScripts()
@@ -168,8 +188,36 @@ public class Main {
     gamehandler.getInput();
   }
 
-  private void update(){
+  private void update(int delta){
+    if(Display.wasResized()){
+      System.out.println("HAI HO");
+      resizeHandler(Display.getWidth(), Display.getHeight());
+    }
+    if(Keyboard.isKeyDown(Keyboard.KEY_0)){
+      try {
+        Display.setDisplayMode(new DisplayMode(WIDTH*scale,HEIGHT*scale));
+        Display.setFullscreen(false);
+
+        glViewport(0, 0, WIDTH*scale, HEIGHT*scale);
+      } catch (LWJGLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+    if(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) && Keyboard.isKeyDown(Keyboard.KEY_RETURN)){
+      try {
+        Display.setFullscreen(true);
+        Display.setDisplayModeAndFullscreen(Display.getDesktopDisplayMode());
+        resizeHandler(Display.getWidth(), Display.getHeight());
+      } catch (LWJGLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+
+    
     gamehandler.update();
+    updateFPS(delta);
   }
 
 
@@ -179,6 +227,7 @@ private void render(){
     glLoadIdentity();
 
     gamehandler.render();
+    handler.render();
 
     Display.update();   //updates the display with the changes
     Display.sync(60);   //makes up for lost time
@@ -192,10 +241,12 @@ private void render(){
   private void gameLoop(){
 
     while(!Display.isCloseRequested()){
+      int delta = getDelta();
+      
       getInput();
-      update();
+      update(delta);
       render();
-      //SoundStore.get().poll(0);
+      SoundStore.get().poll(0);
 
       if (!Keyboard.isCreated())
       {
@@ -251,6 +302,44 @@ private void render(){
   public static Game getGame(){
     return GameHandler.game;
   }
+  
+  private static long getTime(){
+    return System.currentTimeMillis();
+  }
+
+  private static int getDelta(){
+    long time = getTime();
+    int delta = (int)(time - lastFrame);
+    lastFrame = time;
+
+    return delta;
+  }
+
+  /**
+   * Calculate the FPS and set it in the title bar
+   */
+  private static void updateFPS(int delta) {
+    if (getTime() - lastFPS > 1000) {
+      handler.clear();
+      handler.write("FPS: " + fps, 1, 1, new EarthboundFont(1));
+      fps = 0; //reset the FPS counter
+      lastFPS += 1000; //add one second
+    }
+    fps++;
+  }
+  
+  private void resizeHandler(int windowWidth, int windowHeight){
+    if(renderWidth < windowWidth && windowHeight == oldHeight){
+      //Recenter the screen
+      int offX = (windowWidth - renderWidth)/2;
+      glViewport(offX, 0, renderWidth, windowHeight);
+    }
+    
+//    glViewport(0, 0, windowWidth, windowHeight);
+    oldWidth = windowWidth;
+    oldHeight = windowHeight;    
+  }
+
 
 
 }

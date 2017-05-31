@@ -4,6 +4,7 @@
 package komorebi.projsoul.script.text;
 
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.script.text.Font;
 
 /**
  * 
@@ -11,6 +12,13 @@ import komorebi.projsoul.engine.Draw;
  */
 public class SpeechHandler extends TextHandler {
 
+  private static final int TEXTBOX_BOTTOM_Y = 15;
+  private static final int TEXTBOX_TOP_Y = 150;
+  private static final int TEXTBOX_X = 15;
+  private static final int TEXT_WO_PORTRAIT_X = 20;
+  private static final int TEXT_W_PORTRAIT_X = 64;
+  private static final int TEXT_START_HEIGHT = 43;
+  
   private boolean alreadyAsked;
   private boolean hasChoice;
   
@@ -29,15 +37,12 @@ public class SpeechHandler extends TextHandler {
   private String[] options;
   
   private String answerToQuestion;
+  
+  private Portrait portrait = Portrait.YOUNG_CASPIAN;
+  private boolean isBottom = true;
+  
+  private static int y;
 
-
-  /**
-   * Creates a SpeechHandler object
-   */
-  public SpeechHandler()
-  {
-    super();
-  }
 
   /**
    * Sets the speed for ALL SpeechHandlers in the game
@@ -63,6 +68,11 @@ public class SpeechHandler extends TextHandler {
   {
     hasChoice = askMode;
   }
+  
+  public void setPortrait(Portrait portrait) {
+    this.portrait = portrait;
+  }
+
   /**
    * Renders the text and speech box on screen
    */
@@ -70,7 +80,9 @@ public class SpeechHandler extends TextHandler {
   {
     if (!words.isEmpty())
     {
-      Draw.rect(15, 15, 220, 59, 0, 0, 220, 59, 6);
+      //Speech box      
+      Draw.rect(TEXTBOX_X, y, 220, 59, 0, 0, 220, 59, 6);
+      portrait.render();
     }
     
     if (hasChoice)
@@ -91,23 +103,23 @@ public class SpeechHandler extends TextHandler {
 
     if (dots) //Draws the "I'm waiting" ellipses animation . . . 
     {
-      if (dotCount>=10 && dotCount<50)
+      if (dotCount >= 10 && dotCount < 50)
       {
-        Draw.rect(210, 25, 1, 1, 1, 0, 2, 1, 6);
+        Draw.rect(210, 20, 1, 1, 1, 0, 2, 1, 6);
       }
 
-      if (dotCount>=20 && dotCount<60)
+      if (dotCount >= 20 && dotCount < 60)
       {
-        Draw.rect(215, 25, 1, 1, 1, 0, 2, 1, 6);
+        Draw.rect(215, 20, 1, 1, 1, 0, 2, 1, 6);
       }
 
-      if (dotCount>=30 && dotCount<70)
+      if (dotCount >= 30 && dotCount < 70)
       {
-        Draw.rect(220, 25, 1, 1, 1, 0, 2, 1, 6);
+        Draw.rect(220, 20, 1, 1, 1, 0, 2, 1, 6);
       }
 
       dotCount++;
-      if (dotCount>=80)
+      if (dotCount >= 80)
       {
         dotCount=0;
       }
@@ -124,7 +136,10 @@ public class SpeechHandler extends TextHandler {
 
     int horiz = word.getX();
     int vert = word.getY();
-    int size = word.getFont().getFontPoint()*word.getFont().getScale();
+    
+    Font font = word.getFont();
+    
+    int size = font.getFontPoint()*font.getScale();
     char[] letters = word.currentParagraph();
 
     int ohor = horiz;
@@ -142,15 +157,15 @@ public class SpeechHandler extends TextHandler {
     {
 
       //Escape sequence \n
-      if (letters[i]=='\\')
+      if (letters[i] == '\\')
       {
-        if (letters[i+1]=='n')
+        if (letters[i+1] == 'n')
         {
           vert-=size*2;
           horiz = ohor;
           i++;
           continue; 
-        } else if (letters[i+1]=='d')
+        } else if (letters[i+1] == 'd')
         {
           i++;
           continue;
@@ -158,7 +173,7 @@ public class SpeechHandler extends TextHandler {
       }
 
       //Escape sequence \d
-      if (letters[scroll-1]=='\\' && letters[scroll]=='d')
+      if (letters[scroll-1] == '\\' && letters[scroll] == 'd')
       {
         if (!delayed)
         {
@@ -169,26 +184,31 @@ public class SpeechHandler extends TextHandler {
 
       int under = 0, texUnder = 0;
 
-      if (letters[i]=='g' || letters[i] == 'j' || letters[i] == 'p' ||
-          letters[i] == 'q' || letters[i] == 'y')
-      {   
-        under = size;
-        texUnder = word.getFont().getFontPoint();
+      under = font.getTexUnder(letters[i])*font.getScale();
+      if(under != 0){
+        texUnder = font.getTexUnder(letters[i]);
       }
 
 
-      Draw.rect(horiz, vert-under, size, size+under, 
-          word.getFont().getTexX(letters[i]), word.getFont().getTexY(letters[i]), 
-          word.getFont().getTexX(letters[i])+word.getFont().getFontPoint(), 
-          word.getFont().getTexY(letters[i]) + word.getFont().getFontPoint()+texUnder, 
-          word.getFont().getTexture());
-      horiz+=(word.getFont().getLength(letters[i])+1);
+      Draw.rect(horiz, vert-under, 
+          font.getLength(letters[i]), size+under, 
+          font.getTexX(letters[i]), font.getTexY(letters[i]), 
+          font.getTexX(letters[i])+font.getLength(letters[i]), 
+          font.getTexY(letters[i]) + font.getFontPoint()+texUnder, 
+          font.getTexture());
+      
+      //Makes sure IndexOutofBounds doesn't happen on last character
+      if(i+1 >= scroll){
+        horiz+=font.getLength(letters[i]);
+      }else{
+        horiz+=font.getLength(letters[i])+font.getKerning(letters[i], letters[i+1]);
+      }
     }
     
     /* Signifies that the scrolling is done, so if the user clicks "C",
      * it will go to the next paragraph
      */
-    if (scrollIndex==word.currentParagraph().length)
+    if (scrollIndex == word.currentParagraph().length)
     {
       alreadyAsked = true;
       if (word.hasNext())
@@ -199,10 +219,10 @@ public class SpeechHandler extends TextHandler {
 
     if (!dots && !delayed) //Increments the scroll index
     {
-      if (scrollIndex<letters.length)
+      if (scrollIndex < letters.length)
       {
         buffer++;
-        if (buffer>=speed)
+        if (buffer >= speed)
         {
           scrollIndex++;
           buffer=0;
@@ -215,11 +235,11 @@ public class SpeechHandler extends TextHandler {
     {
       delayIndex--;
 
-      if (delayIndex<=0)
+      if (delayIndex <= 0)
       {
         delayed=false;
         buffer++;
-        if (buffer>=speed)
+        if (buffer >= speed)
         {
           scrollIndex++;
           buffer=0;
@@ -248,6 +268,28 @@ public class SpeechHandler extends TextHandler {
   {
     super.write(s,x,y,font);
   }
+  
+  /**
+   * Writes a String for to be shown in a speech box to the object's memory
+   */
+  public void write(String s, Font font)
+  {
+    
+    isBottom = true;
+    
+    if(isBottom){
+      y = TEXTBOX_BOTTOM_Y;
+    }else{
+      y = TEXTBOX_TOP_Y;
+    }
+    
+    if(portrait == Portrait.NONE || !portrait.isLeft()){
+      super.write(s,TEXT_WO_PORTRAIT_X, y+TEXT_START_HEIGHT, font);
+    }else{
+      super.write(s,TEXT_W_PORTRAIT_X, y+TEXT_START_HEIGHT,font);
+    }
+  }
+
 
   /**
    * Will skip the scrolling text, showing all text up until the next 
@@ -292,7 +334,7 @@ public class SpeechHandler extends TextHandler {
    * Creates a String object from a given char array
    * @param array The char array to be converted
    * @return A string containing all the chars in the char array, in order of
-   * their appearance in the array
+   *          their appearance in the array
    */
   public static String charToString(char[] array)
   {
@@ -324,4 +366,21 @@ public class SpeechHandler extends TextHandler {
   {
     return answerToQuestion;
   }
+  
+  /** 
+   * @return the current Y of the speech handler
+   */
+  public static int getY() {
+    return y;
+  }
+
+  /**
+   * Toggles whether SpeechHandlers scroll (true) or all the text appears at once 
+   * (false)
+   */
+  public static void toggleScrolling()
+  {
+    scrolling = !scrolling;
+  }
+
 }
