@@ -97,6 +97,7 @@ public abstract class Player extends Person implements Playable{
     deathAni.add(0, 103);
     deathAni.add(0, 124);
     
+    
   }
   
   protected void initializeSprites()
@@ -376,7 +377,7 @@ public abstract class Player extends Person implements Playable{
    */
   @Override
   public void render() {
-
+    
     if (!invincible)
     {
       if (!isAttacking) {

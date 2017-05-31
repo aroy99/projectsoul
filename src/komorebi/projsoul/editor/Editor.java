@@ -60,7 +60,7 @@ public class Editor implements Playable{
    * Creates a new editor with a map that is 20*20
    */
   public Editor(){
-    map = new EditorMap("res/maps/"+MainE.testLoc, MainE.testLoc);
+    map = new EditorMap(MainE.testLoc);
     //    map = new EditorMap(20, 20);
 
     buttons = new Buttons(map);
@@ -215,8 +215,9 @@ public class Editor implements Playable{
       KeyHandler.reloadKeyboard();
 
       if(returnee == JFileChooser.APPROVE_OPTION){
-        map = new EditorMap(chooser.getSelectedFile().getAbsolutePath(), 
-            chooser.getSelectedFile().getName());
+        System.out.println(chooser.getSelectedFile().getName());
+        
+        map = new EditorMap(chooser.getSelectedFile().getName().replace(".map", ""));
         buttons.setMap(map);
       }
     }
@@ -232,8 +233,7 @@ public class Editor implements Playable{
    */
   public static void loadMap(String name, float x, float y){
     if(requestSave()){
-      map = new EditorMap("res/maps/" + name + ".map", 
-          name + ".map");
+      map = new EditorMap("res/maps/" + name);
       map.setLocation(x, y);
       buttons.setMap(map);
     }
@@ -252,7 +252,7 @@ public class Editor implements Playable{
 
       switch(returnee){
         case JFileChooser.APPROVE_OPTION:
-          if(map.getPath() == null){
+          if(!map.hasPath()){
             continyu = map.newSave();
           }else{
             continyu = map.save();
@@ -280,8 +280,8 @@ public class Editor implements Playable{
     if(JOptionPane.showConfirmDialog(null, "Are you sure you want to go back " +
         "to your last save? Your work will be lost!") == 
         JOptionPane.YES_OPTION){
-      if(map.getPath() != null){
-        map = new EditorMap(map.getPath(), map.getName());
+      if(map.hasPath()){
+        map = new EditorMap(map.getSimpleName());
         buttons.setMap(map);
       }else{
         map = new EditorMap(map.getWidth(),map.getHeight());

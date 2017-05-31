@@ -74,7 +74,22 @@ public class Game extends State{
     dialogue = new DialogueBox();
 
   }
+  
+  public Game(String absolutePath)
+  {
+    map = new Map(absolutePath);
+    
+    currMap = new TextHandler();
+    currMap.write(map.getTitle(), 5, Main.HEIGHT-13);
 
+    confidence = 0;
+    money = 15;
+
+    hud = new HUD(confidence); //TODO WHY KEVIN
+    death = new Death();
+
+    dialogue = new DialogueBox();
+  }
 
 
   /* (non-Javadoc)

@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import komorebi.projsoul.script.commands.keywords.Keywords;
 import komorebi.projsoul.script.decision.Flags;
@@ -72,12 +73,30 @@ public class ScriptEditor extends JFrame {
       new Rectangle(0, 0, 450, 25);
   private JMenu fileMenu;
 
-  private static final JFileChooser fileChooser = new
-      JFileChooser(new File("res/scripts"));
+  private static final ScriptChooser fileChooser = new
+      ScriptChooser(new File("res/scripts"));
 
   private boolean needsToBeSaved;
   private File file;
 
+  protected static class ScriptChooser extends JFileChooser {
+    
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
+    public ScriptChooser(File file)
+    {
+      super(file);
+      
+      this.setFileFilter(new FileNameExtensionFilter("Project Soul Scripts",
+          "txt"));
+      this.setAcceptAllFileFilterUsed(false);
+    }
+
+  }
+  
   public static void main(String[] args)
   {
     try {
@@ -360,8 +379,21 @@ public class ScriptEditor extends JFrame {
     if (response == JFileChooser.APPROVE_OPTION)
     {
       file = fileChooser.getSelectedFile();
+      
+      if (!isScript(file))
+        file = appendExtension(file);
+      
       save();
     }
+  }
+  
+  private boolean isScript(File file)
+  {
+    return file.getName().endsWith(".txt");
+  }
+  
+  private File appendExtension(File file){
+    return new File(file.getPath() + ".txt");
   }
 
   private void open()
@@ -433,7 +465,7 @@ public class ScriptEditor extends JFrame {
 
   private void compile()
   {
-    Script script = new Script(file);
+    Script script = Script.fromFile(file);
 
     String message;
     if (script.getErrors().isEmpty())
@@ -482,7 +514,7 @@ public class ScriptEditor extends JFrame {
   private void promptTestDialog()
   {
     RunTestPrompt prompt = new RunTestPrompt(this, 
-        file.getName().replace(".txt", ""));
+        file.getAbsolutePath());
     
     prompt.setVisible(true);
     

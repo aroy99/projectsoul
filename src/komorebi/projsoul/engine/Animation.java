@@ -115,6 +115,7 @@ public class Animation {
   
   public Animation(int f, int t, int id, boolean loop, int scale)
   {
+    this.scale = scale;
     onlyOnce = !loop;
 
     frames = f;
@@ -357,6 +358,7 @@ public class Animation {
   
   public void playZoom(float x, float y){
     
+    
     if(!flipped[currFrame]){
       switch(rot[currFrame]){
         case 0:
@@ -435,8 +437,8 @@ public class Animation {
    * @param x x location for the animation
    * @param y y location for the animation
    */
-  public void playCam(float x, float y){
-
+  public void playCam(float x, float y) {
+        
     if(!flipped[currFrame]){
       switch(rot[currFrame]){
         case 0:

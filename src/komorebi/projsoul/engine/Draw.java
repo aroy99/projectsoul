@@ -264,7 +264,7 @@ public class Draw {
    * @param texID see {@link Draw#loadTextures() loadTextures}
    */
   public static void rectCam(float x, float y, float sx, float sy, int texx, 
-      int texy, int texsx, int texsy, int angle, int texID) {
+      int texy, int texsx, int texsy, int angle, int texID) {    
     rect(x-Camera.getX(), y-Camera.getY(), 
         sx, sy, texx, texy, texsx, texsy, angle, tex[texID]);
   }

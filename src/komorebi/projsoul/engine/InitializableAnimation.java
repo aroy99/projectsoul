@@ -19,4 +19,5 @@ public abstract class InitializableAnimation extends Animation {
   
   public abstract void initialize();
   
+  
 }

@@ -13,7 +13,6 @@ import komorebi.projsoul.script.execute.LoopableExecution;
 import komorebi.projsoul.script.execute.SubExecution;
 import komorebi.projsoul.script.read.Branch;
 import komorebi.projsoul.script.tasks.Task.Precedence;
-import komorebi.projsoul.script.utils.ScriptDatabase;
 
 /**
  * 
@@ -130,7 +129,7 @@ public class ThreadHandler {
   
   public static void newThread(String script, NPC npc, Player player)
   {
-    Execution ex = ScriptDatabase.newExecution(script);
+    Execution ex = Execution.newExecution(script);
     ex.setOnWhom(npc, player);
     run(ex, Precedence.FOREGROUND);    
   }
@@ -146,7 +145,7 @@ public class ThreadHandler {
   
   public static void newLoop(String script, NPC npc, Player player)
   {
-    LoopableExecution loop = ScriptDatabase.newLoopable(script);
+    LoopableExecution loop = Execution.newLoopable(script);
     loop.setOnWhom(npc, player);
     run(loop, Precedence.BACKGROUND);
   }

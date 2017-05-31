@@ -1,56 +1,70 @@
 package komorebi.projsoul.editor.script;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.PrintWriter;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import komorebi.projsoul.script.utils.ClassUtils;
+import komorebi.projsoul.editor.script.ScriptEditor.ScriptChooser;
 
 public class RunTestPrompt extends JDialog {
 
   private static final long serialVersionUID = 1L;
   private static final Dimension FRAME_SIZE =
-      new Dimension(325, 175);
-  
+      new Dimension(380, 175);
+
   private static final Rectangle PANEL_BOUNDS = 
       new Rectangle(0, 0, 325, 150);
 
   private static final Rectangle WALK_LABEL_BOUNDS =
       new Rectangle(25, 25, 125, 25);
-  
-  private static final Rectangle TALK_LABEL_BOUNDS = 
-      new Rectangle(175, 25, 125, 25);
-  
-  private static final Rectangle WALK_COMBO_BOUNDS = 
+
+  private static final Rectangle WALK_SCRIPT_BOUNDS = 
       new Rectangle(25, 50, 125, 25);
 
-  private static final Rectangle TALK_COMBO_BOUNDS = 
-      new Rectangle(175, 50, 125, 25);
+  private static final Rectangle WALK_BUTTON_BOUNDS = 
+      new Rectangle(155, 50, 25, 25);
+
+  private static final Rectangle TALK_LABEL_BOUNDS = 
+      new Rectangle(200, 25, 125, 25);
+
+  private static final Rectangle TALK_SCRIPT_BOUNDS = 
+      new Rectangle(200, 50, 125, 25);
+
+  private static final Rectangle TALK_BUTTON_BOUNDS = 
+      new Rectangle(330, 50, 25, 25);
 
   private static final Rectangle RUN_BUTTON_BOUNDS =
-      new Rectangle(125, 100, 75, 25);
+      new Rectangle(180, 100, 75, 25);
 
   private static final Rectangle CANCEL_BUTTON_BOUNDS =
-      new Rectangle(225, 100, 75, 25);
-  
-  private JComboBox<String> walkCombo, talkCombo;
+      new Rectangle(280, 100, 75, 25);
 
+  private JLabel walkScript, talkScript;
+  
+  private static final ScriptChooser fileChooser = new
+      ScriptChooser(new File("res/scripts"));
+  
+  private static final File SCRIPT_ARGS = new File("scriptTest/scripts.args");
 
   public RunTestPrompt(JFrame owner, String testThisScript)
   {
     super(owner);
-    
+
     this.setSize(FRAME_SIZE);
     this.setTitle("Test Scripts");
     this.setResizable(false);
@@ -58,20 +72,48 @@ public class RunTestPrompt extends JDialog {
     JPanel panel = new JPanel(null);
     panel.setBounds(PANEL_BOUNDS);
 
-    String[] allScripts = getAllScripts();
-    
     JLabel walkLabel = new JLabel("Walk Script:");
     walkLabel.setBounds(WALK_LABEL_BOUNDS);
 
     JLabel talkLabel = new JLabel("Talk Script:");
     talkLabel.setBounds(TALK_LABEL_BOUNDS);
 
-    walkCombo = new JComboBox<String>(allScripts);
-    walkCombo.setBounds(WALK_COMBO_BOUNDS);
+    walkScript = new JLabel();
+    talkScript = new JLabel(testThisScript);
 
-    talkCombo = new JComboBox<String>(allScripts);
-    talkCombo.setBounds(TALK_COMBO_BOUNDS);
-    talkCombo.setSelectedItem(testThisScript);
+    walkScript.setBounds(WALK_SCRIPT_BOUNDS);
+    talkScript.setBounds(TALK_SCRIPT_BOUNDS);
+
+    walkScript.setBorder(BorderFactory.createLineBorder(Color.black));
+    talkScript.setBorder(BorderFactory.createLineBorder(Color.black));
+
+    JButton walkButton = new JButton("...");
+    JButton talkButton = new JButton("...");
+
+    walkButton.setBounds(WALK_BUTTON_BOUNDS);
+    talkButton.setBounds(TALK_BUTTON_BOUNDS);
+
+    walkButton.addActionListener(new ActionListener()
+    {
+
+      @Override
+      public void actionPerformed(ActionEvent arg0) {
+        findScriptFor(walkScript);
+        
+      }
+
+    });
+    
+    talkButton.addActionListener(new ActionListener()
+    {
+
+      @Override
+      public void actionPerformed(ActionEvent arg0) {
+        findScriptFor(talkScript);
+        
+      }
+
+    });
 
     JButton runButton = new JButton("Run");
     JButton cancelButton = new JButton("Cancel");
@@ -84,12 +126,22 @@ public class RunTestPrompt extends JDialog {
 
       @Override
       public void actionPerformed(ActionEvent arg0) {
-        runTest();
-        closeDialog();
+        if (bothLabelsHaveText())
+        {
+          runTest();
+          closeDialog();
+        } else
+        {
+          notifyNeedsToFillBothLabels();
+        }
+        
+        
       }
 
     });
-
+    
+    
+    
     cancelButton.addActionListener(new ActionListener()
     {
 
@@ -102,13 +154,51 @@ public class RunTestPrompt extends JDialog {
 
     panel.add(walkLabel);
     panel.add(talkLabel);
-    panel.add(walkCombo);
-    panel.add(talkCombo);
+    panel.add(walkScript);
+    panel.add(talkScript);
+
+    panel.add(walkButton);
+    panel.add(talkButton);
     panel.add(runButton);
     panel.add(cancelButton);
 
     this.add(panel);
 
+  }
+  
+  private boolean bothLabelsHaveText()
+  {
+    return 
+        !walkScript.getText().equals("") && !talkScript.getText().equals("");
+  }
+  
+  private void notifyNeedsToFillBothLabels()
+  {
+    JOptionPane.showConfirmDialog(this, "A walk script and talk script"
+        + " must be defined before running a test");
+  }
+  
+  private void findScriptFor(JLabel label)
+  {
+    File selected = searchForFile();
+    
+    if (selected != null)
+    {
+      label.setText(selected.getAbsolutePath());
+    }
+  }
+  
+  private File searchForFile()
+  {
+    int buttonPressed = fileChooser.showOpenDialog(this);
+    
+    if (buttonPressed == JFileChooser.APPROVE_OPTION)
+    {
+      return fileChooser.getSelectedFile();
+    }
+    
+    return null;
+    
   }
 
   private void closeDialog()
@@ -116,38 +206,28 @@ public class RunTestPrompt extends JDialog {
     this.dispose();
   }
 
-  private String[] getAllScripts()
-  {
-    ArrayList<File> files = 
-        ClassUtils.getAllFilesInFolder(new File("res/scripts/"));
-
-    String[] scripts = new String[files.size()];
-
-    for (int i = 0; i < files.size(); i++)
-    {
-      scripts[i] = simpleNameOf(files.get(i));
-    }
-
-    return scripts;
-  }
-
-  private String simpleNameOf(File script)
-  {
-    return script.getName().replace(".txt", "");
-  }
-  
   private void runTest()
   {
-    runTestWithScripts((String) walkCombo.getSelectedItem(), 
-        (String) talkCombo.getSelectedItem());
+    try {
+      PrintWriter write = new PrintWriter(SCRIPT_ARGS);
+     
+      write.println(walkScript.getText().replace(" ", "?"));
+      write.println(talkScript.getText().replace(" ", "?"));
+      
+      write.close();
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+    
+    runTestWithScripts(walkScript.getText(), 
+        talkScript.getText());
   }
 
-  private void runTestWithScripts(String walkScript, String talkScript)
+  private void runTestWithScripts(String walk, String talk)
   {
-    String cmdLine = "java -Djava.library.path=\"native/windows/\" "
-        + "-jar script-tester-eclipse.jar " + walkScript + " " + 
-        talkScript;
 
+    String cmdLine = "java -jar \"Script Tester.jar\"";
+    
     Runtime runTime = Runtime.getRuntime();
     try {
       runTime.exec(cmdLine);

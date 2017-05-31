@@ -185,7 +185,7 @@ public abstract class Person extends Entity {
   }
 
   public void render()
-  {
+  {    
     sprites.renderCurrent(x, y);
   }
 

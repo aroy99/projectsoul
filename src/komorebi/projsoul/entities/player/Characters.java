@@ -4,6 +4,7 @@ import komorebi.projsoul.engine.InitializableAnimation;
 import komorebi.projsoul.entities.sprites.SpriteSet;
 
 public enum Characters {
+  
   CASPIAN(
       new SpriteSet(
           new InitializableAnimation(6, 8, 11)
@@ -17,7 +18,7 @@ public enum Characters {
               add(120,245,15,34,0,true);
 
               setPausedFrame(99,246,14,33,0,true);
-
+              
             }
 
           }, 

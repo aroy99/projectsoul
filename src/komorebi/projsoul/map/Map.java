@@ -106,16 +106,16 @@ public class Map implements Playable{
   public Map(String key){
     this(key, true);
   }
-  
+
   public static Map createMapAndTransferPlayers(String name,
       Map map)
   {
     Map newMap = new Map(name, false);
     newMap.transferPlayers(map);
-    
+
     return newMap;
   }
-  
+
   private Map(String key, boolean initializePlayers)
   {
     try {
@@ -201,8 +201,10 @@ public class Map implements Playable{
           NPC n;
           npcs.add(n=new NPC(split[0], arg0*16, arg1*16,  NPCType.toEnum(split[3])));
 
-          n.setWalkingScript(split[4]);
-          n.setTalkingScript(split[5]);
+
+          n.setWalkingScript(split[4].replace("?", " "));
+          n.setTalkingScript(split[5].replace("?", " "));
+          
         } else if (s.startsWith("script"))
         {
           s = s.replace("script ", "");
@@ -265,10 +267,10 @@ public class Map implements Playable{
         bruno = new Bruno(tiles[0].length/2*16,0);
 
         play = caspian;
-        
+
         Camera.center(play.getX(), play.getY(), tiles[0].length*16, tiles.length*16);
       }
-     
+
 
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
@@ -284,7 +286,7 @@ public class Map implements Playable{
       npc.runWalkingScript();
     }
   }
-  
+
   public void transferPlayers(Map map)
   {
     for (Characters c: Characters.values())
@@ -292,7 +294,7 @@ public class Map implements Playable{
       setPlayer(map.getPlayer(c), c);
     }
   }
-  
+
   public void setPlayer(Player p, Characters c)
   {
     switch (c)
@@ -311,10 +313,10 @@ public class Map implements Playable{
         break;
       default:
         break;
-      
+
     }
   }
-  
+
   public Player getPlayer(Characters c)
   {
     switch (c)
@@ -329,7 +331,7 @@ public class Map implements Playable{
         return sierra;
       default:
         return play;
-      
+
     }
   }
 
@@ -359,16 +361,16 @@ public class Map implements Playable{
   @Override
   public void update() {
     play.update();
-    
+
     for (Enemy enemy: enemies)
     { 
       enemy.update();
     }
-    
+
     for (NPC npc: npcs) {
 
       npc.update();
-      
+
       if (npc.isApproached(play.getArea(), play.getDirection())
           && KeyHandler.firstKeyClick(Key.C))
       {                
@@ -435,6 +437,7 @@ public class Map implements Playable{
    */
   @Override
   public void render() {
+
     for (int i = 0; i < tiles.length; i++) {
       for (int j = 0; j < tiles[0].length; j++) {
         if(checkTileInBounds(j*SIZE, i*SIZE)){
@@ -927,7 +930,7 @@ public class Map implements Playable{
 
     return false;
   }
-  
+
   public void addNPC(NPC npc)
   {
     npcs.add(npc);

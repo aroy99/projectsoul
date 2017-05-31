@@ -3,6 +3,8 @@
  */
 package komorebi.projsoul.script.execute;
 
+import java.io.FileNotFoundException;
+
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.player.Player;
 import komorebi.projsoul.script.commands.abstracts.Command;
@@ -13,6 +15,7 @@ import komorebi.projsoul.script.commands.abstracts.CommandOnNPCOnly;
 import komorebi.projsoul.script.commands.abstracts.CommandOnPlayerOnly;
 import komorebi.projsoul.script.read.Branch;
 import komorebi.projsoul.script.tasks.Task.Precedence;
+import komorebi.projsoul.script.utils.Script;
 
 /**
  * 
@@ -24,34 +27,34 @@ public class Execution implements Runnable {
   private enum ScriptType {
     WALKING(Precedence.BACKGROUND), TALKING(Precedence.FOREGROUND);
 
-    
+
     private Precedence precedence;
-    
+
     private ScriptType(Precedence precedence)
     {
       this.precedence = precedence;
     }
-    
+
     public Precedence precedence()
     {
       return precedence;
     }
-    
+
     public static ScriptType fromIsWalking(boolean isWalking)
     {
       if (isWalking)
         return WALKING;
-      
+
       return TALKING;
     }
   }
-  
+
   private Branch branch;
-  
+
   protected NPC npc;
   private Player play;
   private ScriptType scriptType;
-  
+
   /**
    * Creates an execution object which will begin on the given branch
    * @param myNpc The NPC the execution should affect
@@ -63,7 +66,7 @@ public class Execution implements Runnable {
     scriptType = ScriptType.fromIsWalking(this 
         instanceof LoopableExecution);
   }
-  
+
   public void setOnWhom(NPC npc, Player play)
   {
     this.npc = npc;
@@ -77,7 +80,7 @@ public class Execution implements Runnable {
 
   @Override
   public void run() {
-                
+
     for (Command command: branch)
     {                                    
       if (command instanceof CommandNoSubject)
@@ -94,7 +97,35 @@ public class Execution implements Runnable {
       else if (command instanceof CommandOnPlayerOnly)
         ((CommandOnPlayerOnly) command).execute(play);
     }
-    
+
+  }
+
+  public static Execution newExecution(String name)
+  {
+    try
+    {
+      Script script = Script.fromPath(name);
+      Execution execution = new Execution(script.main());
+      return execution;
+
+    } catch (FileNotFoundException e)
+    {
+      throw new RuntimeException("HANDLE THIS: No such script as " + name);
+    }
+  }
+
+  public static LoopableExecution newLoopable(String name)
+  {
+    try
+    {
+      Script script = Script.fromPath(name);
+      LoopableExecution execution = new LoopableExecution(script.main());
+      return execution;
+
+    } catch (FileNotFoundException e)
+    {
+      throw new RuntimeException(e.getMessage());
+    }
   }
 
 

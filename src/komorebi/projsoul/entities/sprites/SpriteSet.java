@@ -45,6 +45,8 @@ public class SpriteSet {
         current = down;
         break;
     }
+    
+    current.resume();
   }
   
   public void renderCurrent(float x, float y)

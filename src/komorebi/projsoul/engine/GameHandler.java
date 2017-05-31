@@ -33,6 +33,14 @@ public class GameHandler implements Playable{
     menu = new Menu();
     pause = new Pause();
   }
+  
+  public GameHandler(String map)
+  {
+    state = States.GAME;
+    game = new Game(map);
+    menu = new Menu();
+    pause = new Pause();
+  }
 
   /**
    * @see komorebi.projsoul.engine.Playable#getInput()

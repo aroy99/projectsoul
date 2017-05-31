@@ -34,7 +34,7 @@ import org.lwjgl.opengl.DisplayMode;
 import org.newdawn.slick.openal.SoundStore;
 
 import komorebi.projsoul.editor.Editor;
-import komorebi.projsoul.editor.World;
+import komorebi.projsoul.editor.modes.connect.World;
 import komorebi.projsoul.script.text.EarthboundFont;
 import komorebi.projsoul.script.text.TextHandler;
 
@@ -174,6 +174,14 @@ public class MainE {
       update(delta);
       render();
       SoundStore.get().poll(0);
+      
+      if (!Keyboard.isCreated())
+        try {
+          Keyboard.create();
+        } catch (LWJGLException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
 
       if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE) || 
           Display.isCloseRequested()) {

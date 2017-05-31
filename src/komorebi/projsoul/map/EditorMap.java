@@ -18,9 +18,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.NoSuchElementException;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -42,19 +40,18 @@ import komorebi.projsoul.editor.Layer;
 import komorebi.projsoul.editor.LayerControl;
 import komorebi.projsoul.editor.LayerType;
 import komorebi.projsoul.editor.Sublayer;
-import komorebi.projsoul.editor.World;
 import komorebi.projsoul.editor.controls.TabControl;
 import komorebi.projsoul.editor.history.HistoryTab;
 import komorebi.projsoul.editor.history.OpenRevision;
 import komorebi.projsoul.editor.history.Revision;
-import komorebi.projsoul.editor.modes.ConnectMode;
-import komorebi.projsoul.editor.modes.EventMode;
 import komorebi.projsoul.editor.modes.Mode;
 import komorebi.projsoul.editor.modes.MoveMode;
 import komorebi.projsoul.editor.modes.MoveMode.Permission;
 import komorebi.projsoul.editor.modes.TileMode;
+import komorebi.projsoul.editor.modes.connect.ConnectMode;
 import komorebi.projsoul.editor.modes.event.AreaScriptEvent;
 import komorebi.projsoul.editor.modes.event.EnemyEvent;
+import komorebi.projsoul.editor.modes.event.EventMode;
 import komorebi.projsoul.editor.modes.event.NPCEvent;
 import komorebi.projsoul.editor.modes.event.SignPostEvent;
 import komorebi.projsoul.editor.modes.event.WarpScriptEvent;
@@ -66,6 +63,7 @@ import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.enemy.EnemyAI;
 import komorebi.projsoul.entities.enemy.EnemyType;
 import komorebi.projsoul.gameplay.Key;
+import komorebi.projsoul.script.utils.ClassUtils;
 
 /**
  * Represents a map of tiles for use by the Editor
@@ -117,7 +115,8 @@ public class EditorMap implements Playable, Serializable{
   private static float dx, dy;
   private static final float SPEED = 20;
 
-  private String path;  //Path to save the map by default
+  private File mapFile; //File map data is saved in
+  private File editorFile; //File editor data is saved in
   private String name;  //Name to save the map by default
 
   public static final int WIDTH = Display.getWidth();
@@ -137,6 +136,9 @@ public class EditorMap implements Playable, Serializable{
   private Sublayer curr;
 
   private static int height, width;
+  
+  private static final File MAP_FOLDER = new File("res/maps/");
+  private static final File MAP_DATA = new File("res/maps/data/");
 
   /**
    * The various modes this map can be in
@@ -209,10 +211,10 @@ public class EditorMap implements Playable, Serializable{
   /**
    * Creates a map from a map file, used for the Editor
    * 
-   * @param key The location of the map
+   * @param key The location of the map (will be assumed to be in res/maps/)
    * @param name The name of the file
    */
-  public EditorMap(String key, String name){
+  public EditorMap(String key){
 
     layers = new LayerControl();
     history = new HistoryTab();
@@ -221,7 +223,6 @@ public class EditorMap implements Playable, Serializable{
     tabs.addTab(layers);
     tabs.addTab(history);
     tabs.setCurrTab(0);
-
 
     saved = true;
 
@@ -234,14 +235,14 @@ public class EditorMap implements Playable, Serializable{
     maps = new ArrayList<ConnectMap>();
 
     try {
+      
+      defineSavePath(key);
+      
       BufferedReader reader = new BufferedReader(new FileReader(
-          new File(key)));
-
+          mapFile));
+      
       BufferedReader subReader = new BufferedReader(new FileReader(
-          new File(key.substring(0, key.indexOf("maps/")+5) + 
-              "data/" + 
-              key.substring(key.indexOf("maps/")+5, key.indexOf(".map")) +
-              ".edt")));
+          editorFile));
 
       int rows = Integer.parseInt(reader.readLine());
       int cols = Integer.parseInt(reader.readLine());
@@ -379,12 +380,7 @@ public class EditorMap implements Playable, Serializable{
       }
 
 
-
-
-
-
-      path = key;
-      this.name = name;
+      this.name = key + ".map";
 
       Display.setTitle("Project Soul Editor - "+name);
 
@@ -540,13 +536,7 @@ public class EditorMap implements Playable, Serializable{
       l.alignSublayers();
     }
 
-    try
-    {
-      connectMode = new ConnectMode(World.findWorldContainingMap(key));
-    } catch (NoSuchElementException e)
-    {
-      connectMode = new ConnectMode();
-    }
+    connectMode = new ConnectMode();
     
     history.addRevision(new OpenRevision(name));
     //Mode.setMap(tiles);
@@ -584,7 +574,7 @@ public class EditorMap implements Playable, Serializable{
   public void update(){    
     //Resets tiles to default position
     if(isSave){
-      if(path == null){
+      if(mapFile == null){
         newSave();
       }else{
         save();
@@ -750,41 +740,31 @@ public class EditorMap implements Playable, Serializable{
 
     if (mode != Modes.CONNECT)
     {
-      PrintWriter writer, subWriter;
-      String subpath;
-
+      PrintWriter mapWriter, editorWriter;
       try {
-        if(!path.substring(path.length()-4).equals(".map")){
-          path = path + ".map";
-        }
 
-        subpath = path.substring(0, path.indexOf("maps/")+5) + 
-            "data/" + 
-            path.substring(path.indexOf("maps/")+5, path.indexOf(".map")) +
-            ".edt";
+        mapWriter = new PrintWriter(mapFile);
+        editorWriter = new PrintWriter(editorFile);
 
-        writer = new PrintWriter(path, "UTF-8");
-        subWriter = new PrintWriter(subpath, "UTF-8");
+        mapWriter.println(width);
+        mapWriter.println(height);
 
-        writer.println(width);
-        writer.println(height);
-
-        writer.println(title);
-        writer.println(song);
-        writer.println(outside?1 : 0);
+        mapWriter.println(title);
+        mapWriter.println(song);
+        mapWriter.println(outside?1 : 0);
 
         Sublayer[] flats = layers.getFlattenedLayers();
 
         for (int layer = 0; layer < flats.length; layer++)
         {
-          writer.println("#" + LayerType.layerNumber(layer).toString());
+          mapWriter.println("#" + LayerType.layerNumber(layer).toString());
 
           if (flats[layer] == null)
           {
-            writer.println("0^"+(height*width)+" ");
+            mapWriter.println("0^"+(height*width)+" ");
           } else
           {
-            writer.println(condenseData(flats[layer].getTiles()));
+            mapWriter.println(condenseData(flats[layer].getTiles()));
           }
         }
 
@@ -792,49 +772,49 @@ public class EditorMap implements Playable, Serializable{
 
         for (int layer = 0; layer < layers.getLayers().length; layer++)
         {
-          subWriter.println("#" + LayerType.layerNumber(layer).toString());
+          editorWriter.println("#" + LayerType.layerNumber(layer).toString());
 
           for (Sublayer s: layers.getLayers()[layer].getSubs())
           {
-            subWriter.println("~" + s.getTextField().getText());
-            subWriter.println(condenseData(s.getTiles()));
+            editorWriter.println("~" + s.getTextField().getText());
+            editorWriter.println(condenseData(s.getTiles()));
           }
         }
 
-        writer.println("#movement permissions\n" + 
+        mapWriter.println("#movement permissions\n" + 
             condenseData(collision));
 
         //The NPCs
         for(NPCEvent npc: npcs){
-          writer.println(npc.toString());
+          mapWriter.println(npc.toString());
         }
 
         //The Scripts and Warps
         for(AreaScriptEvent script: scripts){
-          writer.println(script.toString());
+          mapWriter.println(script.toString());
         }
 
         for(WarpScriptEvent warp: warps)
         {
-          writer.println(warp.toString());
+          mapWriter.println(warp.toString());
         }
 
         for(EnemyEvent enemy: enemies){
-          writer.println(enemy.toString());
+          mapWriter.println(enemy.toString());
         }
 
         for(SignPostEvent sign:signs){
-          writer.println(sign.toString());
+          mapWriter.println(sign.toString());
         }
 
         for(ConnectMap map: maps){
-          writer.println("connect " + map.getName() + " " + map.getSide() + " " +
+          mapWriter.println("connect " + map.getName() + " " + map.getSide() + " " +
               map.getTileX() + " " + map.getTileY());
         }
 
         saved = true;
-        writer.close();
-        subWriter.close();
+        mapWriter.close();
+        editorWriter.close();
         if(name.substring(name.length()-4).equals(".map")){
           Display.setTitle("Clyde\'s Editor - " + name);
         }else{
@@ -843,7 +823,7 @@ public class EditorMap implements Playable, Serializable{
 
 
         return true;
-      } catch (FileNotFoundException | UnsupportedEncodingException e) {
+      } catch (FileNotFoundException e) {
         e.printStackTrace();
         return false;
       }
@@ -905,8 +885,18 @@ public class EditorMap implements Playable, Serializable{
 
     if(returnee == JFileChooser.APPROVE_OPTION){
 
-      path = chooser.getSelectedFile().getPath();
-      path = path.substring(path.indexOf("res\\")).replace("\\", "/");
+      String mapName = chooser.getSelectedFile().getName();
+      
+      System.out.println(mapName);
+      
+      try
+      {
+        defineSavePath(mapName.replace(".map", ""));
+      } catch (FileNotFoundException e)
+      {
+        System.out.println("This shouldn't happen");
+        e.printStackTrace();
+      }
       name = chooser.getSelectedFile().getName();
 
       return save();
@@ -978,12 +968,7 @@ public class EditorMap implements Playable, Serializable{
   public void setLocation(float x, float y){
     move(x-EditorMap.x, y-EditorMap.y);
   }
-
-  public String getPath() {
-    return path;
-  }
-
-
+  
   public String getName() {
     return name;
   }
@@ -1456,5 +1441,31 @@ public class EditorMap implements Playable, Serializable{
   public boolean doesConnectModeHaveWorld()
   {
     return connectMode.hasWorld();
+  }
+  
+  public void defineSavePath(String fileNameNoExtension) throws
+    FileNotFoundException
+  {
+    try
+    {
+      mapFile = ClassUtils.findFile(MAP_FOLDER, fileNameNoExtension + ".map");
+      editorFile = ClassUtils.findFile(MAP_DATA, fileNameNoExtension + ".edt");
+    } catch (FileNotFoundException e)
+    {
+      throw e;
+    }
+  }
+  
+  /**
+   * @return The name of the map file (sans file extension)
+   */
+  public String getSimpleName()
+  {
+    return name.replace(".map", "");
+  }
+ 
+  public boolean hasPath()
+  {
+    return mapFile != null && editorFile != null;
   }
 }

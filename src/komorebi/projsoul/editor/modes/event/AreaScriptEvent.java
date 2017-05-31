@@ -1,7 +1,7 @@
 package komorebi.projsoul.editor.modes.event;
 
 import komorebi.projsoul.editor.Editor;
-import komorebi.projsoul.editor.modes.EventMode.EventTypes;
+import komorebi.projsoul.editor.modes.event.EventMode.EventTypes;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.map.EditorMap;
 

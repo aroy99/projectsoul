@@ -43,6 +43,4 @@ None
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-npc dummy 1 1 POKEMON walk_up_and_down debug_script
-//npc bob 2 2 NESS walk_up_and_down yoyoyo
-connect Test up -3 20
+npc dummy 1 1 POKEMON walk_up_and_down debug?script2

@@ -2,6 +2,7 @@ package komorebi.projsoul.script.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,7 +25,7 @@ public class Script {
   private HashMap<String, CodeBlock[]> commands;
   private ErrorLog errorLog;
   
-  public Script(File scriptLocation)
+  protected Script(File scriptLocation)
   {
     main = new Branch("main");
     errorLog = new ErrorLog();
@@ -228,5 +229,37 @@ public class Script {
   public String getErrors()
   {
     return errorLog.getErrors();
+  }
+  
+  public static Script fromFile(File file)
+  {
+    return new Script(file);
+  }
+  
+  /**
+   * @param path The file path of the script. 
+   * If an absolute path is not given, the script will be assumed to be
+   * under "res/scripts/"
+   * @return A script object containing the data from the specified path
+   * @throws FileNotFoundException
+   */
+  public static Script fromPath(String path) throws FileNotFoundException
+  { 
+    if (!path.endsWith(".txt"))
+    {
+      path = path + ".txt";
+    }
+    
+    File file = new File(path);
+    
+    System.out.println(file.getPath());
+    
+    if (!file.isAbsolute())
+      file = new File("res/scripts/" + path);
+    
+    if (file.isFile())
+      return new Script(file);
+    
+    throw new FileNotFoundException(file.getPath() + " cannot be found");
   }
 }

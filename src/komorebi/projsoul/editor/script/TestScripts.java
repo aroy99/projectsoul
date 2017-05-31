@@ -19,12 +19,10 @@ import static org.lwjgl.opengl.GL11.glOrtho;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Scanner;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
@@ -33,10 +31,10 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 
 import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.script.commands.keywords.Keywords;
 import komorebi.projsoul.script.decision.Flags;
-import komorebi.projsoul.script.utils.ScriptDatabase;
 import komorebi.projsoul.states.Game;
 
 public class TestScripts {
@@ -47,30 +45,52 @@ public class TestScripts {
   public static final int WIDTH = 256;
   public static final int HEIGHT = 224;
 
-  private static final String DEFAULT_MAP = "ScriptTestingMap.map";
+  private static final String DEFAULT_MAP = "scriptTest/ScriptTestingMap.map";
   private static final File DEFAULT_MAP_FILE = new File(
-      "res/maps/" + DEFAULT_MAP);
+      DEFAULT_MAP);
+  
+  private static final File SCRIPT_ARGS = 
+      new File("scriptTest/scripts.args");
 
   public static void main(String[] args){
     
-    System.out.println("START PRINTING ARGS");
-    
-    for (String arg: args)
-    {
-      System.out.println(arg);
+    try {
+      BufferedReader read = new BufferedReader(new FileReader(
+          SCRIPT_ARGS));
+      
+      String walk = read.readLine();
+      String talk = read.readLine();
+      
+      System.out.println(walk + "\n" + talk);
+      
+      read.close();
+      new TestScripts().run(walk, talk);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-    
-    System.out.println("STOP PRINTING ARGS");
+  }
+  
+  /**
+   * Runs the game
+   */
+  private void run(String walk, String talk) {
 
+    addTestNPCToDefaultMap(walk, talk);
+
+    scale = 2;
+    Game.testLoc = DEFAULT_MAP;
+
+    initDisplay();
+    initGL();
+
+    initGame();
     
-    if (args.length != 2)
-    {
-      args = new String[2];
-      args[0] = "do_nothing";
-      args[1] = "do_nothing";
-    }
+    removeTestNPCFromDefaultMap();
     
-    new TestScripts().run(args);
+    Draw.readSpreadsheets();
+
+    gameLoop();
+    cleanUp();
   }
 
   private static void addTestNPCToDefaultMap(String walkScript,
@@ -86,14 +106,13 @@ public class TestScripts {
       write.close();
 
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
 
   private static void removeTestNPCFromDefaultMap()
   {
-    File temp = new File("res/maps/temp0x0");
+    File temp = new File("scriptTest/temp0x0");
 
     try {
       BufferedReader read = new BufferedReader(
@@ -121,26 +140,7 @@ public class TestScripts {
     }
   }
 
-  /**
-   * Runs the game
-   */
-  private void run(String[] args) {
 
-    addTestNPCToDefaultMap(args[0], args[1]);
-
-    scale = 2;
-    Game.testLoc = DEFAULT_MAP;
-
-    initDisplay();
-    initGL();
-
-    initGame();
-    
-    removeTestNPCFromDefaultMap();
-
-    gameLoop();
-    cleanUp();
-  }
 
 
   /**
@@ -150,7 +150,7 @@ public class TestScripts {
     //create display
     try {
       Display.setDisplayMode(new DisplayMode(WIDTH*scale,HEIGHT*scale));
-      Display.setTitle("Project Soul");
+      Display.setTitle("Project Soul (Test Script)");
       Display.create();
       Display.setVSyncEnabled(true);
 
@@ -168,7 +168,7 @@ public class TestScripts {
 
     initScripts();
 
-    gamehandler = new GameHandler();
+    gamehandler = new GameHandler(DEFAULT_MAP);
     AudioHandler.init();
   }
 
@@ -184,8 +184,6 @@ public class TestScripts {
       e.printStackTrace();
       System.exit(1);
     }
-
-    ScriptDatabase.loadScripts();
   }
 
 
