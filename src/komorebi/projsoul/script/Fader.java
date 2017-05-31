@@ -5,6 +5,8 @@
 package komorebi.projsoul.script;
 
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.ThreadHandler;
+import komorebi.projsoul.engine.ThreadHandler.TrackableThread;
 
 
 /**
@@ -17,7 +19,7 @@ public class Fader {
   private static int faderIndex;
   private static boolean isFadingOut, isFadingIn;
 
-  private static Lock lock;
+  private static TrackableThread waiting;
   
   /**
    * Gradually fades out the screen by rendering a black rectangle that 
@@ -25,11 +27,11 @@ public class Fader {
    * @param lock The lock that pauses the thread waiting for the screen to fade
    * out
    */
-  public static void fadeOut(Lock lock)
+  public static void fadeOut()
   {
     isFadingOut=true;
-    Fader.lock = lock;
-    Fader.lock.pauseThread();
+    waiting = ThreadHandler.currentThread();
+    ThreadHandler.lockCurrentThread();
   }
   
   /**
@@ -38,11 +40,11 @@ public class Fader {
    * @param lock The lock that pauses the thread waiting for the screen to fade
    * in
    */
-  public static void fadeIn(Lock lock)
+  public static void fadeIn()
   {
     isFadingIn=true;
-    Fader.lock = lock;
-    Fader.lock.pauseThread();
+    waiting = ThreadHandler.currentThread();
+    ThreadHandler.lockCurrentThread();
   }
 
   /**
@@ -57,7 +59,7 @@ public class Fader {
       if (faderIndex > 16) 
       {
         isFadingOut=false;
-        lock.resumeThread();
+        waiting.unlock();
       }
     }
 
@@ -68,7 +70,7 @@ public class Fader {
       if (faderIndex <= 0) 
       {
         isFadingIn=false;
-        lock.resumeThread();
+        waiting.unlock();
       }
     }
 

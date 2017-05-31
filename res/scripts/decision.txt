@@ -1,4 +1,10 @@
+branch main
 lock
 ask "How goes it, @me?" "Good" "Meh"
 unlock
-end
+
+branch Good
+say Good
+
+branch Meh
+say Oh

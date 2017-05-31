@@ -4,44 +4,27 @@
  */
 package komorebi.projsoul.states;
 
+import java.io.BufferedReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.KeyHandler;
-import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.engine.Main;
-import komorebi.projsoul.entities.NPC;
-import komorebi.projsoul.entities.NPCType;
-import komorebi.projsoul.entities.SignPost;
-import komorebi.projsoul.entities.player.Player;
+import komorebi.projsoul.engine.ThreadHandler;
+import komorebi.projsoul.engine.ThreadHandler.TrackableThread;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Item;
-import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.gameplay.MagicBar;
 import komorebi.projsoul.gameplay.Item.Items;
+import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.Map;
-import komorebi.projsoul.script.AreaScript;
-import komorebi.projsoul.script.EarthboundFont;
-import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Fader;
-import komorebi.projsoul.script.InstructionList;
-import komorebi.projsoul.script.Instructions;
-import komorebi.projsoul.script.Lock;
-import komorebi.projsoul.script.SignHandler;
-import komorebi.projsoul.script.SpeechHandler;
-import komorebi.projsoul.script.Task;
-import komorebi.projsoul.script.Task.TaskWithNumber;
-import komorebi.projsoul.script.Task.TaskWithString;
-import komorebi.projsoul.script.TextHandler;
-import komorebi.projsoul.script.Word;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.security.KeyStore.PrivateKeyEntry;
-import java.util.ArrayList;
-import java.util.Iterator;
+import komorebi.projsoul.script.text.DialogueBox;
+import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.SpeechHandler;
+import komorebi.projsoul.script.text.TextHandler;
+import komorebi.projsoul.script.text.Word;
 
 /**
  * Represents the game
@@ -53,30 +36,24 @@ import java.util.Iterator;
 public class Game extends State{
 
   public ArrayList<Item> items = new ArrayList<Item>();
- 
-  public boolean[] booleans;
-
-  private boolean hasText, hasChoice;
-  private int pickIndex;
-  private int maxOpt;
-
-  private SpeechHandler speaker;
   
+  private DialogueBox dialogue;
+
   private TextHandler currMap;
-  
+
   private int mapDisplayCount = 120;
   private int displayY = 15;
 
   private BufferedReader read;
-  
+
   private int confidence, money;
-  
+
   public int framesToGo;
   public boolean isPaused;
-  public Lock lock;
-  
+  public TrackableThread waiting;
+
   public static String testLoc;
-  
+
   public HUD hud;
   public Death death;
 
@@ -85,99 +62,59 @@ public class Game extends State{
    */
   public Game(){
     map = new Map("res/maps/"+testLoc);
+
+    currMap = new TextHandler();
+    currMap.write(map.getTitle(), 5, Main.HEIGHT-13);
+
+    confidence = 0;
+    money = 15;
+
+    hud = new HUD(confidence); //TODO WHY KEVIN
+    death = new Death();
+
+    dialogue = new DialogueBox();
+
+  }
+  
+  public Game(String absolutePath)
+  {
+    map = new Map(absolutePath);
     
     currMap = new TextHandler();
     currMap.write(map.getTitle(), 5, Main.HEIGHT-13);
 
-    booleans = new boolean[256];
-
     confidence = 0;
     money = 15;
-    
+
     hud = new HUD(confidence); //TODO WHY KEVIN
     death = new Death();
-    
 
-
+    dialogue = new DialogueBox();
   }
+
 
   /* (non-Javadoc)
    * @see komorebi.clyde.states.State#getInput()
    */
-@Override
-  public void getInput() {    
-    if (KeyHandler.keyClick(Key.C))
+  @Override
+  public void getInput() {      
+    
+    if (dialogue.hasDialogue() && KeyHandler.firstKeyClick(Key.C))
     {
-      if (speaker!=null)
-      {
-        if (speaker.isWaitingOnParagraph())
-        {
-          speaker.nextParagraph();
-        } else {
-          if (!speaker.alreadyAsked())
-          {
-            speaker.skipScroll();
-          } else
-          {
-            if (hasText)
-            {
-              speaker.clear();
-
-              if (hasChoice) {
-                
-                speaker.branch(pickIndex);
-              }
-
-              hasChoice=false;
-              hasText=false;
-              
-              if (speaker instanceof SignHandler)
-              {
-                SignHandler sign = (SignHandler) speaker;
-                sign.disengage();
-              }
-              
-              speaker.releaseLocks();
-              speaker = null;
-            }
-          }
-        } 
-      } 
-    }
-              
-             
-
+      dialogue.next();
+    } 
 
     //TODO Remove map debug features
     map.getInput();
-  
 
-
-
-    if (KeyHandler.keyClick(Key.LEFT))
+    if (KeyHandler.keyClick(Key.LEFT) && dialogue.hasQuestion())
     {
-      if (hasChoice && KeyHandler.keyDown(Key.LEFT))
-      {
-        pickIndex--;
-        if (pickIndex < 1) {
-          pickIndex = maxOpt;
-        }
-        speaker.setPickerIndex(pickIndex);
-        //choosesLeft=!choosesLeft;
-
-      }  
+      dialogue.movePickerLeft();
     }
 
-    if (KeyHandler.keyClick(Key.RIGHT))
+    if (KeyHandler.keyClick(Key.RIGHT) && dialogue.hasQuestion())
     {
-      if (hasChoice && KeyHandler.keyDown(Key.RIGHT))
-      {
-        pickIndex++;
-        if (pickIndex > maxOpt) {
-          pickIndex = 1;
-        }
-        speaker.setPickerIndex(pickIndex);
-      }
+      dialogue.movePickerRight();
     } 
 
     if ((KeyHandler.keyDown(Key.LCTRL) || KeyHandler.keyDown(Key.RCTRL)) &&
@@ -199,18 +136,18 @@ public class Game extends State{
   @Override
   public void update() {
     // TODO Auto-generated method stub  
-	  hud.update();
-	  death.update();
-	  
-    
+    hud.update();
+    death.update();
+
+
     if (isPaused)
     {
       framesToGo--;
-      
+
       if (framesToGo<=0)
       {
         isPaused = false;
-        lock.resumeThread();
+        waiting.unlock();
       }
     }
 
@@ -230,11 +167,17 @@ public class Game extends State{
       Draw.rect(2, Main.HEIGHT-displayY, 100, 12, 1, 1, 2, 2, 6);
       currMap.render(new Word(map.getTitle(), 5, Main.HEIGHT-displayY+2, new EarthboundFont(1)));
       mapDisplayCount--;
-      
+
       if(mapDisplayCount < 0){
         displayY--;
       }
     }
+    
+    if (dialogue.hasDialogue())
+    {
+      dialogue.render();
+    }
+    
     Fader.render();
 
   }
@@ -254,8 +197,7 @@ public class Game extends State{
 
   public void setSpeaker(SpeechHandler talk)
   {
-    this.speaker = talk;
-    this.hasText = true;
+    dialogue.setSpeaker(talk);
   }
 
   /**
@@ -265,14 +207,14 @@ public class Game extends State{
    * @param lock The script execution whose thread will be locked while the game
    *        is paused
    */
-  public void pause(int frames, Lock lock)
+  public void pause(int frames)
   {
     framesToGo = frames;
     isPaused = true;
-    
-    this.lock = lock;
-    lock.pauseThread();
-    
+
+    this.waiting = ThreadHandler.currentThread();
+    ThreadHandler.lockCurrentThread();
+
   }
 
   /**
@@ -281,54 +223,7 @@ public class Game extends State{
    */
   public void setAsker(SpeechHandler talk)
   {
-    this.speaker = talk;
-    this.hasText = true;
-    this.hasChoice = true;
-    //this.choosesLeft = true;
-
-    pickIndex = 1;
-  }
-
-  public void setMaxOptions(int i)
-  {
-    maxOpt = i;
-  }
-
-  /**
-   * Returns the NPC with a specified name
-   * 
-   * @param s The name of the NPC to be retrieved
-   * @return The NPC with name, s
-   */
-  public NPC getNpc(String s)
-  {
-    for (NPC person: NPC.getNPCs())
-    {
-      if (person.getName().equals(s))
-      {
-        return person;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Fades the screen out, loads a new map and fades the screen back in
-   * @param newMap The new map to be loaded (sans .map extension)
-   */
-  public void warp(String newMap)
-  {
-    InstructionList instructions = new InstructionList("Main");
-    instructions.add(new Task(Instructions.FADE_OUT));
-    
-    instructions.add(new TaskWithString(Instructions.LOAD_MAP, newMap));
-    
-    instructions.add(new TaskWithNumber(Instructions.WAIT, 40));
-    instructions.add(new Task(Instructions.FADE_IN));
-
-
-    (new Thread(new Execution(null, instructions))).start();
-
+    dialogue.setAsker(talk);
   }
 
   public void receiveItem(Items item)
@@ -340,40 +235,30 @@ public class Game extends State{
   {
     return items;
   }
-  
+
   public int getMoney()
   {
     return money;
   }
-  
+
   public int getConfidence()
   {
     return confidence;
   }
-  
+
   public void giveMoney(int add)
   {
     money += add;
   }
-  
+
   public void takeMoney(int subtract)
   {
     money -= subtract;
   }
-  
+
   public void giveConfidence(int add)
   {
     confidence += add;
-  }
-  
-  public void setFlag(int index, boolean b)
-  {
-    booleans[index] = b;
-  }
-  
-  public boolean checkFlag(int index)
-  {
-    return booleans[index];
   }
 
 public BufferedReader getRead() {

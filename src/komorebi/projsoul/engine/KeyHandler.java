@@ -3,11 +3,11 @@
  */
 package komorebi.projsoul.engine;
 
-import komorebi.projsoul.gameplay.Key;
-
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+
+import komorebi.projsoul.gameplay.Key;
 
 /**
  * Handles key input
@@ -19,7 +19,16 @@ public class KeyHandler {
 
   private static boolean[] isKeyDown = new boolean[Keyboard.KEYBOARD_SIZE + 3];
   private static boolean[] wasKeyDown = new boolean[Keyboard.KEYBOARD_SIZE + 3];
+  private static boolean[] keyChecked = new boolean[Keyboard.KEYBOARD_SIZE + 3];
+  private static boolean[] buffer = new boolean[Keyboard.KEYBOARD_SIZE+3];
     
+  public static final char NULL_CHAR = '\r';
+  
+  private static final int DOUBLE_CLICK_TOLERANCE = 15;
+  private static int sinceL, sinceR, sinceS;
+  
+  private static boolean capsLock, numLock;
+  
   /**
    * All of the possible controls that can be used in-game
    * 
@@ -37,26 +46,202 @@ public class KeyHandler {
   {
     return Keyboard.KEYBOARD_SIZE + 3;
   }
+  
+  public static char charOf(Key k)
+  {
+    switch (k)
+    {
+      case A:
+        return 'a';
+      case APOSTROPHE:
+        return '\'';
+      case ASTERISK:
+        return '*';
+      case B:
+        return 'b';
+      case BACKSLASH:
+        return '\\';
+      case C:
+        return 'c';
+      case CLOSE_BRACKET:
+        return ']';
+      case COMMA:
+        return ',';
+      case D:
+        return 'd';
+      case DASH:
+        return '-';
+      case DECIMAL:
+        return '.';
+      case E:
+        return 'e';
+      case EQUALS:
+        return '=';
+      case F:
+        return 'f';
+      case G:
+        return 'g';
+      case GRAVE:
+        return '`';
+      case H:
+        return 'h';
+      case I:
+        return 'i';
+      case J:
+        return 'j';
+      case K:
+        return 'k';
+      case L:
+        return 'l';
+      case M:
+        return 'm';
+      case MINUS:
+        return '-';
+      case N:
+        return 'n';
+      case O:
+        return 'o';
+      case OPEN_BRACKET:
+        return '[';
+      case P:
+        return 'p';
+      case PAD0:
+        return '0';
+      case PAD1:
+        return '1';
+      case PAD2:
+        return '2';
+      case PAD3:
+        return '3';
+      case PAD4:
+        return '4';
+      case PAD5:
+        return '5';
+      case PAD6:
+        return '6';
+      case PAD7:
+        return '7';
+      case PAD8:
+        return '8';
+      case PAD9:
+        return '9';
+      case PERIOD:
+        return '.';
+      case PLUS:
+        return '+';
+      case Q:
+        return 'q';
+      case R:
+        return 'r';
+      case ROW0:
+        return '0';
+      case ROW1:
+        return '1';
+      case ROW2:
+        return '2';
+      case ROW3:
+        return '3';
+      case ROW4:
+        return '4';
+      case ROW5:
+        return '5';
+      case ROW6:
+        return '6';
+      case ROW7:
+        return '7';
+      case ROW8:
+        return '8';
+      case ROW9:
+        return '9';
+      case S:
+        return 's';
+      case SEMICOLON:
+        return ';';
+      case SLASH:
+        return '/';
+      case SPACE:
+        return ' ';
+      case T:
+        return 't';
+      case U:
+        return 'u';
+      case V:
+        return 'v';      
+      case W:
+        return 'w'; 
+      case X:
+        return 'x'; 
+      case Y:
+        return 'y'; 
+      case Z:
+        return 'z'; 
+      default:
+        return NULL_CHAR;  
+    }
+  }
 
   /**
    * Gets input from all of the keys and mouse
    */
   public static void getInput()
   {
-
+    
     for (int i=0; i < Keyboard.KEYBOARD_SIZE; i++)
     {
+      buffer[i] = false;
       wasKeyDown[i]=isKeyDown[i];
       isKeyDown[i]=Keyboard.isKeyDown(i);
+      keyChecked[i] = false;
 
     }
     for (int i=Keyboard.KEYBOARD_SIZE; i < Keyboard.KEYBOARD_SIZE+3; i++)
     {
+      buffer[i] = false;
       wasKeyDown[i]=isKeyDown[i];
       isKeyDown[i]=Mouse.isButtonDown(i-Keyboard.KEYBOARD_SIZE);
-
+      keyChecked[i] = false;
     }
-
+    
+    if (keyRelease(Key.LBUTTON))
+    {
+      sinceL = DOUBLE_CLICK_TOLERANCE;
+    }
+    
+    if (keyRelease(Key.RBUTTON))
+    {
+      sinceR = DOUBLE_CLICK_TOLERANCE;
+    }
+    
+    if (keyRelease(Key.MBUTTON))
+    {
+      sinceS = DOUBLE_CLICK_TOLERANCE;
+    }
+    
+    if (sinceL > 0)
+    {
+      sinceL--;
+    }
+    
+    if (sinceR > 0)
+    {
+      sinceR--;
+    }
+    
+    if (sinceS > 0)
+    {
+      sinceS--;
+    }
+    
+    if (isKeyDown[Keyboard.KEY_NUMLOCK] && !wasKeyDown[Keyboard.KEY_NUMLOCK])
+    {
+      numLock = !numLock;
+    }
+    
+    if (isKeyDown[Keyboard.KEY_CAPITAL] && !wasKeyDown[Keyboard.KEY_CAPITAL])
+    {
+      capsLock = !capsLock;
+    }
+    
     
   }
 
@@ -69,9 +254,25 @@ public class KeyHandler {
   {
     if (isKeyDown[k.getGLKey()] && !wasKeyDown[k.getGLKey()])
     {
+      keyChecked[k.getGLKey()] = true;
       return true;
     }
     return false;
+  }
+  
+  public static boolean bufferedKeyClick(Key k)
+  {
+    if (isKeyDown[k.getGLKey()] && !wasKeyDown[k.getGLKey()] && 
+        !buffer[k.getGLKey()])
+    {
+      return true;
+    }
+    return false;
+  }
+  
+  public static void tempDisable(Key k)
+  {
+    buffer[k.getGLKey()] = true;
   }
   
   public static boolean keyRelease(Key k)
@@ -160,6 +361,16 @@ public class KeyHandler {
     return (isKeyDown[Keyboard.KEY_LSHIFT]) || (isKeyDown[Keyboard.KEY_RSHIFT]);
   }
   
+  public static boolean firstKeyClick(Key key)
+  {
+    return !taken(key) && keyClick(key);
+  }
+  
+  private static boolean taken(Key key)
+  {
+    return keyChecked[key.getGLKey()];
+  }
+  
   /**
    * For some stupid reason the keys stick when JDialogs are opened, so this
    * method resets the Keyboard by destroying and creating it
@@ -172,6 +383,94 @@ public class KeyHandler {
       e.printStackTrace();
     }
 
+  }
+  
+  public static char keyWithShift(Key k)
+  {
+    switch (k)
+    {
+      case ROW1:
+        return '!';
+      case ROW2:
+        return '@';
+      case ROW3:
+        return '#';
+      case ROW4:
+        return '$';
+      case ROW5:
+        return '%';
+      case ROW6:
+        return '^';
+      case ROW7:
+        return '&';
+      case ROW8:
+        return '*';
+      case ROW9:
+        return '(';
+      case ROW0:
+        return ')';
+      case DASH:
+        return '_';
+      case EQUALS:
+        return '+';
+      case GRAVE:
+        return '~';
+      case OPEN_BRACKET:
+        return '{';
+      case CLOSE_BRACKET:
+        return '}';
+      case BACKSLASH:
+        return '|';
+      case SEMICOLON:
+        return ':';
+      case APOSTROPHE:
+        return '\"';
+      case COMMA:
+        return '<';
+      case PERIOD:
+        return '>';
+      case SLASH:
+        return '?';
+       default:
+         return charOf(k);
+    }
+  }
+  
+  public static boolean capsLocked()
+  {
+    return capsLock;
+  }
+  
+  public static boolean numLocked()
+  {
+    return numLock;
+  }
+  
+  public static boolean doubleClick(Key mouseKey)
+  {
+    switch (mouseKey)
+    {
+      case LBUTTON:
+        if (keyClick(mouseKey) && sinceL > 0)
+        {
+          return true;
+        }
+        return false;
+      case RBUTTON:
+        if (keyClick(mouseKey) && sinceR > 0)
+        {
+          return true;
+        }
+        return false;
+      case MBUTTON:
+        if (keyClick(mouseKey) && sinceS > 0)
+        {
+          return true;
+        }
+        return false;
+      default:
+        return false;
+    }
   }
 
 }

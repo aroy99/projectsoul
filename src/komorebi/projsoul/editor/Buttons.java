@@ -5,6 +5,14 @@ package komorebi.projsoul.editor;
 
 import static komorebi.projsoul.engine.MainE.HEIGHT;
 
+import javax.swing.JOptionPane;
+
+import org.lwjgl.input.Mouse;
+
+import komorebi.projsoul.editor.modes.connect.ConnectMode;
+import komorebi.projsoul.editor.modes.connect.CreateNewWorld;
+import komorebi.projsoul.editor.modes.connect.FindExistingWorld;
+import komorebi.projsoul.editor.modes.connect.World;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MainE;
@@ -12,8 +20,6 @@ import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.EditorMap.Modes;
-
-import org.lwjgl.input.Mouse;
 
 /**
  * 
@@ -49,7 +55,8 @@ public class Buttons implements Playable{
         case 2:
           EditorMap.setMode(Modes.EVENT); break;
         case 3:
-          EditorMap.setMode(Modes.CONNECT); break;
+          tryOpenConnectMode();
+          break;
         case 4: 
           EditorMap.editMapHeader();
           break;
@@ -58,7 +65,7 @@ public class Buttons implements Playable{
         case 6:
           Editor.newMap();    break;
         case 7:
-          if(map.getPath() == null){
+          if(!map.hasPath()){
             map.newSave();
           }else{
             map.save();
@@ -89,6 +96,102 @@ public class Buttons implements Playable{
     }
 
   }
+  
+  private void tryOpenConnectMode()
+  { 
+    System.out.println("Try open connect");
+    
+    if (Editor.getMap().doesConnectModeHaveWorld())
+    {
+      EditorMap.setMode(Modes.CONNECT);
+    } else if (World.hasWorldContainingMap(map.getName()))
+    {      
+      ConnectMode.setWorld(World.findWorldContainingMap(map.getName()).build());
+      EditorMap.setMode(Modes.CONNECT);
+    } else
+    {
+      showFindAWorldDialog(Editor.getMap().getName());
+    }
+  }
+  
+  private void showFindAWorldDialog(String map)
+  {
+    Object[] options = {"Create a New World", "Find an Existing World",
+        "Cancel"};
+        
+    int response = JOptionPane.showOptionDialog(null, 
+        map + " is not contained within a world.  Where would you like to add it?", 
+        "No World Found", JOptionPane.YES_NO_CANCEL_OPTION, 
+        JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+    
+    if (response == JOptionPane.YES_OPTION)
+    {
+      CreateNewWorld create = new CreateNewWorld(map)
+      {
+
+        @Override
+        public void uponSuccess() {
+          World world = getSelectedWorld().build();
+          ConnectMode.setWorld(world);
+          
+          EditorMap.setMode(Modes.CONNECT);
+          
+        }
+        
+      };
+      
+      (new Thread(create)).start();
+    } else if (response == JOptionPane.NO_OPTION)
+    {
+      FindExistingWorld find = new FindExistingWorld()
+      {
+        @Override
+        public void uponSuccess() {
+          World world = getSelectedWorld().build();
+          ConnectMode.setWorld(world);
+          
+          EditorMap.setMode(Modes.CONNECT);
+        }
+      };
+      
+      (new Thread(find)).start();
+    }
+    
+  }
+  
+  
+  
+  private static class Lock {
+    
+    /**
+     * Pauses the current thread
+     */
+    public void lock()
+    {          
+      synchronized (this)
+      {        
+        try
+        {
+          wait();
+        } catch (InterruptedException e)
+        {
+          e.printStackTrace();
+        }
+      }
+    }
+    
+    /**
+     * Resumes the thread originally paused by this lock
+     */
+    public void unlock()
+    {          
+      synchronized (this)
+      {
+        notifyAll();
+      }
+    }
+  }
+
 
   @Override
   public void render() {

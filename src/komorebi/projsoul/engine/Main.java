@@ -4,17 +4,6 @@
 
 package komorebi.projsoul.engine;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-
-import org.lwjgl.LWJGLException;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.openal.AL;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
-
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
@@ -32,9 +21,20 @@ import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glOrtho;
 
-import org.newdawn.slick.openal.SoundStore;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
+import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.openal.AL;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
 
 import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.script.commands.keywords.Keywords;
+import komorebi.projsoul.script.decision.Flags;
 import komorebi.projsoul.states.Game;
 //import komorebi.projsoul.engine.Save;
 
@@ -141,8 +141,26 @@ public class Main {
    *  @see AudioHandler
    */
   private void initGame(){
+
+    Draw.readSpreadsheets();
+    initScripts();
+
     gamehandler = new GameHandler();
     AudioHandler.init();
+  }
+  
+  private void initScripts()
+  {
+    Flags.loadFlags();
+    
+    try
+    {
+      Keywords.loadKeywords();
+    } catch (Exception e)
+    {
+      e.printStackTrace();
+      System.exit(1);
+    }
   }
 
 
@@ -177,7 +195,7 @@ private void render(){
       getInput();
       update();
       render();
-      SoundStore.get().poll(0);
+      //SoundStore.get().poll(0);
 
       if (!Keyboard.isCreated())
       {

@@ -30,71 +30,18 @@ public class Caspian extends Player {
   private Animation downThrow;
 
   private Animation currentAnimation; 
+  private Animation currentThrowAni;
 
   public Caspian(float x, float y) {
     super(x, y);
 
     character = Characters.CASPIAN;
 
-    upAni =    new Animation(6, 8, 11);
-    downAni =  new Animation(6, 8, 11);
-    leftAni =  new Animation(6, 8, 11);
-    rightAni = new Animation(6, 8, 11);
-
-    upThrow = new Animation(3,8,11,false);
+upThrow = new Animation(3,8,11,false);
     downThrow = new Animation(3,8,11,false);
     rightThrow = new Animation(3,8,11,false);
     leftThrow = new Animation(3,8,11,false);
 
-    hurtUpAni = new Animation(2,8,16,35,11);
-    hurtDownAni = new Animation(2,8,16,34,11);
-    hurtRightAni = new Animation(2,8,14,33,11);
-    hurtLeftAni = new Animation(2,8,14,33,11);
-
-    downAni.add(8,162,16,34);
-    downAni.add(28,164,17,32);
-    downAni.add(49,161,18,35);
-    downAni.add(71,162,16,34);
-    downAni.add(91,164,17,32);
-    downAni.add(112,161,18,35);
-
-    upAni.add(8,204,16,35);
-    upAni.add(28,207,18,32);
-    upAni.add(50,206,18,33);
-    upAni.add(71,204,16,35);
-    upAni.add(91,207,18,32);
-    upAni.add(113,206,18,33);
-
-    rightAni.add(3,247,21,32);
-    rightAni.add(30,246,14,33);
-    rightAni.add(52,245,14,34);
-    rightAni.add(72,247,22,32);
-    rightAni.add(99,246,14,33);
-    rightAni.add(120,245,15,34);
-
-    rightAni.setPausedFrame(99,246,14,33);
-
-    leftAni.add(3,247,21,32,0,true);
-    leftAni.add(30,246,14,33,0,true);
-    leftAni.add(52,245,14,34,0,true);
-    leftAni.add(72,247,22,32,0,true);
-    leftAni.add(99,246,14,33,0,true);
-    leftAni.add(120,245,15,34,0,true);
-
-    leftAni.setPausedFrame(99,246,14,33,0,true);
-
-    hurtUpAni.add(8,204);
-    hurtUpAni.add(141, 205);
-
-    hurtDownAni.add(8, 162);
-    hurtDownAni.add(141, 163);
-
-    hurtRightAni.add(30, 246);
-    hurtRightAni.add(141, 246);
-
-    hurtLeftAni.add(30, 246, true);
-    hurtLeftAni.add(141, 246, true);
-
     upThrow.add(50,206,18,33);
     upThrow.add(50,206,18,33);
     upThrow.add(50,206,18,33);
@@ -110,7 +57,7 @@ public class Caspian extends Player {
     leftThrow.add(52,245,14,34,0,true);
     leftThrow.add(52,245,14,34,0,true);
     leftThrow.add(52,245,14,34,0,true);
-
+    
     melee = new MeleeAttack<WaterSword>(new WaterSword());
     proj = new ProjectileAttack<WaterKunai>(new WaterKunai());
 
@@ -118,7 +65,9 @@ public class Caspian extends Player {
     health = new HUD(maxHealth);
 
     attack1 = melee;
-    attack2 = proj;
+    attack2 = proj; 
+    
+    initializeSprites();
   }
 
   public void update()
@@ -148,7 +97,7 @@ public class Caspian extends Player {
         }
       } else if (attack1 == proj)
       {
-        if (!currentAnimation.playing())
+        if (!currentThrowAni.playing())
         {
           isAttacking = false;
         }
@@ -168,10 +117,7 @@ public class Caspian extends Player {
 
       if (attack1 == melee)
       {
-        upAni.hStop();
-        downAni.hStop();
-        leftAni.hStop();
-        rightAni.hStop();
+        sprites.stopCurrent();
 
         magic.changeMagicBy(-10);
       } else if (attack1 == proj)
@@ -180,25 +126,25 @@ public class Caspian extends Player {
         {
           case DOWN:
             aDy = -3;
-            currentAnimation = downThrow;
+            currentThrowAni = downThrow;
             break;
           case LEFT:
             aDx = -3;
-            currentAnimation = leftThrow;
+            currentThrowAni = leftThrow;
             break;
           case RIGHT:
             aDx = 3;
-            currentAnimation = rightThrow;
+            currentThrowAni = rightThrow;
             break;
           case UP:
             aDy = 3;
-            currentAnimation = upThrow;
+            currentThrowAni = upThrow;
             break;
           default:
             break;          
         }
 
-        currentAnimation.resume();
+        currentThrowAni.resume();
         
         magic.changeMagicBy(-10);
       }
@@ -223,7 +169,7 @@ public class Caspian extends Player {
       melee.getAttackInstance().play(x, y);
     } else if (attack1 == proj)
     {
-      currentAnimation.playCam(x, y);
+      currentThrowAni.playCam(x, y);
     }
 
   }

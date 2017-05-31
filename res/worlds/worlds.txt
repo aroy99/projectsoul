@@ -1,0 +1,6 @@
+world1
+#ref test1.map, test2.map, testA.map
+world2
+#ref test3.map, Big Town.map
+new_world
+#ref deleteme4.map, deleteme3.map

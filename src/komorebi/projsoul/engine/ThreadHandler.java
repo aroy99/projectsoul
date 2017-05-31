@@ -5,9 +5,14 @@ package komorebi.projsoul.engine;
 
 import java.util.ArrayList;
 
-import komorebi.projsoul.script.Execution;
-import komorebi.projsoul.script.Lock;
-import komorebi.projsoul.script.Script;
+import komorebi.projsoul.entities.NPC;
+import komorebi.projsoul.entities.player.Player;
+import komorebi.projsoul.script.commands.abstracts.Command;
+import komorebi.projsoul.script.execute.Execution;
+import komorebi.projsoul.script.execute.LoopableExecution;
+import komorebi.projsoul.script.execute.SubExecution;
+import komorebi.projsoul.script.read.Branch;
+import komorebi.projsoul.script.tasks.Task.Precedence;
 
 /**
  * 
@@ -15,201 +20,178 @@ import komorebi.projsoul.script.Script;
  * @version 
  */
 public class ThreadHandler {
-  
-  public static ArrayList<NewThread> threads = new ArrayList<NewThread>();
-  public static ArrayList<Lock> stragglers = new ArrayList<Lock>();
-  
-  /**
-   * A thread object (extending java's Thread class) that can
-   * interact with the ThreadHandler class
-   * @author Andrew Faulkenberry
-   *
-   */
-  public static class NewThread extends Thread
-  {
-    Script script;
-    boolean interrupted;
-    Lock lock;
-    int waitIndex;
     
-    /**
-     * Creates a new thread that will run the script's instructions when the
-     * Thread.start() method is called
-     * @param script The script to run on a separate thread
-     */
-    public NewThread(Script script)
-    {
-      super(script.getExecution());
-      
-      this.script = script;
-      interrupted = false;
-      lock = null;
-      waitIndex = 0;
-    }
+  private static ArrayList<TrackableThread> background = new
+      ArrayList<TrackableThread>();
+  
+  public static class TrackableThread extends Thread {
+    private Precedence precedence;
+    private boolean terminated;
     
-    /**
-     * Creates a new thread that will run the execution's instructions when the
-     * Thread.start() method is called
-     * @param ex The execution to run on a separate thread
-     */
-    public NewThread(Execution ex)
+    private Lock lock;
+    
+    protected TrackableThread(Execution ex, Precedence prec)
     {
       super(ex);
-      interrupted = false;
-      lock = null;
-      waitIndex = 0;
-    }
-    
-    /**
-     * @return The script associated with the Thread (or null if the Thread was
-     * not instantiated with a script)
-     */
-    public Script getScript()
-    {
-      return script;
-    }
-    
-    /**
-     * @param b If true, halts the thread; if false, resumes the thread
-     */
-    public void setInterrupted(boolean b)
-    {
-      interrupted = b;
-    }
-    
-    /** 
-     * @return Whether the thread is currently halted
-     */
-    public boolean flagged()
-    {
-      return interrupted;
-    }
-    
-    /**
-     * Sets the Thread's lock object
-     * @param lock The lock object to be set
-     */
-    public void setLock(Lock lock)
-    {
-      this.lock = lock;
-    }
-    
-    /**
-     * @return The thread's current lock object
-     */
-    public Lock getLock()
-    {
-      return lock;
-    }
-  }
-  
-  /**
-   * Creates and beings a new thread which will run the instructions of the
-   * script
-   * @param script 
-   */
-  public static void newThread(Script script)
-  {
-    NewThread thr = new NewThread(script);
-    threads.add(thr);
-    thr.start();
-  }
-  
-  /**
-   * Adds a given NewThread to 
-   * @param thread
-   */
-  public static void newThread(NewThread thread)
-  {
-    threads.add(thread);
-    thread.start();
-  }
-  
-  public static void remove(Script script)
-  {     
-    int i = -1;
-    
-    for (int j=0; j<threads.size(); j++)
-    {
-      if (threads.get(j).getScript()==script)
-      {
-        i = j;
-      }
-    }
-    
-    if (i!=-1) threads.remove(i);
-  }
-  
-  public static void remove(NewThread thread)
-  {    
-    int i = -1;
-    
-    for (int j=0; j<threads.size(); j++)
-    {
-      if (threads.get(j) == thread)
-      {
-        i = j;
-      }
-    }
-    
-    if (i!=-1) threads.remove(i);
-  }
-  
-  public static void interrupt(Script script)
-  {    
-    System.out.println(threads.size());
-    
-    for (NewThread t: threads)
-    {
-      System.out.println(t);
-    }
-    
-    for (int j=0; j<threads.size(); j++)
-    {
-      if (threads.get(j).getScript() == script)
-      {
-        threads.get(j).setInterrupted(true);
-        break;
-      }
-    }
-    
-  }
-  
-  public static void giveLock(NewThread thread, Lock lock)
-  {
-    int i = threads.indexOf(thread);
-    
-    if (i!=-1) 
-    {
-      threads.get(i).setLock(lock);
-    }
-   }
-  
-  public static void unlock(Script script)
-  {
-    int i = -1;
-    
-    for (int j=0; j<threads.size(); j++)
-    {
-      if (threads.get(j).getScript()==script)
-      {
-        i = j;
-      }
-    }
-    
-    if (i!=-1)
-    {
-      if (threads.get(i).getLock()!=null)
-      {
-        threads.get(i).getLock().resumeThread();
-      }
+      precedence = prec;
       
-      threads.get(i).setInterrupted(false);
+      if (precedence == Precedence.BACKGROUND)
+        background.add(this);
+      
+      this.lock = new Lock();
+    }
+    
+    public Precedence precedence()
+    {
+      return precedence;
+    }
+    
+    public void terminate()
+    {
+      terminated = true;
+    }
+    
+    public boolean isTerminated()
+    {
+      return terminated;
+    }
+    
+    public void lock()
+    {
+      lock.lock(1);
+    }
+    
+    public void multiLock(int keys)
+    {
+      lock.lock(keys);
+    }
+    
+    public void unlock()
+    {
+      lock.unlock();
     }
   }
   
-  public static int indexOf(Thread thread)
+  private static class Lock {
+    
+    private int keys;
+    
+    /**
+     * Pauses the current thread
+     */
+    public void lock(int keys)
+    {          
+      synchronized (this)
+      {
+        this.keys = keys;
+        
+        try
+        {
+          wait();
+        } catch (InterruptedException e)
+        {
+          e.printStackTrace();
+        }
+      }
+    }
+    
+    /**
+     * Resumes the thread originally paused by this lock
+     */
+    public void unlock()
+    {          
+      synchronized (this)
+      {
+        keys--;
+        
+        if (keys <= 0)
+          notifyAll();
+      }
+    }
+  }
+
+  
+  public static void endBackgroundThreads()
   {
-    return threads.indexOf(thread);
+    for (TrackableThread thread: background)
+    {
+      thread.terminate();
+    }
+  }
+  
+  public static TrackableThread currentThread()
+  {
+    if (Thread.currentThread() instanceof TrackableThread)
+      return (TrackableThread) Thread.currentThread();
+    
+    throw new RuntimeException("Current thread is not a trackable thread");
+  }
+  
+  public static void newThread(String script, NPC npc, Player player)
+  {
+    Execution ex = Execution.newExecution(script);
+    ex.setOnWhom(npc, player);
+    run(ex, Precedence.FOREGROUND);    
+  }
+ 
+  public static void branchInto(Branch branch, NPC npc,
+      Player player, TrackableThread returnTo)
+  {
+    SubExecution ex = new SubExecution(branch, returnTo);
+    ex.setOnWhom(npc, player);
+    
+    run(ex, Precedence.FOREGROUND);
+  }
+  
+  public static void newLoop(String script, NPC npc, Player player)
+  {
+    LoopableExecution loop = Execution.newLoopable(script);
+    loop.setOnWhom(npc, player);
+    run(loop, Precedence.BACKGROUND);
+  }
+
+  
+  private static void run(Execution ex, Precedence precedence)
+  {            
+    new TrackableThread(ex, precedence).start();
+  }
+  
+  private static void runOnCurrentThread(Execution ex)
+  {
+    ex.run();
+  }
+  
+  public static void executeOnCurrentThread(Command command, NPC npc,
+      Player player)
+  {
+    Branch branch = new Branch("");
+    branch.addTask(command);
+    
+    executeOnCurrentThread(branch, npc, player);
+  }
+  
+  public static void executeOnCurrentThread(Branch branch, NPC npc,
+      Player player)
+  {    
+    Execution ex = new Execution(branch);
+    ex.setOnWhom(npc, player);
+    
+    runOnCurrentThread(ex);
+  }
+  
+  public static void lockCurrentThread(int keys)
+  {
+    try
+    {
+      currentThread().multiLock(keys);
+    } catch (RuntimeException e)
+    {
+      throw new RuntimeException("Cannot pause the main thread");
+    }
+  }
+  
+  public static void lockCurrentThread()
+  {
+    lockCurrentThread(1);
   }
 }

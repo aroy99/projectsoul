@@ -1,18 +1,18 @@
+branch main
 lock
 align
 say Caspian: Uhhh, I think you are on fire.
 call talking, running, flash
 call finishing
 unlock
-end
 
 branch talking
-say Ash: AHHHHHHHHHHHHHHHHHHHH!
-sync
+if caspian, say Ash: AHHHHHH HELP CASP!
+elseif flannery, say Ash: Y U DO THIS!
+else, say Ash: AHHHHHHHH!
 
 branch running
 jog up up left left down down right right
-sync
 
 branch finishing
 say Caspian: I got you covered. Here's some water.
@@ -22,4 +22,3 @@ fadeout
 fadein
 fadeout
 fadein
-sync

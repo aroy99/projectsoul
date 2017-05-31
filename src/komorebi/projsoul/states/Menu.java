@@ -7,8 +7,8 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.script.EarthboundFont;
-import komorebi.projsoul.script.TextHandler;
+import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.TextHandler;
 
 /**
  * 

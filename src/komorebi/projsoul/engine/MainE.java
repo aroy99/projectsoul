@@ -20,10 +20,10 @@ import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glOrtho;
-import komorebi.projsoul.editor.Editor;
-import komorebi.projsoul.script.EarthboundFont;
-import komorebi.projsoul.script.TextHandler;
-import komorebi.projsoul.states.Game;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
@@ -32,10 +32,10 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.newdawn.slick.openal.SoundStore;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import komorebi.projsoul.editor.Editor;
+import komorebi.projsoul.editor.modes.connect.World;
+import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.TextHandler;
 
 /**
  * Use this if you want to run the editor
@@ -97,6 +97,9 @@ public class MainE {
 
     initDisplay();
     initGl();
+    
+    Draw.readSpreadsheets();
+    World.loadWorlds();
 
     initGame();
     gameLoop();
@@ -133,7 +136,6 @@ public class MainE {
     lastFPS = getTime(); // call before loop to initialise fps timer
 
     handler = new TextHandler();
-
   }
 
 
@@ -172,6 +174,14 @@ public class MainE {
       update(delta);
       render();
       SoundStore.get().poll(0);
+      
+      if (!Keyboard.isCreated())
+        try {
+          Keyboard.create();
+        } catch (LWJGLException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
 
       if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE) || 
           Display.isCloseRequested()) {

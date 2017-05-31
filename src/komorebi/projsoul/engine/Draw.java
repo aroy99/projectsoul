@@ -4,7 +4,7 @@
 
 package komorebi.projsoul.engine;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_NEAREST;
 import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER;
@@ -12,6 +12,7 @@ import static org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLE_FAN;
 import static org.lwjgl.opengl.GL11.glBegin;
 import static org.lwjgl.opengl.GL11.glColor3f;
+import static org.lwjgl.opengl.GL11.glColor4f;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glEnd;
@@ -24,15 +25,16 @@ import static org.lwjgl.opengl.GL11.glTexParameteri;
 import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.opengl.GL11.glVertex2f;
 
-import komorebi.projsoul.gameplay.Camera;
-
-import org.newdawn.slick.opengl.Texture;
-import org.newdawn.slick.opengl.TextureLoader;
-
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import org.newdawn.slick.opengl.Texture;
+import org.newdawn.slick.opengl.TextureLoader;
+
+import komorebi.projsoul.gameplay.Camera;
 
 /**
  * Draws stuff. :D
@@ -48,6 +50,10 @@ public class Draw {
   private static final int NUM_PIZZA_SLICES = 30;
   
   public static final int BLANK_TILE = 0;
+  public static final Rectangle LAYER_MANAGER = new Rectangle(0, 0, 12*16, 
+      34*16-8);
+  public static final Rectangle FULL_SCREEN =
+      new Rectangle(0, 0, MainE.WIDTH*MainE.scale, MainE.HEIGHT*MainE.scale);
   
   private static final int SPREADSHEET_SIZE = 256;
   private static final int SPREADSHEET_ROW = 16;
@@ -258,7 +264,7 @@ public class Draw {
    * @param texID see {@link Draw#loadTextures() loadTextures}
    */
   public static void rectCam(float x, float y, float sx, float sy, int texx, 
-      int texy, int texsx, int texsy, int angle, int texID) {
+      int texy, int texsx, int texsy, int angle, int texID) {    
     rect(x-Camera.getX(), y-Camera.getY(), 
         sx, sy, texx, texy, texsx, texsy, angle, tex[texID]);
   }
@@ -267,6 +273,13 @@ public class Draw {
       int texy, int texsx, int texsy, Texture texture)
   {
     rect(x-Camera.getX(), y-Camera.getY(), sx, sy, texx, texy, texsx, texsy,
+        0, texture);
+  }
+  
+  public static void rect(float x, float y, float sx, float sy, int texx,
+      int texy, int texsx, int texsy, Texture texture)
+  {
+    rect(x, y, sx, sy, texx, texy, texsx, texsy,
         0, texture);
   }
   
@@ -305,23 +318,14 @@ public class Draw {
     rectCam(x, y, sx, sy, texx, texy, texsx, texsy, 0, texID);
   }
   
-  public static void addTexture(int png) throws IOException
+  public static void tile(float x, float y, int texX, int texY, int texID)
   {
-    try
-    {
-      Texture t = TextureLoader.getTexture("PNG", new FileInputStream(
-          new File("res/spreadsheets/"+png+".png")));
-      sheets.add(t);
-    } catch (IOException e)
-    {
-      throw new IOException();
-    }
+      Draw.rect(x, y, 16, 16, texX, texY, texX+16, texY+16, sheets.get(texID));
   }
   
-  public static void tile(int x, int y, int texX, int texY, int texID)
+  public static void tileCam(float x, float y, int texX, int texY, int texID)
   {
-      Draw.rectCam(x, y, 16, 16, texX, texY, texX+16, texY+16, sheets.get(texID));
-   
+    Draw.tile(x-Camera.getX(), y-Camera.getY(), texX, texY, texID);
   }
   
   public static int getTexX(int id)
@@ -339,6 +343,8 @@ public class Draw {
     if (id==-1) return -1;
     return id / SPREADSHEET_SIZE;
   }
+  
+ 
   
   /**
    * Creates an approximated circle at the specified point
@@ -383,5 +389,120 @@ public class Draw {
       float r, float g, float b, float a){
     circ(x-Camera.getX(), y-Camera.getY(), radius, r, g, b, a);
   }
+  
+  public static void readSpreadsheets()
+  {
+    int texNum = 0;
+    boolean hasFiles = true;
 
-}
+    while (hasFiles)
+    {
+      try 
+      {
+        addTexture(texNum);
+        texNum++;
+      } catch (IOException e)
+      {
+        hasFiles = false;
+      }
+    }
+  }
+  
+  public static void addTexture(int png) throws IOException
+  {
+    try
+    {
+      Texture t = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/spreadsheets/"+png+".png")));
+      sheets.add(t);
+    } catch (IOException e)
+    {
+      throw new IOException();
+    }
+  }
+  
+  public static int getNumberOfSpreadsheets()
+  {
+    return sheets.size();
+  }
+  
+  public static void drawIfInBounds(Rectangle r, float x, float y, 
+      float sx, float sy, int texx, int texy, int texsx, int texsy,
+      int rot, int texId)
+  {
+    Rectangle obj = new Rectangle((int) x, (int) y, (int) sx, (int) sy);
+    if (r.contains(obj))
+    {
+      Draw.rect(x, y, sx, sy, texx, texy, texsx, texsy, rot, texId);
+    } else if (r.intersects(obj))
+    {
+      int scale = (int) sx / (texsx - texx);
+      
+      float drawX = Math.max(r.x, x);
+      float drawY = Math.max(r.y, y);
+      float drawMaxX = Math.min(r.x+r.width, x+sx);
+      float drawMaxY = Math.min(r.y+r.height, y+sy);
+      
+      if ((int) drawY % 2 != 0 && (int) drawMaxY % 2 == 0)
+      {
+        drawY--;
+      } else if ((int) drawY % 2 == 0 && (int) drawMaxY % 2 != 0)
+      {
+        drawMaxY++;
+      }
+      
+      if ((int) drawX % 2 != 0 && (int) drawMaxX % 2 == 0)
+      {
+        drawX--;
+      } else if ((int) drawX % 2 == 0 && (int) drawMaxX % 2 != 0)
+      {
+        drawMaxX++;
+      }      
+      float drawSx = (drawMaxX - drawX);
+      float drawSy = (drawMaxY - drawY);
+                  
+      int topOff = (int) ((y+sy-drawMaxY) / scale);
+      int botOff = (int) ((drawY - y) / scale);
+      int rightOff = (int) ((x+sx-drawMaxX) / scale);
+      int leftOff = (int) ((drawX - x) / scale);
+      
+      Draw.rect(drawX, drawY, drawSx, drawSy, texx + leftOff,
+        texy + topOff, texsx - rightOff, texsy -
+        botOff, rot, texId);
+      
+    }
+  }
+  
+  public static void drawIfInBounds(Rectangle r, float x, float y, 
+      float sx, float sy, int texx, int texy, int texsx, int texsy,
+      int texId)
+  {
+    drawIfInBounds(r, x, y, sx, sy, texx, texy, texsx, texsy, 0, texId);
+  }
+  
+  public static void tileZoom(float x, float y, int texx, int texy, 
+      int texID, float zoom, float pivx, float pivy)
+  {
+    rect((x-pivx)*zoom+pivx, (y-pivy)*zoom+pivy, 16*zoom, 16*zoom, texx, texy, 
+        texx+16, texy+16, sheets.get(texID));
+  }
+  
+  public static void rectZoom(float x, float y, float sx, float sy,
+      int texx, int texy, int texsx, int texsy, int texID, float zoom,
+      float ex, float ey)
+  { 
+    rect((x-ex)*zoom+ex, (y-ey)*zoom+ey, sx*zoom, sy*zoom, 
+        texx, texy, texsx, texsy, texID);
+    
+    /*rectZoom(x, y, sx, sy, texx, texy, texsx, texsy, 0, texID, zoom,
+        ex, ey);*/
+    
+  }
+  
+  public static void rectZoom(float x, float y, float sx, float sy,
+      int texx, int texy, int texsx, int texsy, int rot, int texID, float zoom,
+      float ex, float ey)
+  { 
+    rect((x-ex)*zoom+ex, (y-ey)*zoom+ey, sx*zoom, sy*zoom, 
+        texx, texy, texsx, texsy, rot, texID);
+  }}

@@ -10,11 +10,11 @@ import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.engine.Save;
 import komorebi.projsoul.gameplay.Item;
 import komorebi.projsoul.gameplay.Key;
-import komorebi.projsoul.script.EarthboundFont;
-import komorebi.projsoul.script.Font;
+import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.Font;
+import komorebi.projsoul.script.text.SpeechHandler;
+import komorebi.projsoul.script.text.TextHandler;
 import komorebi.projsoul.map.Map;
-import komorebi.projsoul.script.SpeechHandler;
-import komorebi.projsoul.script.TextHandler;
 
 /**
  * 

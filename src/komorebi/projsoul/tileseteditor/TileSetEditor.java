@@ -1,5 +1,5 @@
 /**
- * TileSetEditor.java		Jul 28, 2016, 2:35:58 PM
+f * TileSetEditor.java		Jul 28, 2016, 2:35:58 PM
  */
 package komorebi.projsoul.tileseteditor;
 
@@ -85,22 +85,9 @@ public class TileSetEditor implements Playable {
     min = 0;
     max = 16;
 
-    int texNum = 0;
-    boolean hasFiles = true;
+    Draw.readSpreadsheets();
 
-    while (hasFiles)
-    {
-      try 
-      {
-        Draw.addTexture(texNum);
-        texNum++;
-      } catch (IOException e)
-      {
-        hasFiles = false;
-      }
-    }
-
-    left = new int[32*texNum][8];
+    left = new int[32*Draw.getNumberOfSpreadsheets()][8];
 
     for (int i=0, k=0; i<left.length; i++)
     {
@@ -804,8 +791,8 @@ public class TileSetEditor implements Playable {
       }else{
         writer = new PrintWriter(path+".tset", "UTF-8");
       }
-      writer.println(right.length);
-      writer.println(right[0].length);
+      //writer.println(right.length);
+      //writer.println(right[0].length);
 
       for (int[] tile : right) {
         for (int i : tile) {

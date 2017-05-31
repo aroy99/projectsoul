@@ -2,8 +2,8 @@ package komorebi.projsoul.gameplay;
 
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Renderable;
-import komorebi.projsoul.script.EarthboundFont;
-import komorebi.projsoul.script.TextHandler;
+import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.TextHandler;
 
 public class MagicBar implements Renderable {
 

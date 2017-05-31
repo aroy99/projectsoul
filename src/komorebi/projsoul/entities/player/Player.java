@@ -13,27 +13,28 @@ import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.ProjectileAttack;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
-import komorebi.projsoul.entities.Entity;
+import komorebi.projsoul.engine.ThreadHandler;
+import komorebi.projsoul.engine.ThreadHandler.TrackableThread;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.NPC;
-import komorebi.projsoul.entities.Entity.Entities;
+import komorebi.projsoul.entities.Person;
 import komorebi.projsoul.entities.enemy.Enemy;
+import komorebi.projsoul.entities.sprites.SpriteSet;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.gameplay.MagicBar;
 import komorebi.projsoul.map.Map;
-import komorebi.projsoul.script.Execution;
-import komorebi.projsoul.script.Lock;
 import komorebi.projsoul.states.Game;
 
 /**
  * @author Aaron Roy
  * @author Andrew Faulkenberry
  */
-public abstract class Player extends Entity implements Playable{
+public abstract class Player extends Person implements Playable{
 
   private boolean up;
   private boolean down;
@@ -50,43 +51,28 @@ public abstract class Player extends Entity implements Playable{
 
   public boolean isAttacking;
 
-  protected boolean canMove = true;
-
-  protected float dx;
-  protected float dy;
+  protected boolean unlocked = true;
 
   private int framesToGo;
   private boolean hasInstructions;
 
-  public Animation upAni;
-  public Animation downAni;
-  public Animation leftAni;
-  public Animation rightAni;
-
-  public Animation hurtLeftAni;
-  public Animation hurtRightAni;
-  public Animation hurtUpAni;
-  public Animation hurtDownAni;
+  public SpriteSet hurtSprites;
   public Animation deathAni;
 
   private int hurtCount;
 
-  private Rectangle area;
   protected boolean invincible;
   private boolean restoreMvmtX;
   private boolean restoreMvmtY;
 
   private static final float SPEED = 1;
 
-  public Face dir = Face.DOWN;    
-  private Execution ex;
-
-  private Lock lock;
-
   public Rectangle future;
 
   public MagicBar magic;
   public HUD health;
+  
+  private TrackableThread waiting;
 
   protected boolean noContact;
 
@@ -98,12 +84,11 @@ public abstract class Player extends Entity implements Playable{
    */
   public Player(float x, float y) {
     super(x, y, 16, 24);
-    ent = Entities.CLYDE;
 
     restoreMvmtX = true;
     restoreMvmtY = true;
 
-    area = new Rectangle((int) x, (int) y, 16, 24);
+    area = new Rectangle((int) this.x, (int) this.y, 16, 24);
     future = new Rectangle((int) x, (int) y, 16, 24);
 
     deathAni = new Animation(4,8,16,21,11,false);
@@ -111,9 +96,16 @@ public abstract class Player extends Entity implements Playable{
     deathAni.add(0, 82);
     deathAni.add(0, 103);
     deathAni.add(0, 124);
-
+    
+    
   }
-
+  
+  protected void initializeSprites()
+  {
+    sprites = character.getNewWalkingSprites();
+    hurtSprites = character.getNewHurtSprites();
+  }
+  
   public abstract void levelUp();
 
   /**
@@ -121,7 +113,7 @@ public abstract class Player extends Entity implements Playable{
    */
   public void getInput(){
 
-    if (canMove)
+    if (unlocked)
     {
       up =    Keyboard.isKeyDown(Keyboard.KEY_UP) && 
           !Keyboard.isKeyDown(Keyboard.KEY_DOWN);
@@ -142,10 +134,12 @@ public abstract class Player extends Entity implements Playable{
    */
   @Override
   public void update() {
-
+    
+    super.update();
+    
     int aniSpeed = 8;
 
-    if (canMove) {
+    if (unlocked) {
 
       if (!guiding && restoreMvmtX && restoreMvmtY)
       {
@@ -154,51 +148,53 @@ public abstract class Player extends Entity implements Playable{
 
           if (!isAttacking)
           {
-            dir = Face.LEFT;
-            leftAni.resume();
+            turn(Face.LEFT);
+            resumeAnimationIfStopped();
           }
         }
         if(right){
           dx = SPEED;
           if (!isAttacking)
           {
-            dir = Face.RIGHT;
-            rightAni.resume();
+            turn(Face.RIGHT);
+            resumeAnimationIfStopped();
           }
         }
+        
         if(!(left || right)){
           dx = 0;
-          leftAni.hStop();
-          rightAni.hStop();
         }
 
         if(down){
           dy = -SPEED;
           if (!isAttacking)
           {
-            dir = Face.DOWN;
-            downAni.resume();
+            turn(Face.DOWN);
+            resumeAnimationIfStopped();
           }
         }
         if(up){
           dy = SPEED;
           if (!isAttacking)
           {
-            dir = Face.UP;
-            upAni.resume();
+            turn(Face.UP);
+            resumeAnimationIfStopped();
           }
         }
 
         if(!(up || down)){
           dy = 0;
-          downAni.hStop();
-          upAni.hStop();
         }
 
         if(run){
           dx *=2;
           dy *=2;
           aniSpeed /=2;
+        }
+        
+        if (!moving())
+        {
+          sprites.stopCurrent();
         }
       }
 
@@ -222,11 +218,8 @@ public abstract class Player extends Entity implements Playable{
 
 
 
-      upAni.setSpeed(aniSpeed);
-      downAni.setSpeed(aniSpeed);
-      leftAni.setSpeed(aniSpeed);
-      rightAni.setSpeed(aniSpeed);
-
+      sprites.setAniSpeed(aniSpeed);
+      
       if (invincible)
       {
         hurtCount--;
@@ -265,28 +258,7 @@ public abstract class Player extends Entity implements Playable{
         {
           invincible = false;
 
-          switch (dir)
-          {
-            case DOWN:
-              hurtDownAni.hStop();
-              downAni.resume();
-              break;
-            case LEFT:
-              hurtLeftAni.hStop();
-              leftAni.resume();
-              break;
-            case RIGHT:
-              hurtRightAni.hStop();
-              rightAni.resume();
-              break;
-            case UP:
-              hurtUpAni.hStop();
-              upAni.resume();
-              break;
-            default:
-              break;
-
-          }
+          hurtSprites.stopCurrent();
         }
       }
 
@@ -312,10 +284,7 @@ public abstract class Player extends Entity implements Playable{
       }
 
     }else {
-      upAni.hStop();
-      downAni.hStop();
-      leftAni.hStop();
-      rightAni.hStop();
+      sprites.stopCurrent();
     }
 
     overrideImproperMovements();
@@ -326,7 +295,7 @@ public abstract class Player extends Entity implements Playable{
 
     area.x += dx;
     area.y += dy;
-
+    
     if (hasInstructions)
     {
       if (dx!=0) 
@@ -346,24 +315,12 @@ public abstract class Player extends Entity implements Playable{
       System.out.println("x: "+x+", y: "+y);
     }
 
-    if (hasInstructions&&framesToGo<=0)
-    {
-      hasInstructions=false;
-      dx=0;
-      dy=0;
-      left = false;
-      right = false;
-      down = false;
-      up = false;
-      lock.resumeThread();
-    }
-
     area.x = (int) x;
     area.y = (int) y;
 
     future.x = (int) x;
     future.y = (int) y;
-
+    
     guiding = false;
 
     magic.update();
@@ -405,13 +362,22 @@ public abstract class Player extends Entity implements Playable{
 
 
   }
+  
+  private void resumeAnimationIfStopped()
+  {
+    if (sprites.isCurrentStopped())
+    {
+      sprites.resumeCurrent();
+    }
+  }
+
 
   /**
    * @see komorebi.projsoul.engine.Renderable#render()
    */
   @Override
   public void render() {
-
+    
     if (!invincible)
     {
       if (!isAttacking) {
@@ -422,179 +388,46 @@ public abstract class Player extends Entity implements Playable{
       }
     } else
     {
-      switch (dir)
-      {
-        case DOWN:
-          hurtDownAni.playCam(x, y);
-          break;
-        case LEFT:
-          hurtLeftAni.playCam(x, y);
-          break;
-        case RIGHT:
-          hurtRightAni.playCam(x, y);
-          break;
-        case UP:
-          hurtUpAni.playCam(x, y);
-          break;
-        default:
-          break;
-      }
+      hurtSprites.renderCurrent(x, y);
     }
 
     ProjectileAttack.play();
     RingOfFire.play();
   }
 
-  public void pause(int frames, Lock lock)
+ 
+
+  public void align(Face dir, NPC npc)
   {
-    framesToGo = frames;
-
-    pause = true;
-    hasInstructions = true;
-
-    this.lock = lock;
-    this.lock.pauseThread();
-  }
-
-  public void walk(Face dir, int tiles)
-  {
-
-    hasInstructions=true;
-    framesToGo = tiles*16;
-    //isMoving=true;
-    //isRunning=false;
-    this.dir = dir;
-
-    switch (dir)
-    {
-      case DOWN:
-        down = true;
-        break;
-      case LEFT:
-        left = true;
-        break;
-      case RIGHT:
-        right = true;
-        break;
-      case UP:
-        up = true;
-        break;
-      default:
-        break;
-    }
-
-  }
-
-  public void walk(Face dir, int tiles, Execution ex)
-  {
-    walk(dir, tiles);
-    this.ex = ex;
-    this.ex.getLock().pauseThread();    
-  }
-
-  public void walk(Face dir, int tiles, Lock lock)
-  {
-    this.lock = lock;
-    walk(dir,tiles);
-    this.lock.pauseThread();
-  }
-
-  public void align(Face dir, Lock lock)
-  {
-    this.lock = lock;
+    waiting = ThreadHandler.currentThread();
     hasInstructions=true;
 
-    this.dir = dir;
+    Rectangle r = npc.getSurroundingRectangle(dir);
+    
+    goToPixX(r.x);
+    goToPixY(r.y);
 
-    switch (dir)
-    {
-      case DOWN:
-        framesToGo = (int) this.y - 16*getTileY();
-        down = true;
-        break;
-      case LEFT:
-        framesToGo = (int) this.x - 16*getTileX();
-        left = true;
-        break;
-      case RIGHT:
-        framesToGo = (int) (16*getTileX() + 16 - this.x);
-        right = true;
-        break;
-      case UP:
-        framesToGo = (int) (16*getTileY() + 16 - this.y);
-        up = true;
-        break;
-      default:
-        break;
-    }
-
-    this.lock.pauseThread();
   }
 
-  public void align(NPC npc, Lock lock)
+  public void align(NPC npc)
   {
+    waiting = ThreadHandler.currentThread();
+    
     Rectangle r = npc.intersectedHitbox(area);
-    goToPixX(r.x, lock);
-    goToPixY(r.y, lock);
+    
+    goToPixX(r.x);
+    goToPixY(r.y);
+    
     dir = npc.faceMe(area);
-  }
-
-  public void goToPixX(int goTo, Lock lock)
-  {
-    int distance = goTo - (int) x;
-    framesToGo = Math.abs(distance);
-    hasInstructions = true;
-
-    if (distance<0)
-    {
-      left = true;
-      dir = Face.LEFT;
-      dx = -1;
-    } else if (distance>0)
-    {
-      right = true;
-      dir = Face.RIGHT;
-      dx = 1;
-    }
-
-    this.lock = lock;
-    lock.pauseThread();
-  }
-
-  public void goToPixY(int goTo, Lock lock)
-  {
-
-    int distance = goTo - (int) y;
-    framesToGo = Math.abs(distance);
-    hasInstructions = true;
-
-    if (distance<0)
-    {
-      down = true;
-      dir = Face.DOWN;
-      dy = -1;
-    } else if (distance>0)
-    {
-      up = true;
-      dir = Face.UP;
-      dy = 1;
-    }
-
-    this.lock = lock;
-    lock.pauseThread();
-  }
-
-  public void turn(Face dir)
-  {
-    this.dir = dir;
+    turn(dir);
   }
 
   public void lock(){
-    canMove=false;
+    unlocked=false;
   }
 
   public void unlock(){
-    canMove=true;
+    unlocked=true;
   }
 
   public int getTileX(){
@@ -609,36 +442,7 @@ public abstract class Player extends Entity implements Playable{
     return dir;
   }
 
-  public void goTo(boolean horizontal, int tx, Lock lock)
-  {
-    System.out.println(tx*16 + ", x = " + x);
-
-
-    if (horizontal)
-    {
-      if (x>tx*16)
-      {
-        align(Face.LEFT, lock);
-        walk(Face.LEFT, getTileX()-tx);
-      } else if (x<tx*16)
-      {
-        align(Face.RIGHT, lock);
-        walk(Face.RIGHT, tx-getTileX(), lock);
-      }
-    } else
-    {
-      if (y>tx*16)
-      {
-        align(Face.DOWN, lock);
-        walk(Face.DOWN, getTileY()-tx, lock);
-      } else if (y<tx*16)
-      {
-        align(Face.UP, lock);
-        walk(Face.UP, tx-getTileY(), lock);
-      }
-    }
-
-  }
+  
 
   public void stop()
   {
@@ -790,26 +594,8 @@ public abstract class Player extends Entity implements Playable{
 
     hurtCount = 40;
 
-    switch (dir)
-    {
-      case DOWN:
-        hurtDownAni.resume();
-        break;
-      case LEFT:
-        hurtLeftAni.resume();
-        break;
-      case RIGHT:
-        hurtRightAni.resume();
-        break;
-      case UP:
-        hurtUpAni.resume();
-        break;
-      default:
-        break;
-
-    }
-
-    System.out.println("Damage = " + attack + " - " + getDefense(character) + "/2");
+    hurtSprites.turn(dir);
+    hurtSprites.resumeCurrent();
 
     if (attack - getDefense(character)/2 > 0)
     {
@@ -995,27 +781,25 @@ public abstract class Player extends Entity implements Playable{
 
   public void playWalk()
   {
-    switch (dir) {
-      case DOWN:
-        downAni.playCam(x,y);
-        break;
-      case UP:
-        upAni.playCam(x,y);
-        break;
-      case LEFT:
-        leftAni.playCam(x,y);
-        break;
-      case RIGHT:
-        rightAni.playCam(x,y);
-        break;
-      default:
-        break;
-    }
+    sprites.renderCurrent(x, y);
   }
 
   public int getHealth()
   {
     return health.getHealth();
+  }
+  
+  public boolean canMove(float dx, float dy)
+  {
+    future = new Rectangle((int) (x + dx), (int) (y + dy), 
+        sx, sy);
+        
+    return !Game.getMap().willIntersectNPCs(future);
+  }
+  
+  public boolean isLocked()
+  {
+    return !unlocked;
   }
 
 

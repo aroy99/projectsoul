@@ -4,72 +4,44 @@
  **/
 package komorebi.projsoul.entities;
 
-import komorebi.projsoul.engine.Animation;
-import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.engine.Main;
-import komorebi.projsoul.map.Map;
-import komorebi.projsoul.script.EarthboundFont;
-import komorebi.projsoul.script.Execution;
-import komorebi.projsoul.script.Lock;
-import komorebi.projsoul.script.SpeechHandler;
-import komorebi.projsoul.script.TalkingScript;
-import komorebi.projsoul.script.WalkingScript;
-
 import java.awt.Rectangle;
-import java.util.ArrayList;
+
+import komorebi.projsoul.engine.Main;
+import komorebi.projsoul.engine.ThreadHandler;
+import komorebi.projsoul.map.Map;
+import komorebi.projsoul.script.tasks.Task.Precedence;
+import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.SpeechHandler;
 
 
 /**
  * 
  * @author Andrew Faulkenberry
  */
-public class NPC extends Entity {
-
-  private static ArrayList<NPC> npcs = new ArrayList<NPC>();
+public class NPC extends Person {
 
   private String name;
 
   private boolean started;
 
   public Face direction = Face.DOWN;
-  private SpeechHandler text;
-  
-  private Rectangle[] surround = new Rectangle[4];
-  
-  private boolean isVisible, isMoving, isRunning, isWaiting;
-  private boolean hasInstructions;
 
-  private Execution instructor;
+  private Rectangle[] surround = new Rectangle[4];
 
   private NPCType type;
-
-  private int dx, dy;
-  private int framesToGo;
-
-  private int xTravelled;
-  private int yTravelled;
 
   public Rectangle future;
 
   private String[] names = new String[4];
-  private TalkingScript talkScript;
 
   private boolean isTalking, isWalking;
 
-  private WalkingScript walkScript;
-
-  Animation rightAni, leftAni, downAni, upAni;
-
-  private int prevdx, prevdy;
-  private int prevFrames;
-  private Face prevDir;
-  private boolean wasHangingOn;
+  private String walkScript, talkScript;
   
-  private Lock lock;
-  private Lock prevLock;
+  private static final int TOP = 0, RIGHT = 1, BOTTOM = 2, LEFT = 3;
 
   boolean hangOn;
-  
+  boolean interruptWalking;
 
   /**
    * @param x The x location (in pixels) of the bottom left corner of the NPC
@@ -77,24 +49,20 @@ public class NPC extends Entity {
    */
   public NPC(String name, float x, float y, NPCType type) {
     super(x,y,16,24);
-    
+
     area = new Rectangle((int) x, (int) y, 16, 24);
 
     this.name = name;
 
-    setAttributes(type);
-
-    isMoving=false;
-    hasInstructions=false;
-    isVisible = true;
+    setNPCType(type);
 
     text = new SpeechHandler();
     SpeechHandler.setSpeed(3);
 
-    surround[0] = new Rectangle((int) this.x, (int) this.y+24, 16, 24);
-    surround[1] = new Rectangle((int) this.x + 16, (int) this.y, 16, 24);
-    surround[2] = new Rectangle((int) this.x, (int) this.y - 24, 16, 24);
-    surround[3] = new Rectangle((int) this.x - 16, (int) this.y, 16, 24);
+    surround[TOP] = new Rectangle(16, 24);
+    surround[RIGHT] = new Rectangle(16, 24);
+    surround[BOTTOM] = new Rectangle(16, 24);
+    surround[LEFT] = new Rectangle(16, 24);
 
     future = new Rectangle((int) this.x, (int) this.y, 16, 24);
 
@@ -102,23 +70,8 @@ public class NPC extends Entity {
     names[1] = "Right";
     names[2] = "Bottom";
     names[3] = "Left";
-
-  }
-
-  public NPC(String name)
-  {
-    super(0,0,16,24);
-    
-    this.name = name;
-    ent=Entities.NPC;
-
-    isVisible = false;
-
-    isMoving = false;
-    hasInstructions=false;
-
-    text = new SpeechHandler();
-
+  
+    sprites.turn(Face.DOWN);
   }
 
 
@@ -131,128 +84,21 @@ public class NPC extends Entity {
    * Updates the behavior of the NPC, such as speed and movement
    */
   public void update() {
-                
-    if (framesToGo <= 0 && hasInstructions)
-    {
-      isMoving=false;
-      isRunning=false;
-      isWaiting=false;
-      dx=0;
-      dy=0;
 
-      hasInstructions=false;
+    super.update();
 
-      if (lock != null)
-      {
-        lock.resumeThread();
-      } 
-
-    }
+    refreshSurroundingRectangles();
     
-    if (isMoving)
-    {      
-      if (!hangOn && !frontClear() && isWalking)
-      {
-        hangOn = true;
-
-        prevdx = dx;
-        prevdy = dy;
-
-        dx=0;
-        dy=0;
-        
-        prevDir = direction;
-
-        downAni.hStop();
-        upAni.hStop();
-        leftAni.hStop();
-        rightAni.hStop();
-
-
-      } else if (hangOn && frontClear() && isWalking)
-      {        
-        hangOn = false;
-
-        dx = prevdx;
-        dy = prevdy;
-        
-        direction = prevDir;
-      }
-
-      if (isRunning)
-      {
-        downAni.setSpeed(8);
-        leftAni.setSpeed(8);
-        rightAni.setSpeed(8);
-        upAni.setSpeed(8);
-
-      } else
-      {
-        downAni.setSpeed(4);
-        leftAni.setSpeed(4);
-        rightAni.setSpeed(4);
-        upAni.setSpeed(4);
-      }
-
-      if (!hangOn)
-      {
-        switch (direction)
-        {
-          case DOWN:
-            downAni.resume();
-            break;
-          case LEFT:
-            leftAni.resume();
-            break;
-          case RIGHT:
-            rightAni.resume();
-            break;
-          case UP:
-            upAni.resume();
-            break;
-          default:
-            break;
-        }
-      }
-    } else
-    {
-      downAni.hStop();
-      upAni.hStop();
-      leftAni.hStop();
-      rightAni.hStop();
-    }
+  }
+  
+  private void refreshSurroundingRectangles()
+  {
+    surround[TOP].setLocation((int) this.x, (int) this.y+24);
+    surround[RIGHT].setLocation((int) this.x + 16, (int) this.y);
+    surround[BOTTOM].setLocation((int) this.x, (int) this.y - 24);
+    surround[LEFT].setLocation((int) this.x - 16, (int) this.y);
     
-    x+=dx;
-    xTravelled+=dx;
-
-    y+=dy;
-    yTravelled+=dy;
-    
-    future.x+=dx;
-    future.y+=dy;
-    
-    area.x += dx;
-    area.y += dy;
-
-    for (Rectangle r: surround)
-    {
-      r.x += dx;
-      r.y += dy;
-    }
-
-    if (!hangOn || isTalking)
-    {
-      if (dx != 0) {
-        framesToGo-=Math.abs(dx);
-      } else if (dy != 0){
-        framesToGo-=Math.abs(dy);
-      } else if (isWaiting){
-        framesToGo--;
-      }
-    }
-
-
-
+    future.setLocation((int) x, (int) y);
   }
 
   /* (non-Javadoc)
@@ -265,309 +111,14 @@ public class NPC extends Entity {
    */
   public void render() {
 
-    if (isVisible) {
-      switch (direction)
-      {
-        case DOWN:
-          downAni.playCam(x,y);
-          break;
-        case LEFT:
-          leftAni.playCam(x,y);
-          break;
-        case RIGHT:
-          rightAni.playCam(x,y);
-          break;
-        case UP:
-          upAni.playCam(x,y);
-          break;
-        default:
-          break;
-      }
-
-      text.render();
-
-				//DEBUG This
-//      Draw.rectCam(area.x, area.y, area.width, area.height, 
-//          220, 0, 221, 1, 6);
-      
-    }
+    super.render();
 
   }
-
-  /**
-   * Moves the NPC indefinitely in a given direction
-   * @param dir The direction in which the NPC should move
-   */
-  public void walk(Face dir)
-  {
-
-    isMoving=true;
-    isRunning=false;
-    this.direction = dir;
-
-    switch (dir)
-    {
-      case DOWN:
-        dx=0;
-        dy=-1;
-        break;
-      case LEFT:
-        dx=-1;
-        dy=0;
-        break;
-      case RIGHT:
-        dx=1;
-        dy=0;
-        break;
-      case UP:
-        dx=0;
-        dy=1;
-        break;
-      default:
-        break;
-
-    }
-
-  }
-
-  /**
-   * Moves the NPC a given number of tiles in a specified direction
-   * 
-   * @param dir The direction in which the NPC should move
-   * @param tiles The number of tiles the NPC should move, where one tile is 
-   *         equal to 16 pixels 
-   */
-  private void walk(Face dir, int tiles)
-  {
-
-    hasInstructions=true;
-    framesToGo = tiles*16;
-    isMoving=true;
-    isRunning=false;
-    this.direction = dir;
-
-    switch (dir)
-    {
-      case DOWN:
-        dx=0;
-        dy=-1;
-        break;
-      case LEFT:
-        dx=-1;
-        dy=0;
-        break;
-      case RIGHT:
-        dx=1;
-        dy=0;
-        break;
-      case UP:
-        dx=0;
-        dy=1;
-        break;
-      default:
-        break;
-
-    }
-
-  }
-
-  /**
-   * Moves the NPC a given number of tiles in a specified direction, pausing the
-   * thread
-   * 
-   * @param dir The direction in which the NPC should move
-   * @param tiles The number of tiles the NPC should move, where one tile is 
-   *         equal to 16 pixels 
-   * @param ex The new thread to run the command The new thread to run the command
-   */
-  @Deprecated
-  public void walk(Face dir, int tiles, Execution ex)
-  {
-    this.instructor = ex;
-
-    walk(dir,tiles);
-    instructor.getLock().pauseThread();
-
-  }
-
-  public void walk(Face dir, int tiles, Lock lock)
-  {
-
-    this.lock = lock;
-
-    walk(dir,tiles);
-    lock.pauseThread();
-  }
-
-  /**
-   * Moves the NPC a given number of tiles in a specified direction at a brisk 
-   * pace
-   * 
-   * @param dir The direction in which the NPC should move
-   * @param tiles The number of tiles the NPC should move, where one tile is 
-   *         equal to 16 pixels 
-   */
-  private void jog(Face dir, int tiles)
-  {
-    hasInstructions=true;
-    framesToGo = tiles*16;
-    isMoving=true;
-    isRunning=true;
-    this.direction = dir;
-
-    switch (dir)
-    {
-      case DOWN:
-        dx=0;
-        dy=-2;
-        break;
-      case LEFT:
-        dx=-2;
-        dy=0;
-        break;
-      case RIGHT:
-        dx=2;
-        dy=0;
-        break;
-      case UP:
-        dx=0;
-        dy=2;
-        break;
-      default:
-        break;
-
-    }
-  }
-
-
-  /**
-   * Moves the NPC a given number of tiles in a specified direction at a brisk 
-   * pace, pausing the thread
-   * 
-   * @param dir The direction in which the NPC should move
-   * @param tiles The number of tiles the NPC should move, where one tile is
-   *         equal to 16 pixels 
-   * @param instructor The new thread to run the command The new thread to run the command
-   */
-  @Deprecated
-  public void jog(Face dir, int tiles, Execution instructor)
-  { 
-
-    this.instructor = instructor;
-    jog(dir,tiles);
-    this.instructor.getLock().pauseThread();
-
-  }
-
-  public void jog(Face dir, int tiles, Lock lock)
-  {
-    this.lock = lock;
-    jog(dir,tiles);
-    lock.pauseThread();
-  }
-
-  /**
-   * Turns the NPC to face a different direction
-   * 
-   * @param dir The direction for the NPC to face
-   */
-  public void turn(Face dir)
-  {
-    direction=dir;
-  }
-
-  /**
-   * Turns the NPC to face a different direction, pausing the thread
-   * 
-   * @param dir The direction for the NPC to face
-   * @param instructor The new thread to run the command The new thread to run the command
-   */
-  public void turn(Face dir, Execution instructor)
-  {
-    this.instructor = instructor;
-    turn(dir);
-
-  }
-
 
   public void setNPCType(NPCType type)
   {
-    setAttributes(type);
-  }
-
-  /**
-   * Creates all of the required objects for the specified NPC type
-   * 
-   * @param type The NPC type to set the attributes
-   */
-  public void setAttributes(NPCType type)
-  {
     this.type = type;
-    switch (type){
-      case POKEMON:
-        leftAni = new Animation(3,8,16,24,3);
-        rightAni = new Animation(3,8,16,24,3);
-        upAni = new Animation(3,8,16,24,3);
-        downAni = new Animation(3,8,16,24,3);
-
-        downAni.add(1, 0);
-        downAni.add(18, 0);
-        downAni.add(35, 0);
-
-        leftAni.add(51, 0);
-        leftAni.add(67, 0);
-        leftAni.add(83, 0);
-
-        rightAni.add(51, 0, true);
-        rightAni.add(67, 0, true);
-        rightAni.add(83, 0, true);
-
-        upAni.add(100, 0);
-        upAni.add(117, 0);
-        upAni.add(134, 0);
-        break;
-      case NESS:
-        leftAni = new Animation(2,8,16,24,4);
-        rightAni = new Animation(2,8,16,24,4);
-        upAni = new Animation(2,8,16,24,4);
-        downAni = new Animation(2,8,16,24,4);
-
-        downAni.add(0, 0);
-        downAni.add(17, 0);
-
-        upAni.add(34, 0);
-        upAni.add(34, 0, true);
-
-        leftAni.add(51, 0);
-        leftAni.add(68, 0);
-
-        rightAni.add(51, 0, true);
-        rightAni.add(68, 0, true);
-        break;
-      default:
-        leftAni = new Animation(3,8,16,24,3);
-        rightAni = new Animation(3,8,16,24,3);
-        upAni = new Animation(3,8,16,24,3);
-        downAni = new Animation(3,8,16,24,3);
-
-        downAni.add(1, 0);
-        downAni.add(18, 0);
-        downAni.add(35, 0);
-
-        leftAni.add(51, 0);
-        leftAni.add(67, 0);
-        leftAni.add(83, 0);
-
-        rightAni.add(51, 0, true);
-        rightAni.add(67, 0, true);
-        rightAni.add(83, 0, true);
-
-        upAni.add(100, 0);
-        upAni.add(117, 0);
-        upAni.add(134, 0);
-        break;
-
-    }
+    this.sprites = type.getNewSpriteSet();
   }
 
   /**
@@ -592,26 +143,21 @@ public class NPC extends Entity {
    * @param args The options to write
    * @param lock The new thread to run the command
    */
-  public String ask(String[] args, Execution ex, Lock lock)
+  public String ask(String[] args)
   {
+    text.clear();
     text.write(args[0], 20, 58, new EarthboundFont(1));
     if (args.length>1) text.write(args[1], 30, 40, new EarthboundFont(1));
     if (args.length>2) text.write(args[2], 100, 40, new EarthboundFont(1));
     if (args.length>3) text.write(args[3], 30, 22, new EarthboundFont(1));
     if (args.length>4) text.write(args[4], 100, 22, new EarthboundFont(1));
 
-    this.instructor = ex;
-    this.lock = lock;
-
     //options = args;
     text.setOptions(args);
-    text.drawPicker(1);
     
-    Main.getGame().setMaxOptions(args.length-1);
     Main.getGame().setAsker(text);
-    
-    text.setLockAndPause(lock);
-    return text.getAnswer();
+
+   return text.getAnswer();
   }
 
   public int getTileX()
@@ -624,11 +170,6 @@ public class NPC extends Entity {
     return ((int) y)/16;
   }
 
-  public void setPickerIndex(int i)
-  {
-    text.setPickerIndex(i);
-  }
-
   public NPCType getType()
   {
     return type;
@@ -639,123 +180,41 @@ public class NPC extends Entity {
     return name;
   }
 
-  public static void add(NPC person)
-  {
-    npcs.add(person);
-  }
 
   /**
-   * Returns the NPC that matches the name provided
-   * 
-   * @param s The name input
-   * @return The NPC, if none found, null
-   */
-  public static NPC get(String s)
-  {
-    for (NPC n: npcs)
-    {
-      if (n.getName().equals(s)) 
-      {
-        return n;
-      }
-    }
-
-    return null;
-  }
-
-  public static ArrayList<NPC> getNPCs()
-  {
-    return npcs;
-  }
-
-  public void setVisible(boolean b)
-  {
-    isVisible = b;
-  }
-
-  public int getXTravelled()
-  {
-    return xTravelled;
-  }
-
-  public int getYTravelled()
-  {
-    return yTravelled;
-  }
-
-  
-
-  /**
-   * Runs the NPC's talking script when Clyde prompts them
+   * Runs the NPC's talking script when the player prompts them
    */
   public void approach()
   {
-    prevFrames = framesToGo;
-    wasHangingOn = hangOn;
+    isTalking = true;
     
-    prevLock = lock;
-    
-    abortWalkingScript();
-    talkScript.run();
+    interrupt();
+    runTalkingScript();
   }
 
   public void disengage()
   {
-    if (isTalking)
-    {
-      walkScript.resume();
-      talkScript.setIsRunning(false);
-      isWalking = true;
-    } else
-    {
-      isWalking = false;
-      walkScript.setIsRunning(false);
-    }
-    isTalking = false;    
-    
-    if (prevFrames > 0)
-    {
-      isMoving = true;
-      hasInstructions = true;
-    }
-    
-    hangOn = wasHangingOn;
-    framesToGo = prevFrames;
-    
-    lock = prevLock;
-
+    letContinue();
+    isTalking = false;
   }
 
-  public void setTalkingScript(TalkingScript nScript)
+
+  public void setTalkingScript(String nScript)
   {
     talkScript = nScript;
   }
 
-  public void setWalkingScript(WalkingScript nScript)
+  public void setWalkingScript(String nScript)
   {
     walkScript = nScript;
   }
-
-  public void abortTalkingScript()
-  {
-    talkScript.pause();
-    isTalking = false;
-    isWalking = true;
-  }
-
-  public void abortWalkingScript()
-  {
-    walkScript.pause();
-    isTalking = true;
-    isWalking = false;
-  }
-
-  public TalkingScript getTalkingScript()
+ 
+  public String getTalkingScript()
   {
     return talkScript;
   }
 
-  public WalkingScript getWalkingScript()
+  public String getWalkingScript()
   {
     return walkScript;
   }
@@ -779,19 +238,28 @@ public class NPC extends Entity {
   {
     isWalking = b;
   }
-
+  
   public void runWalkingScript()
   {
     isWalking = true;
     started = true;
-    walkScript.run();
+    
+    ThreadHandler.newLoop(walkScript, this, Map.getPlayer());
+  }
+  
+  public void runTalkingScript()
+  {
+    isWalking = false;
+    started = true;
+    
+    ThreadHandler.newThread(talkScript, this, Map.getPlayer());
   }
 
   public void move(float dx, float dy)
   {
     x+=dx;
     y+=dy;
-
+    
     surround[0].setLocation((int) x, (int) y+24);
     surround[1].setLocation((int) x+16, (int) y);
     surround[2].setLocation((int) x, (int) y-24);
@@ -844,25 +312,27 @@ public class NPC extends Entity {
    * @param tx The tile to move to
    * @param lock Lock to wait on
    */
-  public void goTo(boolean horizontal, int tx, Lock lock)
+  public void goTo(boolean horizontal, int tx, Precedence precedence)
   {
     if (horizontal)
     {
       if (x>tx*16)
       {
-        walk(Face.LEFT, getTileX()-tx);
+        for (int i = 0; i < getTileX()-tx; i++)
+          walk(Face.LEFT);
       } else if (x<tx*16)
-      {
-        walk(Face.RIGHT, tx-getTileX(), lock);
+      { for (int i = 0; i < getTileX()-tx; i++)
+        walk(Face.RIGHT);
       }
     } else
     {
-      if (y>tx*16)
+      if (y>ty*16)
+      {for (int i = 0; i < getTileX()-tx; i++)
+        walk(Face.DOWN);
+      } else if (y<ty*16)
       {
-        walk(Face.DOWN, getTileY()-tx, lock);
-      } else if (y<tx*16)
-      {
-        walk(Face.UP, tx-getTileY(), lock);
+        for (int i = 0; i < ty-getTileY(); i++)
+          walk(Face.UP);
       }
     }
 
@@ -871,75 +341,62 @@ public class NPC extends Entity {
   /**
    * @return Whether the player is standing right in the NPC's path
    */
-  public boolean frontClear()
+  public boolean canMove(float dx, float dy)
   {
-    boolean get;
+    future.x += dx;
+    future.y += dy;
     
-    future.x+=dx;
-    future.y+=dy;
-    
-    if (direction == Face.LEFT || direction == Face.RIGHT)
+    if (future.intersects(Map.getPlayer().getArea()))
     {
-      future.grow(1, 0);
-    } else
-    {
-      future.grow(0, 1);
+      future.x -= dx;
+      future.y -= dy;
+      
+      return false;
     }
     
-    get = !future.intersects(Map.getPlayer().getArea());
-
-    if (direction == Face.LEFT || direction == Face.RIGHT)
-    {
-      future.grow(-1, 0);
-    } else
-    {
-      future.grow(0, -1);
-    }
+    future.x -= dx;
+    future.y -= dy;
     
-    future.x-=dx;
-    future.y-=dy;
+    return true; 
     
-    return get;
   }
-  
+
   public Rectangle getArea()
   {
     return area;
   }
-  
+
   /**
    * 
    * @param clydeX
    * @param clydeY
    * @return
    */
-  public boolean isApproached(Rectangle clyde, Face direction)
-  {
-    return ((surround[0].intersects(clyde) && direction == Face.DOWN) ||
-        (surround[1].intersects(clyde) && direction == Face.LEFT) ||
-        (surround[2].intersects(clyde) && direction == Face.UP) ||
-        (surround[3].intersects(clyde) && direction == Face.RIGHT)) && !isTalking;
+  public boolean isApproached(Rectangle player, Face direction)
+  {    
+    return ((surround[0].intersects(player) && direction == Face.DOWN) ||
+        (surround[1].intersects(player) && direction == Face.LEFT) ||
+        (surround[2].intersects(player) && direction == Face.UP) ||
+        (surround[3].intersects(player) && direction == Face.RIGHT)) && 
+        !isTalking;
   }
-  
-   public void say(String s, Lock lock)
-  {
-    text.write(s, 20, 58, new EarthboundFont(1));
-    Main.getGame().setSpeaker(text);
-    text.setAndLock(lock);
-  }
-  
-  public void pause(int frames, Lock lock)
-  {
-    framesToGo = frames;
-    isWaiting = true;
-    hasInstructions = true;
-    
-    this.lock = lock;
-    lock.pauseThread();
-    
-  }
-  
+
   public void setName(String newName){
     name = newName;
+  }
+  
+  public Rectangle getSurroundingRectangle(Face dir)
+  {
+    switch (dir)
+    {
+      case DOWN:
+        return surround[BOTTOM];
+      case LEFT:
+        return surround[LEFT];
+      case RIGHT:
+        return surround[RIGHT];
+      default:
+        return surround[TOP];
+    }
   }
 }
