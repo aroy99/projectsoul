@@ -88,6 +88,8 @@ public abstract class Script {
     execution = new Execution(npc, ex);
   }
 
+  
+  //TODO Add support for portraits
   /**
    * Converts one line of a script into a Task
    * @param s The line of script to be interpreted

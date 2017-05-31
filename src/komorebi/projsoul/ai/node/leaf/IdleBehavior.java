@@ -24,6 +24,7 @@ public class IdleBehavior extends Behavior{
   @Override
   public Status update() {
     idleCount--;
+    parent.move(0, 0);
     
     if(idleCount <= 0){
       close();
@@ -33,11 +34,6 @@ public class IdleBehavior extends Behavior{
     return Status.RUNNING;
   }
   
-  @Override
-  public BehaviorStates getState(){
-    return BehaviorStates.IDLE;
-  }
-    
   public void close(){
     super.close();
     idleCount = GEN.nextInt(maxIdle)+maxIdle;

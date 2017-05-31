@@ -7,10 +7,10 @@ import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.attack.projectile.FireBall;
 import komorebi.projsoul.attack.projectile.ProjectileAttack;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.KeyHandler.Control;
 import komorebi.projsoul.gameplay.HUD;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.gameplay.MagicBar;
 
 /**

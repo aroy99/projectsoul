@@ -55,12 +55,14 @@ public class Draw {
   private static final int SPREADSHEET_ROW = 16;
   
   /** Holds all of the textures for this class.*/
-  private static Texture[] tex = new Texture[15];
+  private static Texture[] tex = new Texture[16];
   
   private static ArrayList<Texture> sheets = new ArrayList<Texture>();
 
   /** Determines whether textures are loaded.*/
   private static boolean texLoaded;
+
+  private static int prevTexID = 0;
   
   //No instances of this class!
   private Draw(){}
@@ -84,6 +86,7 @@ public class Draw {
    *    12: Other Filler Characters<br>
    *    13: You Ded Screen
    *    14: Menu Font
+   *    15: Portraits
    */
   public static void loadTextures() {
     try {
@@ -118,6 +121,8 @@ public class Draw {
           new File("res/Death.png")));
       tex[14] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/MenuFont.png")));
+      tex[15] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/Portraits.png")));
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -180,17 +185,23 @@ public class Draw {
       if (!texLoaded) {
         loadTextures();
         texLoaded = true;
+        tex[texID].bind();
       }
-      //This keeps messing up my shit
-      //TODO Change Death png that has to be 256 by 256
+
       int imgX = tex[texID].getImageWidth();
       int imgY = tex[texID].getImageHeight();
+           
+      //TODO Investigate performance benefits
+//      if(prevTexID != texID){
+      tex[texID].bind();
+//      }
+      
+//      prevTexID = texID;
 
       glTranslatef((int)x, (int)y, 0);
       glRotatef(angle * RIGHT_ANGLE, 0.0f, 0.0f, 1.0f);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      tex[texID].bind();
 
       glBegin(GL_QUADS);
       {
@@ -235,11 +246,10 @@ public class Draw {
         loadTextures();
         texLoaded = true;
       }
-      //This keeps messing up my shit
-      //TODO Change Death png that has to be 256 by 256
+
       int imgX = texture.getImageWidth();
       int imgY = texture.getImageHeight();
-
+      
       glTranslatef((int)x, (int)y, 0);
       glRotatef(angle * RIGHT_ANGLE, 0.0f, 0.0f, 1.0f);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

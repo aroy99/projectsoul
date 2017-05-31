@@ -4,11 +4,11 @@
 package komorebi.projsoul.attack;
 
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.player.Characters;
-import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.MapHandler;
 
 import java.awt.Rectangle;
@@ -79,10 +79,10 @@ public class WaterBarrier implements SingleInstance {
           for(int i = 0; i < 2; i++){
             for (int j = 0; j < 2; j++){
 
-              float distance = MapHandler.distanceBetween(ox, oy, xs[j], ys[i]);
+              float distance = Arithmetic.distanceBetween(ox, oy, xs[j], ys[i]);
               
               if(distance < radius){
-                double ang = MapHandler.angleOf(xs[j], ys[i], ox, oy);
+                double ang = Arithmetic.angleOf(xs[j], ys[i], ox, oy);
                 enemy.inflictPain(attack, ang,
                     Characters.CASPIAN, KNOCKBACK);
                 break outer;

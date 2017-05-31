@@ -5,7 +5,6 @@ package komorebi.projsoul.ai.node.leaf;
 
 import komorebi.projsoul.ai.node.Status;
 import komorebi.projsoul.entities.enemy.Enemy;
-import komorebi.projsoul.map.Map;
 
 /**
  * The enemy is tired and slowly follows the player
@@ -68,11 +67,6 @@ public class MoveToTarget extends Behavior{
     System.out.format("Dx: %f, Dy: %f\t Tx: %f, Ty: %f\n", dx, dy, targetX, targetY);
 
     return Status.RUNNING;
-  }
-
-  @Override
-  public BehaviorStates getState() {
-    return BehaviorStates.TIRED;
   }
 
 }

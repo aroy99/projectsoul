@@ -5,11 +5,11 @@ import static komorebi.projsoul.engine.KeyHandler.button;
 import komorebi.projsoul.attack.Charge;
 import komorebi.projsoul.attack.MeleeAttack;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.KeyHandler.Control;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.gameplay.MagicBar;
 
 /**

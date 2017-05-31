@@ -8,6 +8,7 @@ import static komorebi.projsoul.map.Map.SIZE;
 import komorebi.projsoul.ai.Location;
 import komorebi.projsoul.engine.CollisionDetector;
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.entities.XPObject;
@@ -20,7 +21,6 @@ import komorebi.projsoul.entities.player.Flannery;
 import komorebi.projsoul.entities.player.Player;
 import komorebi.projsoul.entities.player.Sierra;
 import komorebi.projsoul.gameplay.Camera;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.script.EarthboundFont;
 import komorebi.projsoul.script.TextHandler;
 import komorebi.projsoul.script.Word;
@@ -71,7 +71,7 @@ public class MapHandler {
   
   static boolean isOutside;
   
-  private static final float TOLERANCE = 0.5f;
+  public static final float TOLERANCE = 0.5f;
   
   private static TileList[][] border = {{TileList.dBLANK, TileList.dBLANK},
                                         {TileList.dBLANK, TileList.dBLANK}};
@@ -239,45 +239,49 @@ public class MapHandler {
     String currMapAddress = findEntity(play.getHitBox());
     
     if(!activeMap.getAddress().equals(currMapAddress) && currMapAddress !=  null){
-      for(int i = 0; i < borderMaps.size(); i++){
-        Map newMap = borderMaps.get(i);
-        
-        if(newMap.getAddress().equals(currMapAddress)){
-          for(Enemy enemy: enemies){
-            if(!findEntity(enemy.getHitBox()).equals(currMapAddress) &&
-                !findEntity(enemy.getHitBox()).equals(activeMap.getAddress())){
-              enemy.kill();
-              System.out.println("Killed "+ enemy.getType());
-            }
-          }
-          
-          Map temp = activeMap;
-          activeMap = newMap;
-          
-          for(Map map: borderMaps){
-            if(map != temp){
-              map.cleanUp();
-            }
-          }
-          
-          borderMaps.clear();
-          borderMaps.add(temp);
-          
-          loadNeighbors();
-          createCollision();
-          
-          mapDisplayCount = MAX_DISPLAY_COUNT;
-          displayY = MAX_DISPLAY_Y;
-          
-          System.out.println("Welcome to " + activeMap.getAddress() + "!");
-          break;
-        }
-      }
+      switchMaps(currMapAddress);
     }
     
     //Removes all dead enemies from the computer's memory
     cleanUp();
 
+  }
+
+  private static void switchMaps(String currMapAddress) {
+    for(int i = 0; i < borderMaps.size(); i++){
+      Map newMap = borderMaps.get(i);
+      
+      if(newMap.getAddress().equals(currMapAddress)){
+        for(Enemy enemy: enemies){
+          if(!findEntity(enemy.getHitBox()).equals(currMapAddress) &&
+              !findEntity(enemy.getHitBox()).equals(activeMap.getAddress())){
+            enemy.kill();
+            System.out.println("Killed "+ enemy.getType());
+          }
+        }
+        
+        Map temp = activeMap;
+        activeMap = newMap;
+        
+        for(Map map: borderMaps){
+          if(map != temp){
+            map.cleanUp();
+          }
+        }
+        
+        borderMaps.clear();
+        borderMaps.add(temp);
+        
+        loadNeighbors();
+        createCollision();
+        
+        mapDisplayCount = MAX_DISPLAY_COUNT;
+        displayY = MAX_DISPLAY_Y;
+        
+        System.out.println("Welcome to " + activeMap.getAddress() + "!");
+        break;
+      }
+    }
   }
  
   /**
@@ -503,56 +507,6 @@ public class MapHandler {
     xpObj.add(xp);
   }
 
-  /**
-   * Calculates the distance between the enemy and the player
-   * 
-   * @param x
-   *          The x of the enemy
-   * @param y
-   *          The y of the enemy
-   * @param tarX
-   *          The target X (i.e., the x of the player)
-   * @param tarY
-   *          The target Y (i.e., the y of the player)
-   * @return The distance, as a double
-   */
-  public static float distanceBetween(float x, float y, float tarX,
-      float tarY) {
-    return (float) Math.sqrt(Math.pow((x - tarX), 2) + Math.pow((y - tarY), 2));
-  }
-
-  public static float angleOf(float x, float y, float tarX, float tarY) {
-    float triX = x - tarX, triY = y - tarY;
-    double ret = Math.atan(triY / triX) * (180 / Math.PI);
-
-    if (triX < 0 && triY > 0) {
-      ret += 180;
-    } else if (triX < 0 && triY < 0) {
-      ret -= 180;
-    }
-
-    return (float) ret;
-  }
-
-  public static int quadrantOf(float x, float y, float tarX, float tarY) {
-    double angle = angleOf(x, y, tarX, tarY);
-
-    if (angle > 0.5 && angle < 89.5) {
-      return 1;
-    } else if (angle > 90.5 && angle < 179.5) {
-      return 2;
-    } else if (angle > -179.5 && angle < -90.5) {
-      return 3;
-    } else if (angle > -89.5 && angle < -0.5) {
-      return 4;
-    } else if (Math.abs(angle) < TOLERANCE || Math.abs(angle - 180) < TOLERANCE ||
-        Math.abs(angle + 180) < TOLERANCE) {
-      return 0;
-    } else {
-      return -1;
-    }
-  }
-
   public static void giveXP(Characters c, int xp) {
     switch (c) {
       case CASPIAN:
@@ -570,16 +524,6 @@ public class MapHandler {
       default:
         break;
     }
-  }
-
-  public static float[] coordinatesAt(float cx, float cy, float dist,
-      float ang) {
-    float[] ret = new float[2];
-
-    ret[0] = (float) (cx + Math.cos(ang * (Math.PI / 180)) * dist);
-    ret[1] = (float) (cy + Math.sin(ang * (Math.PI / 180)) * dist);
-
-    return ret;
   }
 
   public static boolean allPlayersDead() {

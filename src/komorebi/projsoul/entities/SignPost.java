@@ -12,6 +12,10 @@ import java.awt.Rectangle;
 
 public class SignPost extends Entity {
 
+  /**
+   * 
+   */
+  private static final EarthboundFont FONT = new EarthboundFont(1);
   SignHandler text;
   public boolean shown;
   String message;
@@ -36,7 +40,7 @@ public class SignPost extends Entity {
   public void show()
   {
     shown = true;
-    text.write(message, 20, 58, new EarthboundFont(1));
+    text.write(message, FONT);
     Main.getGame().setSpeaker(text);
   }
 

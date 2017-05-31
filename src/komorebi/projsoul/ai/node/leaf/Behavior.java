@@ -4,7 +4,6 @@
 package komorebi.projsoul.ai.node.leaf;
 
 import komorebi.projsoul.ai.node.Node;
-import komorebi.projsoul.ai.node.Status;
 import komorebi.projsoul.entities.enemy.Enemy;
 
 import java.util.Random;
@@ -22,7 +21,5 @@ public abstract class Behavior extends Node{
   public Behavior(Enemy parent){
     this.parent = parent;
   }
-  
-  public abstract BehaviorStates getState();
   
 }

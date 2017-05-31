@@ -3,8 +3,6 @@
  */
 package komorebi.projsoul.entities.enemy;
 
-import komorebi.projsoul.ai.node.leaf.BehaviorStates;
-
 /**
  * An enemy that does nothing
  *

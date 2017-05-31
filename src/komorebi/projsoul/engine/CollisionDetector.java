@@ -5,7 +5,6 @@ package komorebi.projsoul.engine;
 
 import static komorebi.projsoul.map.Map.SIZE;
 
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.MapHandler;
 
 /**

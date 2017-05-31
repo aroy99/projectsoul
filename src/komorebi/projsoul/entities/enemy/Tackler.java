@@ -7,8 +7,6 @@ import komorebi.projsoul.ai.node.composite.MemSequence;
 import komorebi.projsoul.ai.node.composite.Priority;
 import komorebi.projsoul.ai.node.composite.Sequence;
 import komorebi.projsoul.ai.node.decorator.Invincible;
-import komorebi.projsoul.ai.node.leaf.Behavior;
-import komorebi.projsoul.ai.node.leaf.BehaviorStates;
 import komorebi.projsoul.ai.node.leaf.IdleBehavior;
 import komorebi.projsoul.ai.node.leaf.LineUpBehavior;
 import komorebi.projsoul.ai.node.leaf.ShakeCamera;
@@ -17,15 +15,11 @@ import komorebi.projsoul.ai.node.leaf.WalkBehavior;
 import komorebi.projsoul.ai.node.leaf.conditions.IsHittingPlayer;
 import komorebi.projsoul.ai.node.leaf.conditions.IsHittingWall;
 import komorebi.projsoul.ai.node.leaf.conditions.IsPlayerInRange;
+import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.engine.Draw;
-import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.EditorMap.Modes;
-import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.MapHandler;
-
-import java.util.HashMap;
-import java.util.Random;
 
 /**
  * An enemy that lines up and tries to charge at the player
@@ -37,8 +31,6 @@ public class Tackler extends Enemy {
   float targetX, targetY; //Location of the player
   float currDist;         //Calculated distance between this enemy and the player
   
-  
-  private BehaviorStates currState = BehaviorStates.IDLE;
   
   protected final int distance;
   
@@ -52,17 +44,8 @@ public class Tackler extends Enemy {
   private static final int MAX_STUN = 60;
   private static final int MAX_WAIT = 30;
   
-  private int idleCount = MAX_IDLE;
-  private int walkCount = MAX_WALK;
-  private int stunCount = MAX_STUN;
-  private int waitCount = MAX_WAIT;
-
-  private static final Random GEN = new Random();
-    
   //DEBUG radius
   protected int red, green, blue;
-  
-  private Face direction = Face.DOWN;
   
   private Priority root;
   
@@ -101,17 +84,6 @@ public class Tackler extends Enemy {
     red = (int)(Math.random()*255);
     green = (int)(Math.random()*255);
     blue = (int)(Math.random()*255);
-    
-    Behavior[] behaviors = new Behavior[]{
-        new IdleBehavior(this, MAX_IDLE),
-        new WalkBehavior(this, MAX_WALK, WALK_SPEED),
-        new LineUpBehavior(this, RUN_SPEED, TOLERANCE),
-    };
-    this.behaviors = new HashMap<>();
-    for(Behavior currBehavior: behaviors){
-      this.behaviors.put(currBehavior.getState(), currBehavior);
-    }
-    
     
     //Just see 
     //https://drive.google.com/open?id=1RM_jia5cyQiPZ4u_SoY9sr2EkXuvCJXd_rGmrUFrUkg
@@ -157,7 +129,7 @@ public class Tackler extends Enemy {
       targetX = MapHandler.getPlayer().getX();
       targetY = MapHandler.getPlayer().getY();
 
-      currDist = MapHandler.distanceBetween(x,y,targetX,targetY);
+      currDist = Arithmetic.distanceBetween(x,y,targetX,targetY);
 
       root.update();
     }

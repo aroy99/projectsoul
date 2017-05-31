@@ -5,8 +5,8 @@ package komorebi.projsoul.ai.node.leaf.conditions;
 
 import komorebi.projsoul.ai.node.Node;
 import komorebi.projsoul.ai.node.Status;
+import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.entities.enemy.Enemy;
-import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.MapHandler;
 
 /**
@@ -43,7 +43,7 @@ public class IsPlayerInRange extends Node {
     float x = parent.getX();
     float y = parent.getY();
     
-    float currDist = MapHandler.distanceBetween(x,y,targetX,targetY);
+    float currDist = Arithmetic.distanceBetween(x,y,targetX,targetY);
     return currDist;
   }
 

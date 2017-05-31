@@ -4,6 +4,7 @@
 package komorebi.projsoul.attack;
 
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
@@ -95,9 +96,9 @@ public class CircleStrike implements SingleInstance {
           outer: for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 2; j++) {
 
-              float distance = MapHandler.distanceBetween(ox, oy, xs[j], ys[i]);
+              float distance = Arithmetic.distanceBetween(ox, oy, xs[j], ys[i]);
               if (distance < currRadius) {
-                double ang = MapHandler.angleOf(xs[j], ys[i], ox, oy);
+                double ang = Arithmetic.angleOf(xs[j], ys[i], ox, oy);
                 enemy.inflictPain((int) (endRad / distance * attack - attack),
                     ang, Characters.SIERRA, KNOCKBACK);
                 break outer;

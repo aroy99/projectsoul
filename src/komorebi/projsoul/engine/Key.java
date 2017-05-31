@@ -1,7 +1,7 @@
 /**
  * Key.java Jul 6, 2016, 12:32:17 PM
  */
-package komorebi.projsoul.gameplay;
+package komorebi.projsoul.engine;
 
 import org.lwjgl.input.Keyboard;
 

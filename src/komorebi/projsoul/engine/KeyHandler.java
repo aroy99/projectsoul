@@ -3,8 +3,6 @@
  */
 package komorebi.projsoul.engine;
 
-import komorebi.projsoul.gameplay.Key;
-
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;

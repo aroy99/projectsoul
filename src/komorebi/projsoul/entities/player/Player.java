@@ -11,7 +11,9 @@ import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.attack.WaterBarrier;
 import komorebi.projsoul.attack.projectile.ProjectileAttack;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.engine.CollisionDetector;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.entities.Entity;
@@ -20,13 +22,10 @@ import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.gameplay.MagicBar;
-import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
-import komorebi.projsoul.states.Game;
 
 import org.lwjgl.input.Keyboard;
 
@@ -794,7 +793,7 @@ public abstract class Player extends Entity implements Playable{
       if (ring.intersectsCirc(new Rectangle((int)(x+dx),(int)(y+dy),sx,sy)))
       {
         float[] center = ring.getCenter();
-        double ang = MapHandler.angleOf(x, y, center[0], center[1]);
+        double ang = Arithmetic.angleOf(x, y, center[0], center[1]);
 
         if (ring.inRing(new Rectangle((int)(x+dx),(int)(y+dy),sx,sy)))
         {

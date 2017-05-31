@@ -541,27 +541,11 @@ public class NPC extends Entity {
         rightAni.add(51, 0, true);
         rightAni.add(68, 0, true);
         break;
+      case GUARD:
+//        leftAni =  new Animation(f, t, id, loop)
+        
       default:
-        leftAni = new Animation(3,8,16,24,3);
-        rightAni = new Animation(3,8,16,24,3);
-        upAni = new Animation(3,8,16,24,3);
-        downAni = new Animation(3,8,16,24,3);
-
-        downAni.add(1, 0);
-        downAni.add(18, 0);
-        downAni.add(35, 0);
-
-        leftAni.add(51, 0);
-        leftAni.add(67, 0);
-        leftAni.add(83, 0);
-
-        rightAni.add(51, 0, true);
-        rightAni.add(67, 0, true);
-        rightAni.add(83, 0, true);
-
-        upAni.add(100, 0);
-        upAni.add(117, 0);
-        upAni.add(134, 0);
+        setAttributes(NPCType.POKEMON);
         break;
 
     }
@@ -933,9 +917,9 @@ public class NPC extends Entity {
         (surround[3].intersects(clyde) && direction == Face.RIGHT)) && !isTalking;
   }
   
-   public void say(String s, Lock lock)
+  public void say(String s, Lock lock)
   {
-    text.write(s, 20, 58, font);
+    text.write(s, font);
     Main.getGame().setSpeaker(text);
     text.setAndLock(lock);
   }

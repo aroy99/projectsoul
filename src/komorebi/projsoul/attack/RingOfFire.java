@@ -1,11 +1,11 @@
 package komorebi.projsoul.attack;
 
+import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.entities.Face;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.Map;
-import komorebi.projsoul.map.MapHandler;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -88,21 +88,21 @@ public class RingOfFire extends Attack<FireRingInstance> {
       dy = -1;
     }
     
-    if (MapHandler.distanceBetween(x, y, tarX, tarY) > RANGE)
+    if (Arithmetic.distanceBetween(x, y, tarX, tarY) > RANGE)
     {
-      float[] get = MapHandler.coordinatesAt(tarX, tarY, RANGE, 
-          MapHandler.angleOf(x, y, tarX, tarY));
+      float[] get = Arithmetic.coordinatesAt(tarX, tarY, RANGE, 
+          Arithmetic.angleOf(x, y, tarX, tarY));
       x = get[0];
       y = get[1];
     }
     
-    if (MapHandler.distanceBetween(x+dx,y+dy,tarX,tarY) > RANGE)
+    if (Arithmetic.distanceBetween(x+dx,y+dy,tarX,tarY) > RANGE)
     {
       double ang;
-      switch (MapHandler.quadrantOf(x, y, tarX, tarY))
+      switch (Arithmetic.quadrantOf(x, y, tarX, tarY))
       {
         case 1:
-          ang = MapHandler.angleOf(x, y, tarX, tarY) - 90;
+          ang = Arithmetic.angleOf(x, y, tarX, tarY) - 90;
 
           if (up && !right)
           {
@@ -116,7 +116,7 @@ public class RingOfFire extends Attack<FireRingInstance> {
           }
           break;
         case 2:
-          ang = 90 + MapHandler.angleOf(x, y, tarX, tarY);
+          ang = 90 + Arithmetic.angleOf(x, y, tarX, tarY);
           
           if (up && !left)
           {
@@ -130,7 +130,7 @@ public class RingOfFire extends Attack<FireRingInstance> {
           } 
           break;
         case 3:
-          ang = 90 + MapHandler.angleOf(x, y, tarX, tarY);
+          ang = 90 + Arithmetic.angleOf(x, y, tarX, tarY);
           
           if (down && !left)
           {
@@ -144,7 +144,7 @@ public class RingOfFire extends Attack<FireRingInstance> {
           }
           break;
         case 4:
-          ang = MapHandler.angleOf(x, y, tarX, tarY) + 90;
+          ang = Arithmetic.angleOf(x, y, tarX, tarY) + 90;
           
           if (right && !down)
           {

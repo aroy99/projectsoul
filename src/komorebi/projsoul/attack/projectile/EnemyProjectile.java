@@ -4,6 +4,7 @@
 package komorebi.projsoul.attack.projectile;
 
 import komorebi.projsoul.attack.WaterBarrier;
+import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.player.Caspian;
 import komorebi.projsoul.entities.player.Player;
@@ -50,7 +51,7 @@ public abstract class EnemyProjectile extends Projectile {
         for(int i = 0; i < 2; i++){
           for (int j = 0; j < 2; j++){
 
-            float distance = MapHandler.distanceBetween(barr.getX(), barr.getY(), xs[j], ys[i]);
+            float distance = Arithmetic.distanceBetween(barr.getX(), barr.getY(), xs[j], ys[i]);
 
             if(barr.intersectsCirc(distance)){
               destroyMe = true;

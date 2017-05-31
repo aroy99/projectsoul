@@ -3,12 +3,9 @@
  */
 package komorebi.projsoul.entities.enemy;
 
-import komorebi.projsoul.ai.node.Status;
 import komorebi.projsoul.ai.node.composite.MemSequence;
 import komorebi.projsoul.ai.node.composite.Priority;
 import komorebi.projsoul.ai.node.composite.Sequence;
-import komorebi.projsoul.ai.node.leaf.Behavior;
-import komorebi.projsoul.ai.node.leaf.BehaviorStates;
 import komorebi.projsoul.ai.node.leaf.IdleBehavior;
 import komorebi.projsoul.ai.node.leaf.LineUpBehavior;
 import komorebi.projsoul.ai.node.leaf.MoveToTarget;
@@ -20,13 +17,12 @@ import komorebi.projsoul.ai.node.leaf.conditions.IsPlayerInRange;
 import komorebi.projsoul.attack.projectile.ProjectileAttack;
 import komorebi.projsoul.attack.projectile.StraightShot;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.map.EditorMap;
 import komorebi.projsoul.map.EditorMap.Modes;
 import komorebi.projsoul.map.MapHandler;
-
-import java.util.HashMap;
 
 /**
  * An enemy that tries to line up with the player and shoot him
@@ -69,17 +65,7 @@ public class Shooter extends MagicEnemy {
   
   private static final float PROJ_SPEED = 2;
 
-  private BehaviorStates currState = BehaviorStates.IDLE;
-  
   private Priority root;
-
-  private IdleBehavior idle;
-  private WalkBehavior walk;
-  private LineUpBehavior lineUp;
-  private ShootBehavior shoot;
-  private RunBehavior run;
-  private MoveToTarget tired;
-
 
   /**
    * Creates an enemy that tries to run away from the player and shoot at a distance
@@ -116,23 +102,7 @@ public class Shooter extends MagicEnemy {
     blue = (int)(Math.random()*255);
     
     projectile = new ProjectileAttack<StraightShot>(new StraightShot());
-    
-    idle = new IdleBehavior(this, MAX_IDLE);
-    walk = new WalkBehavior(this, MAX_WALK, WALK_SPEED);
-    lineUp = new LineUpBehavior(this, RUN_SPEED, TOLERANCE);
-    shoot = new ShootBehavior(this, MAX_SHOOT, PROJ_SPEED, aggroDistance);
-    run = new RunBehavior(this, RUN_SPEED);
-    tired = new MoveToTarget(this, WALK_SPEED/2);
-
-    
-    Behavior[] behaviors = new Behavior[]{idle, walk, lineUp, shoot, run,
-        tired};
-    
-    this.behaviors = new HashMap<>();
-    for(Behavior currBehavior: behaviors){
-      this.behaviors.put(currBehavior.getState(), currBehavior);
-    }
-    
+        
     root = new Priority(
         new Sequence(                                //Tired
             new IsOutofMagic(this, SHOOT_COST),
@@ -166,7 +136,7 @@ public class Shooter extends MagicEnemy {
       targetX = MapHandler.getPlayer().getX();
       targetY = MapHandler.getPlayer().getY();
 
-      currDist = MapHandler.distanceBetween(x,y,targetX,targetY);
+      currDist = Arithmetic.distanceBetween(x,y,targetX,targetY);
 
 //      behaviors.get(currState).update();
 //      decideWhetherToSwitchStates();
@@ -176,101 +146,7 @@ public class Shooter extends MagicEnemy {
     super.update();
 
   }
-
-
-  @Deprecated
-  protected void decideWhetherToSwitchStates() {
-    
-    if(magic <= 0){
-      switchState(BehaviorStates.TIRED);
-    }
-    
-    else if (currState != BehaviorStates.TIRED  && !hurt) {
-      
-      //Run
-      if (currState != BehaviorStates.RUN && currDist <= runDistance) {
-        switchState(BehaviorStates.RUN);
-      }
-      
-      //Line Up / Shoot
-      else if (!inShootCycle() && inAggroRange()) {
-        switchState(BehaviorStates.LINE_UP);
-      }
-      
-      else if(currState == BehaviorStates.LINE_UP && lineUp.getStatus() == Status.SUCCESS){
-        switchState(BehaviorStates.SHOOT);
-      }
-      
-      else if(currState == BehaviorStates.SHOOT && shoot.getStatus() == Status.FAIL){
-        switchState(BehaviorStates.LINE_UP);
-      }
-      
-      // Walk and Wait
-      else if (!inWalkCycle() && currDist > aggroDistance) {
-        switchState(BehaviorStates.IDLE);
-      }
-      
-      else if(currState == BehaviorStates.IDLE && idle.getStatus() == Status.SUCCESS){
-        switchState(BehaviorStates.WALK);
-      }
-      
-      else if(currState == BehaviorStates.WALK && walk.getStatus() == Status.SUCCESS){
-        switchState(BehaviorStates.IDLE);
-      }
-    }
-  }
   
-  private boolean inWalkCycle() {
-    return currState == BehaviorStates.IDLE || currState == BehaviorStates.WALK;
-  }
-
-
-  private boolean inShootCycle() {
-    return currState == BehaviorStates.LINE_UP || currState == BehaviorStates.SHOOT;
-  }
-
-
-  private boolean inAggroRange(){
-    return currDist <= aggroDistance && currDist > runDistance;
-  }
-
-  @Deprecated
-  protected void switchState(BehaviorStates newState) {
-    currState = newState;
-    
-    System.out.println("Switch to: " + newState);
-    
-    behaviors.get(newState).open();
-    
-    switch (newState) {
-      case WALK:
-        direction = Face.random();
-        regAni.resume();
-        regAni.setSpeed((int)(6/WALK_SPEED));
-        walk.open();
-        break;
-      case IDLE:
-        regAni.stop();
-        idle.open();
-        break;
-      case LINE_UP: case RUN:
-        regAni.resume();
-        regAni.setSpeed((int) (6/RUN_SPEED));
-        break;
-      case SHOOT:
-        regAni.stop();
-        shoot.setShootCount(10);
-        break;
-      case TIRED:
-        regAni.resume();
-        regAni.setSpeed((int)(6/WALK_SPEED*2));
-        break;
-      default:
-        break;
-    }
-  }
-
-
   public void refreshDirection(){
     if(Math.abs(dx) < Math.abs(dy)){
       if (dx < 0) {

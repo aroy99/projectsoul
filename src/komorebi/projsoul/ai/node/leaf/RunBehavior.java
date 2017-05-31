@@ -55,9 +55,4 @@ public class RunBehavior extends Behavior {
     return Status.RUNNING;
   }
 
-  @Override
-  public BehaviorStates getState() {
-    return BehaviorStates.RUN;
-  }
-
 }

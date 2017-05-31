@@ -5,7 +5,6 @@ package komorebi.projsoul.ai.node.leaf;
 
 import komorebi.projsoul.ai.node.Status;
 import komorebi.projsoul.entities.enemy.Enemy;
-import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.MapHandler;
 
 /**
@@ -69,10 +68,5 @@ public class TackleBehavior extends Behavior {
     
     return Status.RUNNING;
   }
-
-  @Override
-  public BehaviorStates getState() {
-    return BehaviorStates.TACKLE;
-  }
-
+  
 }

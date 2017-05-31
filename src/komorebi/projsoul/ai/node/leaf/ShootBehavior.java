@@ -4,6 +4,7 @@
 package komorebi.projsoul.ai.node.leaf;
 
 import komorebi.projsoul.ai.node.Status;
+import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.entities.enemy.Shooter;
 import komorebi.projsoul.map.MapHandler;
 
@@ -80,12 +81,7 @@ public class ShootBehavior extends Behavior {
     x = parent.getX();
     y = parent.getY();
     
-    currDist = MapHandler.distanceBetween(x,y,targetX,targetY);
-  }
-  
-  @Override
-  public BehaviorStates getState(){
-    return BehaviorStates.SHOOT;
+    currDist = Arithmetic.distanceBetween(x,y,targetX,targetY);
   }
   
   public void setShootCount(int shootCount){

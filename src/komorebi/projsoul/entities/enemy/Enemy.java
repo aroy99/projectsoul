@@ -1,21 +1,17 @@
 package komorebi.projsoul.entities.enemy;
 
-import komorebi.projsoul.ai.node.leaf.Behavior;
-import komorebi.projsoul.ai.node.leaf.BehaviorStates;
 import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.engine.CollisionDetector;
 import komorebi.projsoul.entities.Entity;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.XPObject;
 import komorebi.projsoul.entities.player.Characters;
-import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.MapHandler;
-import komorebi.projsoul.states.Game;
 
 import java.awt.Rectangle;
-import java.util.HashMap;
 
 /**
  * Represents an Enemy in the game
@@ -61,9 +57,6 @@ public abstract class Enemy extends Entity {
   //Sprite of this enemy
   private EnemyType type;
   
-  protected HashMap<BehaviorStates, Behavior> behaviors;
-
-
   /**
    * @return The amount of exp this enemy gives per level
    */
@@ -170,7 +163,7 @@ public abstract class Enemy extends Entity {
       if (ring.intersects(new Rectangle((int) (x+dx),(int) (y+dy),sx,sy)) && !hurt)
       {          
         float[] coords = ring.getCenter();
-        inflictPain(ring.getDamage(), MapHandler.angleOf(x, y, coords[0], coords[1]), 
+        inflictPain(ring.getDamage(), Arithmetic.angleOf(x, y, coords[0], coords[1]), 
             Characters.FLANNERY);
       }
     }
@@ -443,8 +436,33 @@ public abstract class Enemy extends Entity {
   public void move(float dx, float dy){
     this.dx = dx;
     this.dy = dy;
+    animateWalk();
   }
   
+  /**
+   * Figures out walking automatically
+   */
+  private void animateWalk() {
+    float ddx = (float)Math.abs(dx);
+    float ddy = (float)Math.abs(dy);
+    
+    
+    if(ddx == 0 && ddy == 0){
+      regAni.stop();
+      return;
+    }
+    
+    if(ddx >= ddy){
+      regAni.setSpeed(15/(int)(ddx+1));
+    }else{
+      regAni.setSpeed(15/(int)(ddy+1));
+    }
+    
+    if(!regAni.playing()){
+      regAni.resume();
+    }
+  }
+
   public void switchDirection(Face newDir){
     direction = newDir;
   }

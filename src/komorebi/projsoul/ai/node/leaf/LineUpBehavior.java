@@ -80,8 +80,4 @@ public class LineUpBehavior extends Behavior {
     parent.move(dx, dy);
   }
   
-  @Override
-  public BehaviorStates getState(){
-    return BehaviorStates.LINE_UP;
-  }
 }

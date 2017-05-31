@@ -11,8 +11,10 @@ import java.util.ArrayList;
  */
 public enum NPCType {
   POKEMON,
-  NESS;
-
+  NESS,
+  GUARD
+  ;
+  
   /**
    * Takes in a string and returns its respective NPCType
    * 
@@ -26,6 +28,9 @@ public enum NPCType {
 
       case "NESS":
         return NPCType.NESS;
+        
+      case "GUARD":
+        return NPCType.GUARD;
 
       default:
         return null;
@@ -37,6 +42,7 @@ public enum NPCType {
     switch(this){
       case POKEMON: return "POKEMON";
       case NESS:    return "NESS";
+      case GUARD:   return "GUARD";
       default:      return "bleh";
     }
   }

@@ -6,20 +6,18 @@ package komorebi.projsoul.map;
 
 import static komorebi.projsoul.engine.Main.HEIGHT;
 import static komorebi.projsoul.engine.Main.WIDTH;
-import static komorebi.projsoul.map.Map.SIZE;
 
 import komorebi.projsoul.ai.Location;
 import komorebi.projsoul.audio.Song;
 import komorebi.projsoul.engine.Draw;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.SignPost;
 import komorebi.projsoul.entities.player.Player;
 import komorebi.projsoul.gameplay.Camera;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.script.AreaScript;
-import komorebi.projsoul.script.Script;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;

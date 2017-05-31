@@ -1,8 +1,8 @@
 package komorebi.projsoul.entities;
 
+import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.entities.player.Characters;
-import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.MapHandler;
 
 import java.awt.Rectangle;
@@ -87,10 +87,10 @@ public class XPObject extends Entity {
   public boolean withinRadius(Rectangle r)
   {
     
-    return (MapHandler.distanceBetween(r.x, r.y, x+4, y+4) < GRAV_RADIUS) ||
-        (MapHandler.distanceBetween(r.x+r.width, r.y, x+4, y+4) < GRAV_RADIUS) ||
-        (MapHandler.distanceBetween(r.x+r.width, r.y+r.height, x+4, y+4) < GRAV_RADIUS) ||
-        (MapHandler.distanceBetween(r.x, r.y+r.height, x+4, y+4) < GRAV_RADIUS);
+    return (Arithmetic.distanceBetween(r.x, r.y, x+4, y+4) < GRAV_RADIUS) ||
+        (Arithmetic.distanceBetween(r.x+r.width, r.y, x+4, y+4) < GRAV_RADIUS) ||
+        (Arithmetic.distanceBetween(r.x+r.width, r.y+r.height, x+4, y+4) < GRAV_RADIUS) ||
+        (Arithmetic.distanceBetween(r.x, r.y+r.height, x+4, y+4) < GRAV_RADIUS);
   }
   
   public void guide(float tarX, float tarY)

@@ -18,9 +18,6 @@ public class WalkBehavior extends Behavior{
   
   private final float walkSpeed;
 
-  private static final BehaviorStates state = BehaviorStates.WALK;
-
-  
   public WalkBehavior(Enemy parent, int maxWalk, float walkSpeed) {
     super(parent);
     this.maxWalk = maxWalk;
@@ -56,11 +53,6 @@ public class WalkBehavior extends Behavior{
   }
 
 
-  @Override
-  public BehaviorStates getState(){
-    return state;
-  }
-  
   @Override
   public void close(){
     super.close();

@@ -4,21 +4,15 @@
 package komorebi.projsoul.editor;
 
 import static komorebi.projsoul.engine.KeyHandler.button;
-import static org.lwjgl.opengl.GL11.glLoadIdentity;
-import static org.lwjgl.opengl.GL11.glOrtho;
-import static org.lwjgl.opengl.GL11.glViewport;
 
-import komorebi.projsoul.audio.AudioHandler;
 import komorebi.projsoul.audio.Song;
 import komorebi.projsoul.editor.modes.Mode;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.KeyHandler.Control;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.engine.MainE;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.map.EditorMap;
-
-import org.lwjgl.opengl.Display;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -29,9 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
-import javax.print.attribute.standard.RequestingUserName;
 import javax.swing.Box;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;

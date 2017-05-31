@@ -5,13 +5,13 @@
 package komorebi.projsoul.states;
 
 import komorebi.projsoul.engine.GameHandler;
+import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Item;
 import komorebi.projsoul.gameplay.Item.Items;
-import komorebi.projsoul.gameplay.Key;
 import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Fader;
