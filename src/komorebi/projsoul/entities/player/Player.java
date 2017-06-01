@@ -113,10 +113,6 @@ public abstract class Player extends Person implements Playable{
     hurtSprites = character.getNewHurtSprites();
   }
   
-
-  /**
-   * @see komorebi.projsoul.engine.Playable#update()
-   */
   public void getInput(){
 
     if (unlocked)
@@ -311,7 +307,7 @@ public abstract class Player extends Person implements Playable{
     
     if (hasInstructions)
     {
-      if (dx!=0) 
+      if (dx != 0) 
       {
         framesToGo-=Math.abs(dx);
       } else if (dy != 0)
@@ -849,7 +845,7 @@ public abstract class Player extends Person implements Playable{
     return health.getHealth();
   }
   
-    public int getRequiredExp(int level){
+  public int getRequiredExp(int level){
     return (int)(level*level + 10*level + 10);
   }
   

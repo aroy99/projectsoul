@@ -298,7 +298,9 @@ public class SpeechHandler extends TextHandler {
   public void skipScroll()
   {
     alreadyAsked = true;
-    scrollIndex = words.get(0).currentParagraph().length;
+    if(!words.isEmpty()){
+      scrollIndex = words.get(0).currentParagraph().length;
+    }
   }
 
   public boolean alreadyAsked()

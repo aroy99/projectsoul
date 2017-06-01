@@ -8,6 +8,11 @@ import komorebi.projsoul.script.text.SignHandler;
 
 import java.awt.Rectangle;
 
+/**
+ * 
+ * 
+ * @author Andrew Faulkenberry
+ */
 public class SignPost extends Entity {
 
   private static final EarthboundFont FONT = new EarthboundFont(1);

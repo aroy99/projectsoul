@@ -9,6 +9,7 @@ import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.engine.ThreadHandler.TrackableThread;
+import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Item;
 import komorebi.projsoul.gameplay.Item.Items;
@@ -90,6 +91,8 @@ public class Game extends State{
     {
       GameHandler.switchState(States.PAUSE);
     }
+    
+    MapHandler.getInput();
 
   }
 
@@ -97,7 +100,7 @@ public class Game extends State{
   public void update() {
     hud.update();
     death.update();
-
+    Camera.update();
 
     if (isPaused)
     {

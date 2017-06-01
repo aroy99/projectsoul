@@ -81,21 +81,22 @@ public class Execution implements Runnable {
   @Override
   public void run() {
 
-    for (Command command: branch)
-    {                                    
-      if (command instanceof CommandNoSubject)
+    for (Command command : branch) {
+      if (command instanceof CommandNoSubject) {
         ((CommandNoSubject) command).execute();
-      else if (command instanceof CommandOnAnyPerson)
-        if (command.appliesToPlayer())
+      } else if (command instanceof CommandOnAnyPerson) {
+        if (command.appliesToPlayer()) {
           ((CommandOnAnyPerson) command).execute(play);
-        else
+        } else {
           ((CommandOnAnyPerson) command).execute(npc);
-      else if (command instanceof CommandOnNPCAndPlayer)
+        }
+      } else if (command instanceof CommandOnNPCAndPlayer) {
         ((CommandOnNPCAndPlayer) command).execute(npc, play);
-      else if (command instanceof CommandOnNPCOnly)
+      } else if (command instanceof CommandOnNPCOnly) {
         ((CommandOnNPCOnly) command).execute(npc);
-      else if (command instanceof CommandOnPlayerOnly)
+      } else if (command instanceof CommandOnPlayerOnly) {
         ((CommandOnPlayerOnly) command).execute(play);
+      }
     }
 
   }
