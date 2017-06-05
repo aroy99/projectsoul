@@ -11,8 +11,7 @@ public class SpriteSet {
   private Animation left, right, up, down;
   private Animation current;
   
-  public SpriteSet(Animation left, Animation right, 
-      Animation up, Animation down)
+  public SpriteSet(Animation left, Animation right, Animation up, Animation down)
   {
     this.left = left;
     this.right = right;
@@ -72,5 +71,9 @@ public class SpriteSet {
   public void setAniSpeed(int speed)
   {
     current.setSpeed(speed);
+  }
+  
+  public Animation getCurrent(){
+    return current;
   }
 }

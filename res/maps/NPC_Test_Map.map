@@ -43,7 +43,8 @@ None
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-npc dummy 1 1 POKEMON walk_up_and_down debug?script2
+npc dummy 1 1 DOCTOR walk_around debug?script2
+npc dummyo 5 5 BANKTELLER walk_around debug?script2
 connect Bigger_Town down -5 -32
 connect Some_Town_V3 up 6 20
-enemy 17 17 SATURN chaser 5
+enemy 17 17 BLUE_DETRAL chaser 5

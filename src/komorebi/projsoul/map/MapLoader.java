@@ -180,6 +180,7 @@ public class MapLoader {
     int arg0 = Integer.parseInt(split[1]) + offX;
     int arg1 = Integer.parseInt(split[2]) + offY;
     NPC n;
+    
     npcs.add(n = new NPC(split[0], arg0 * 16, arg1 * 16,
         NPCType.toEnum(split[3])));
 

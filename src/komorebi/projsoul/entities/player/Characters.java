@@ -1,109 +1,121 @@
 package komorebi.projsoul.entities.player;
 
 import komorebi.projsoul.engine.InitializableAnimation;
+import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.sprites.SpriteSet;
 
+/**
+ * Holds all(read: most) of the character sprites
+ * 
+ * @author Andrew Faulkenberry
+ */
 public enum Characters {
-  
+
   CASPIAN(
-      new SpriteSet(
-          new InitializableAnimation(6, 8, 11)
-          {
-            public void initialize() {
-              add(3,247,21,32,0,true);
-              add(30,246,14,33,0,true);
-              add(52,245,14,34,0,true);
-              add(72,247,22,32,0,true);
-              add(99,246,14,33,0,true);
-              add(120,245,15,34,0,true);
-
-              setPausedFrame(99,246,14,33,0,true);
-              
-            }
-
-          }, 
-          new InitializableAnimation(6, 8, 11)
-          {
-
-            public void initialize() {
-              add(3,247,21,32);
-              add(30,246,14,33);
-              add(52,245,14,34);
-              add(72,247,22,32);
-              add(99,246,14,33);
-              add(120,245,15,34);
-
-              setPausedFrame(99,246,14,33);
-
-            }
-
-          },
-          new InitializableAnimation(6, 8, 11)
-          {
-
-            public void initialize() {
-              add(8,204,16,35);
-              add(28,207,18,32);
-              add(50,206,18,33);
-              add(71,204,16,35);
-              add(91,207,18,32);
-              add(113,206,18,33);
-            }
-
-          }, 
-          new InitializableAnimation(6, 8, 11)
-          {
-
-            public void initialize() {
-              add(8,162,16,34);
-              add(28,164,17,32);
-              add(49,161,18,35);
-              add(71,162,16,34);
-              add(91,164,17,32);
-              add(112,161,18,35);
-            }
-
-
+    new SpriteSet(
+        new InitializableAnimation(6, 8, 11)
+        {
+          //Left
+          public void initialize() {
+            add(3,247,21,32,0,true);
+            add(30,246,14,33,0,true);
+            add(52,245,14,34,0,true);
+            add(72,247,22,32,0,true);
+            add(99,246,14,33,0,true);
+            add(120,245,15,34,0,true);
+  
+            setPausedFrame(166,245,14,34,0,true);
           }
-          ),
-      new SpriteSet(
-          new InitializableAnimation(2,8,14,33,11)
-          {
-            public void initialize() {
-              add(30, 246, true);
-              add(141, 246, true);
-            }
-
-          }, 
-          new InitializableAnimation(2,8,14,33,11)
-          {
-            public void initialize() {
-              add(30, 246);
-              add(141, 246);
-            }
-
-          },
-          new InitializableAnimation(2,8,16,35,11)
-          {
-
-            public void initialize() {
-              add(8,204);
-              add(141, 205);
-            }
-
-          }, 
-          new InitializableAnimation(2,8,16,34,11)
-          {
-
-            public void initialize() {
-              add(8, 162);
-              add(141, 163);
-            }
-
+  
+        }, 
+        new InitializableAnimation(6, 8, 11)
+        {
+          //Right
+          public void initialize() {
+            add(3,247,21,32, -4, 0);
+            add(30,246,14,33);
+            add(52,245,14,34);
+            add(72,247,22,32, -5, 0);
+            add(99,246,14,33);
+            add(120,245,15,34);
+  
+            setPausedFrame(166,245,14,34);
+  
           }
+  
+        },
+        new InitializableAnimation(6, 8, 11)
+        {
+          //Up
+          public void initialize() {
+            add(113,206,18,33, -3, 0);
+            add(8,204,16,35);
+            add(28,207,18,32, -1, 0);
+            add(50,206,18,33, -2, 0);
+            add(71,204,16,35, -2, 0);
+            add(91,207,18,32, -3, 0);
 
-          )
-      ),
+            setPausedFrame(166, 207, 16, 33);
+          }
+  
+        }, 
+        new InitializableAnimation(6, 8, 11)
+        {
+          //Down
+          public void initialize() {
+            add(71,162,16,34);
+            add(91,164,17,32, -1, 0);
+            add(112,161,18,35, -2, 0);
+            add(8,162,16,34);
+            add(28,164,17,32);
+            add(49,161,18,35);
+
+            setPausedFrame(166, 162, 16, 35);
+          }
+  
+  
+        }
+    )
+//      NPCType.GUARD.getNewSpriteSet()
+    ,
+    new SpriteSet(
+        new InitializableAnimation(2,8,14,33,11)
+        {
+          public void initialize() {
+            add(30, 246, true);
+            add(141, 246, true);
+          }
+  
+        }, 
+        new InitializableAnimation(2,8,14,33,11)
+        {
+          public void initialize() {
+            add(30, 246);
+            add(141, 246);
+          }
+  
+        },
+        new InitializableAnimation(2,8,16,35,11)
+        {
+  
+          public void initialize() {
+            add(8,204);
+            add(141, 205);
+          }
+  
+        }, 
+        new InitializableAnimation(2,8,16,34,11)
+        {
+  
+          public void initialize() {
+            add(8, 162);
+            add(141, 163);
+          }
+  
+        }
+  
+        )
+  ),
   FLANNERY(
       new SpriteSet(
           new InitializableAnimation(6, 8, 12)
@@ -197,8 +209,8 @@ public enum Characters {
 
           }
 
-          )
-      ),
+      )
+  ),
   SIERRA(
       new SpriteSet(
           new InitializableAnimation(6, 8, 12)
@@ -438,7 +450,9 @@ public enum Characters {
   {
     for (Characters c: Characters.values())
     {
-      if (c.ordinal() == i) return c;
+      if (c.ordinal() == i) {
+        return c;
+      }
     }
 
     return null;

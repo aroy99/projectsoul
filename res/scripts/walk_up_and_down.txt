@@ -1,5 +1,5 @@
 branch main
-jog right right
+walk right right
 pause 75
-jog left left
+walk left left
 pause 75

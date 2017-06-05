@@ -9,12 +9,19 @@ import komorebi.projsoul.attack.WaterSword;
 import komorebi.projsoul.attack.projectile.ProjectileAttack;
 import komorebi.projsoul.attack.projectile.WaterKunai;
 import komorebi.projsoul.engine.Animation;
+import komorebi.projsoul.engine.InitializableAnimation;
+import komorebi.projsoul.engine.Key;
+import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.KeyHandler.Control;
 import komorebi.projsoul.entities.enemy.Enemy;
+import komorebi.projsoul.entities.sprites.NPCLoader;
+import komorebi.projsoul.entities.sprites.SpriteSet;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.MagicBar;
 import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.states.Game;
+
+import org.lwjgl.input.Keyboard;
 
 import java.awt.Rectangle;
 
@@ -92,12 +99,68 @@ public class Caspian extends Player {
     attack3 = support;
     
     initializeSprites();
+    
+    System.out.println("In caspian "+sprites.getCurrent().hasCustomFrame());
   }
 
   @Override
   public void update()
   {
     super.update();
+    
+    if(KeyHandler.keyClick(Key.J)){
+      sprites =       new SpriteSet(
+          //Left
+          new InitializableAnimation(4,16,16)
+          {
+            public void initialize() {
+              add(NPCLoader.SPRITES.get("doctor_13"), 3, 0);
+              add(NPCLoader.SPRITES.get("doctor_14"), -1, 0);
+              add(NPCLoader.SPRITES.get("doctor_15"), 3, 0);
+              add(NPCLoader.SPRITES.get("doctor_16"), -2, 0);
+
+              setPausedFrame(NPCLoader.SPRITES.get("doctor_01"), 3, 0);
+            } 
+          },
+          //Right
+          new InitializableAnimation(4,16,16)
+          {
+            public void initialize() {
+              add(NPCLoader.SPRITES.get("doctor_09"), 0, 0);
+              add(NPCLoader.SPRITES.get("doctor_10"), 3, 0);
+              add(NPCLoader.SPRITES.get("doctor_11"), 1, 0);
+              add(NPCLoader.SPRITES.get("doctor_12"), 3, 0);
+
+              setPausedFrame(NPCLoader.SPRITES.get("doctor_03"), 3, 0);
+            } 
+          },
+          //Up
+          new InitializableAnimation(4,16,16)
+          {
+            public void initialize() {
+              add(NPCLoader.SPRITES.get("doctor_17"), -1, 0);
+              add(NPCLoader.SPRITES.get("doctor_18"), 1, 1);
+              add(NPCLoader.SPRITES.get("doctor_19"), 2, 0);
+              add(NPCLoader.SPRITES.get("doctor_20"), 1, 1);
+
+              setPausedFrame(NPCLoader.SPRITES.get("doctor_04"), 1, 0);
+            } 
+          },
+          //Down
+          new InitializableAnimation(4,16,16)
+          {
+            public void initialize() {
+              add(NPCLoader.SPRITES.get("doctor_05"), -1, 0);
+              add(NPCLoader.SPRITES.get("doctor_06"), 1, 1);
+              add(NPCLoader.SPRITES.get("doctor_07"), 1, 0);
+              add(NPCLoader.SPRITES.get("doctor_08"), 1, 1);
+
+              setPausedFrame(NPCLoader.SPRITES.get("doctor_02"), 1, 0);
+            } 
+          }
+          );
+
+    }
     
     if (isAttacking)
     {

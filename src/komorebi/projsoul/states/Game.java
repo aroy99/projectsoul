@@ -9,6 +9,7 @@ import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.engine.ThreadHandler.TrackableThread;
+import komorebi.projsoul.entities.sprites.NPCLoader;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Item;
@@ -51,7 +52,6 @@ public class Game extends State{
    */
   public Game(){
     MapHandler.initialize(testLoc);
-
 
     confidence = 0;
     money = 15;

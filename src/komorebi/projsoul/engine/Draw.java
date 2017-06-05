@@ -60,7 +60,7 @@ public class Draw {
   private static final int SPREADSHEET_ROW = 16;
 
   /** Holds all of the textures for this class.*/
-  private static Texture[] tex = new Texture[16];
+  private static Texture[] tex = new Texture[17];
 
   private static ArrayList<Texture> sheets = new ArrayList<Texture>();
 
@@ -84,9 +84,10 @@ public class Draw {
    *    10: Miscellaneous Items<br>
    *    11: Fillers for Project Soul<br>
    *    12: Other Filler Characters<br>
-   *    13: You Ded Screen
-   *    14: Menu Font
-   *    15: Portraits
+   *    13: You Ded Screen<br>
+   *    14: Menu Font<br>
+   *    15: Portraits<br>
+   *    16: Justin, Mike, and Anthony's NPCs
    */
   public static void loadTextures() {
     try {
@@ -123,6 +124,8 @@ public class Draw {
           new File("res/MenuFont.png")));
       tex[15] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/Portraits.png")));
+      tex[16] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/compressed_spritesheet.png")));
 
     } catch (Exception e) {
       e.printStackTrace();

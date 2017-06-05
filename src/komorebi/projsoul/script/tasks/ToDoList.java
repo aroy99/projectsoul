@@ -38,7 +38,7 @@ public class ToDoList {
     for (int i = 0; i < tasks.size(); i++)
     {
       Task task = tasks.get(0);
-      if (task.isFinished())
+      if (task != null && task.isFinished())
       {
         tasks.remove(0);
       }

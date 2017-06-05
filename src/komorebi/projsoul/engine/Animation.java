@@ -5,6 +5,7 @@
 package komorebi.projsoul.engine;
 
 import komorebi.projsoul.editor.Editor;
+import komorebi.projsoul.entities.sprites.Sprite;
 import komorebi.projsoul.map.EditorMap;
 
 /**
@@ -146,6 +147,44 @@ public class Animation {
 
 
   /**
+   * Adds a frame to the animation, given a sprite
+   * 
+   * @param sprite The sprite you want to add
+   */
+  public void add(Sprite sprite){
+    add(sprite.tx, sprite.ty, sprite.sx, sprite.sy, 0, 0, 0, false);
+  }
+  
+  /**
+   * Adds a frame to the animation, given a sprite
+   * 
+   * @param sprite The sprite you want to add
+   * @param offX Amount of pixels the frame should be moved when drawn on the screen
+   *                  (+ means right, - means left)
+   * @param offY Amount of pixels the frame should be moved when drawn on the screen
+   *                  (+ means up, - means down)
+   */
+  public void add(Sprite sprite, int offX, int offY){
+    add(sprite.tx, sprite.ty, sprite.sx, sprite.sy, offX, offY, 0, false);
+  }
+  
+  /**
+   * Adds a frame to the animation, given a sprite
+   * 
+   * @param sprite The sprite you want to add
+   * @param offX Amount of pixels the frame should be moved when drawn on the screen
+   *                  (+ means right, - means left)
+   * @param offY Amount of pixels the frame should be moved when drawn on the screen
+   *                  (+ means up, - means down)
+   * @param rot the rotation of the tile / 90 degrees
+   * @param flipped whether to flip the image or not
+   */
+  public void add(Sprite sprite, int offX, int offY, int rot, boolean flipped){
+    add(sprite.tx, sprite.ty, sprite.sx, sprite.sy, offX, offY, rot, flipped);
+  }
+
+  
+  /**
    * Adds a frame to the animation, given  the texture coordinates
    * 
    * @param tx X position on the picture, starting from the left         
@@ -231,8 +270,8 @@ public class Animation {
    * @param rot the rotation of the tile / 90 degrees
    */
   public void add(int tx, int ty, int rot){
-    add(tx, ty, sx[cAddFrame], sy[cAddFrame], 0,
-        0, rot, false);  }
+    add(tx, ty, sx[cAddFrame], sy[cAddFrame], 0, 0, rot, false);  
+  }
   
   public void add(int tx, int ty, int sx, int sy, int rot)
   {
@@ -258,7 +297,9 @@ public class Animation {
    * whether it's flipped or not
    * 
    * @param tx X position on the picture, starting from the left         
-   * @param ty Y position on the picture, starting from the <i>top</i>   
+   * @param ty Y position on the picture, starting from the <i>top</i> 
+   * @param sx Horizontal size of the sprite on the picture
+   * @param sy Veritcal size of the sprite on the picture
    * @param rot the rotation of the tile / 90 degrees
    * @param flip whether to flip the image or not
    */
@@ -290,11 +331,13 @@ public class Animation {
     if(!flipped[currFrame]){
       switch(rot[currFrame]){
         case 0:
-          Draw.rect(x+offX[currFrame], y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, texx[currFrame], texy[currFrame], 
+          Draw.rect(x+offX[currFrame], y+offY[currFrame], sx[currFrame]*scale, 
+              sy[currFrame]*scale, texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], texID);
           break;
         case 1:
-          Draw.rect(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, 
+          Draw.rect(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], 
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame],
               1, texID);
@@ -307,7 +350,8 @@ public class Animation {
               2, texID);
           break;
         case 3:
-          Draw.rect(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, sx[currFrame]*scale, sy[currFrame]*scale, 
+          Draw.rect(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, 
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               3, texID);
@@ -318,11 +362,13 @@ public class Animation {
     }else{
       switch(rot[currFrame]){
         case 0:
-          Draw.rect(x+offX[currFrame], y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
+          Draw.rect(x+offX[currFrame], y+offY[currFrame], sx[currFrame]*scale, 
+              sy[currFrame]*scale, texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame], texID);
           break;
         case 1:
-          Draw.rect(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, 
+          Draw.rect(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], 
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame],
               1, texID);
@@ -335,7 +381,8 @@ public class Animation {
               2, texID);
           break;
         case 3:
-          Draw.rect(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, sx[currFrame]*scale, sy[currFrame]*scale, 
+          Draw.rect(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, 
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               3, texID);
@@ -363,25 +410,29 @@ public class Animation {
     if(!flipped[currFrame]){
       switch(rot[currFrame]){
         case 0:
-          Draw.rectZoom(x+offX[currFrame], y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, texx[currFrame], texy[currFrame], 
+          Draw.rectZoom(x+offX[currFrame], y+offY[currFrame], 
+              sx[currFrame]*scale, sy[currFrame]*scale, texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], 0, texID,
               Editor.zoom(), EditorMap.getX(), EditorMap.getY());
           break;
         case 1:
-          Draw.rectZoom(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, 
+          Draw.rectZoom(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], 
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame],
               1, texID, Editor.zoom(), EditorMap.getX(), EditorMap.getY());
           break;
         case 2:
-          Draw.rectZoom(x+offX[currFrame]+sx[currFrame]*scale, y+offY[currFrame]+sy[currFrame]*scale,
+          Draw.rectZoom(x+offX[currFrame]+sx[currFrame]*scale, 
+              y+offY[currFrame]+sy[currFrame]*scale,
               sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               2, texID, Editor.zoom(), EditorMap.getX(), EditorMap.getY());
           break;
         case 3:
-          Draw.rectZoom(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, sx[currFrame]*scale, sy[currFrame]*scale, 
+          Draw.rectZoom(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, 
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               3, texID, Editor.zoom(), EditorMap.getX(), EditorMap.getY());
@@ -448,7 +499,8 @@ public class Animation {
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], texID);
           break;
         case 1:
-          Draw.rectCam(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, 
+          Draw.rectCam(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame],
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame],
               1, texID);
@@ -461,7 +513,8 @@ public class Animation {
               2, texID);
           break;
         case 3:
-          Draw.rectCam(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, sx[currFrame]*scale, sy[currFrame]*scale, 
+          Draw.rectCam(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale,
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame], texy[currFrame], 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               3, texID);
@@ -472,11 +525,13 @@ public class Animation {
     }else{
       switch(rot[currFrame]){
         case 0:
-          Draw.rectCam(x+offX[currFrame], y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
+          Draw.rectCam(x+offX[currFrame], y+offY[currFrame], sx[currFrame]*scale,
+              sy[currFrame]*scale, texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame], texID);
           break;
         case 1:
-          Draw.rectCam(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame], sx[currFrame]*scale, sy[currFrame]*scale, 
+          Draw.rectCam(x+offX[currFrame]+sy[currFrame]*scale, y+offY[currFrame],
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame],
               1, texID);
@@ -489,7 +544,8 @@ public class Animation {
               2, texID);
           break;
         case 3:
-          Draw.rectCam(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale, sx[currFrame]*scale, sy[currFrame]*scale, 
+          Draw.rectCam(x+offX[currFrame], y+offY[currFrame]+sx[currFrame]*scale,
+              sx[currFrame]*scale, sy[currFrame]*scale, 
               texx[currFrame]+(int)sx[currFrame], texy[currFrame], 
               texx[currFrame], texy[currFrame]+(int)sy[currFrame], 
               3, texID);
@@ -578,6 +634,7 @@ public class Animation {
     return (currFrame+1 == frames);
   }
 
+  //TODO Empty method
   public void setStopFrame(){
 
   }
@@ -612,6 +669,45 @@ public class Animation {
     return offY[currFrame];
   }
 
+  /**
+   * Adds a frame to the animation, given a sprite
+   * 
+   * @param sprite The sprite you want to add
+   */
+  public void setPausedFrame(Sprite sprite){
+    setPausedFrame(sprite.tx, sprite.ty, sprite.sx, sprite.sy, 0, 0, 0, false);
+  }
+  
+  /**
+   * Adds a frame to the animation, given a sprite
+   * 
+   * @param sprite The sprite you want to add
+   * @param offX Amount of pixels the frame should be moved when drawn on the screen
+   *                  (+ means right, - means left)
+   * @param offY Amount of pixels the frame should be moved when drawn on the screen
+   *                  (+ means up, - means down)
+   */
+  public void setPausedFrame(Sprite sprite, int offX, int offY){
+    setPausedFrame(sprite.tx, sprite.ty, sprite.sx, sprite.sy, offX, offY, 0, false);
+  }
+
+  /**
+   * Adds a frame to the animation, given a sprite
+   * 
+   * @param sprite The sprite you want to add
+   * @param offX Amount of pixels the frame should be moved when drawn on the screen
+   *                  (+ means right, - means left)
+   * @param offY Amount of pixels the frame should be moved when drawn on the screen
+   *                  (+ means up, - means down)
+   * @param rot the rotation of the tile / 90 degrees
+   * @param flipped whether to flip the image or not
+   */
+  public void setPausedFrame(Sprite sprite, int offX, int offY, int rot, boolean flipped){
+    setPausedFrame(sprite.tx, sprite.ty, sprite.sx, sprite.sy, offX, offY, rot, flipped);
+  }
+
+  
+  
   public void setPausedFrame(int tx, int ty){
     setPausedFrame(tx, ty, 0, false);
   }
@@ -682,7 +778,9 @@ public class Animation {
    * whether it's flipped or not
    * 
    * @param tx X position on the picture, starting from the left         
-   * @param ty Y position on the picture, starting from the <i>top</i>   
+   * @param ty Y position on the picture, starting from the <i>top</i> 
+   * @param sx Horizontal size of the sprite on the picture
+   * @param sy Veritcal size of the sprite on the picture
    * @param rot the rotation of the tile / 90 degrees
    * @param flip whether to flip the image or not
    */
@@ -783,7 +881,7 @@ public class Animation {
     for(int j = 0; j < frames; j++){
       if(offX[j] != 0){
         returnee.add(texx[j], texy[j], sx[j], sy[j], 
-            offX[j]+2, offY[j], rot[j], !flipped[j]);
+            offX[j], offY[j], rot[j], !flipped[j]);
       }else{
         returnee.add(texx[j], texy[j], sx[j], sy[j], 
             offX[j], offY[j], rot[j], !flipped[j]);
@@ -793,13 +891,11 @@ public class Animation {
     if(hasCustomFrame){
       if(offX[frames] != 0){
         returnee.setPausedFrame(texx[frames], texy[frames], sx[frames], sy[frames], 
-            offX[frames]+2, offY[frames], !flipped[frames]);
+            offX[frames], offY[frames], !flipped[frames]);
       }else{
         returnee.setPausedFrame(texx[frames], texy[frames], sx[frames], sy[frames], 
             offX[frames], offY[frames], !flipped[frames]);
       }
-      returnee.setPausedFrame(texx[frames], texy[frames], 
-          rot[frames], !flipped[frames]);
     }
     return returnee;
   }
@@ -810,10 +906,29 @@ public class Animation {
     
     for (int i = 0; i < frames; i++)
     {
-      duplicate.add(texx[i], texy[i], sx[i], sy[i], offX[i],
-          offY[i], rot[i], flipped[i]);
+      if(offX[i] != 0){
+        duplicate.add(texx[i], texy[i], sx[i], sy[i], 
+            offX[i], offY[i], rot[i], flipped[i]);
+      }else{
+        duplicate.add(texx[i], texy[i], sx[i], sy[i], 
+            offX[i], offY[i], rot[i], flipped[i]);
+      }
+    }
+    
+    if(hasCustomFrame){
+      if(offX[frames] != 0){
+        duplicate.setPausedFrame(texx[frames], texy[frames], sx[frames], sy[frames], 
+            offX[frames], offY[frames], flipped[frames]);
+      }else{
+        duplicate.setPausedFrame(texx[frames], texy[frames], sx[frames], sy[frames], 
+            offX[frames], offY[frames], flipped[frames]);
+      }
     }
     
     return duplicate;
+  }
+  
+  public boolean hasCustomFrame(){
+    return hasCustomFrame;
   }
 }

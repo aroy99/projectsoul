@@ -368,8 +368,6 @@ public abstract class Player extends Person implements Playable{
       isAttacking = false;
       switchAttack(true);
     }
-
-
   }
   
   private void resumeAnimationIfStopped()

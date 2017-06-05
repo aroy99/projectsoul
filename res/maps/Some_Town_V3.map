@@ -48,6 +48,6 @@ The Forest
 /npc bobobo-bobobo 2 10 NESS walk_up_and_down yoyoyo
 /npc bobby 3 7 POKEMON walk_left_and_right yoyoyo
 /npc vincent 16 6 POKEMON walk_up_and_down buy
-npc ness 16 2 NESS jog_no_sleep cant_talk
+npc ness 16 2 GUARD jog_no_sleep cant_talk
 warp Somewhere_Inside 8 9
 connect NPC_Test_Map down -6 -20

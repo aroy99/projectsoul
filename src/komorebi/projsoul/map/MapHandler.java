@@ -20,6 +20,7 @@ import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.entities.player.Flannery;
 import komorebi.projsoul.entities.player.Player;
 import komorebi.projsoul.entities.player.Sierra;
+import komorebi.projsoul.entities.sprites.NPCLoader;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.script.text.EarthboundFont;
 import komorebi.projsoul.script.text.TextHandler;
@@ -81,6 +82,8 @@ public class MapHandler {
   private MapHandler(){}
   
   public static void initialize(String firstMap){
+    NPCLoader.initialize();
+    
     activeMap = MapLoader.loadMap(firstMap, 0, 0);
     
     caspian = new Caspian(0,0);

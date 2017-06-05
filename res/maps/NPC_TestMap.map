@@ -47,5 +47,5 @@ None
 /npc ness 11 7 NESS walk_up_and_down pk_fire
 /npc jogger_joe 18 10 POKEMON jog_no_sleep cant_talk
 /npc mess 8 12 NESS walk_around quick
-enemy 17 17 SATURN chaser 5
+enemy 17 17 BLUE_DETRAL chaser 5
 sign 7 15 This is a test message.
