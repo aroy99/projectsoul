@@ -6,6 +6,7 @@ package komorebi.projsoul.states;
 
 import komorebi.projsoul.entities.player.Player;
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.engine.Save;
 
 /**
  * Represents a state in the game
@@ -13,9 +14,11 @@ import komorebi.projsoul.map.Map;
  * @author Aaron Roy
  */
 
+@SuppressWarnings("unused")
 public abstract class State{
 	
   protected static Map map;
+  protected static Save saveFile;
 
   /**
    * Represents all of the states in the game
@@ -23,7 +26,7 @@ public abstract class State{
    * @author Aaron Roy
    */
   public enum States{
-    GAME, EDITOR, MENU, PAUSE;
+    GAME, EDITOR, MENU, PAUSE, SAVELIST;
   }
 
   /**

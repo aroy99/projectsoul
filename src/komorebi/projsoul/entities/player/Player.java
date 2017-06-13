@@ -14,6 +14,7 @@ import komorebi.projsoul.attack.ProjectileAttack;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.entities.Entity;
 import komorebi.projsoul.entities.Face;
@@ -28,6 +29,7 @@ import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
 import komorebi.projsoul.states.Game;
+import komorebi.projsoul.attack.ElementalProperty;
 
 /**
  * @author Aaron Roy
@@ -47,7 +49,7 @@ public abstract class Player extends Entity implements Playable{
   private boolean dead; 
 
   public Characters character;
-
+  public ElementalProperty charProperty;
   public boolean isAttacking;
 
   protected boolean canMove = true;
@@ -233,17 +235,17 @@ public abstract class Player extends Entity implements Playable{
 
         if (!restoreMvmtX)
         {
-          if (Math.abs(dx)<=0.5 && Math.abs(dx)>=0)
-          {
-            dx = 0;
-            restoreMvmtX = true;
-          }
-          if (dx > 0){
-            dx-=0.5;
-          }
-          if (dx < 0){
-            dx+=0.5;
-          }
+        	if (Math.abs(dx)<=0.5 && Math.abs(dx)>=0)
+          	{
+        	  dx = 0;
+        	  restoreMvmtX = true;
+          	}
+          	if (dx > 0){
+        	  dx-=0.5;
+          	}
+          	if (dx < 0){
+        	  dx+=0.5;
+          	}
         }
 
         if (!restoreMvmtY)
@@ -292,8 +294,8 @@ public abstract class Player extends Entity implements Playable{
 
       //TODO Debug
       if(!KeyHandler.keyDown(Key.G)){
-        Game.getMap().guidePlayer(x, y, dx, dy);
-        boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
+        Game.getMap().guidePlayer(getX(), y, dx, dy);
+        boolean[] col = Game.getMap().checkCollisions(getX(),y,dx,dy);
 
         if(!col[0] || !col[2]){
           dy=0;
@@ -306,9 +308,10 @@ public abstract class Player extends Entity implements Playable{
       }
 
       if(KeyHandler.keyClick(Key.R)){
-        x = 100;
+        setX(100);
         y = 100;
-        Camera.center(x, y);
+        Camera.center(getX(), y);
+        Main.scale=1;
       }
 
     }else {
@@ -321,7 +324,7 @@ public abstract class Player extends Entity implements Playable{
     overrideImproperMovements();
 
     Camera.move(dx, dy);
-    x += dx;
+    setX(getX() + dx);
     y += dy;
 
     area.x += dx;
@@ -343,7 +346,7 @@ public abstract class Player extends Entity implements Playable{
 
     //TODO Debug
     if(KeyHandler.keyClick(Key.L)){
-      System.out.println("x: "+x+", y: "+y);
+      System.out.println("x: "+getX()+", y: "+y);
     }
 
     if (hasInstructions&&framesToGo<=0)
@@ -358,10 +361,10 @@ public abstract class Player extends Entity implements Playable{
       lock.resumeThread();
     }
 
-    area.x = (int) x;
+    area.x = (int) getX();
     area.y = (int) y;
 
-    future.x = (int) x;
+    future.x = (int) getX();
     future.y = (int) y;
 
     guiding = false;
@@ -425,16 +428,16 @@ public abstract class Player extends Entity implements Playable{
       switch (dir)
       {
         case DOWN:
-          hurtDownAni.playCam(x, y);
+          hurtDownAni.playCam(getX(), y);
           break;
         case LEFT:
-          hurtLeftAni.playCam(x, y);
+          hurtLeftAni.playCam(getX(), y);
           break;
         case RIGHT:
-          hurtRightAni.playCam(x, y);
+          hurtRightAni.playCam(getX(), y);
           break;
         case UP:
-          hurtUpAni.playCam(x, y);
+          hurtUpAni.playCam(getX(), y);
           break;
         default:
           break;
@@ -513,11 +516,11 @@ public abstract class Player extends Entity implements Playable{
         down = true;
         break;
       case LEFT:
-        framesToGo = (int) this.x - 16*getTileX();
+        framesToGo = (int) this.getX() - 16*getTileX();
         left = true;
         break;
       case RIGHT:
-        framesToGo = (int) (16*getTileX() + 16 - this.x);
+        framesToGo = (int) (16*getTileX() + 16 - this.getX());
         right = true;
         break;
       case UP:
@@ -541,7 +544,7 @@ public abstract class Player extends Entity implements Playable{
 
   public void goToPixX(int goTo, Lock lock)
   {
-    int distance = goTo - (int) x;
+    int distance = goTo - (int) getX();
     framesToGo = Math.abs(distance);
     hasInstructions = true;
 
@@ -598,7 +601,7 @@ public abstract class Player extends Entity implements Playable{
   }
 
   public int getTileX(){
-    return  (int) (x/16);
+    return  (int) (getX()/16);
   }
 
   public int getTileY(){
@@ -611,16 +614,16 @@ public abstract class Player extends Entity implements Playable{
 
   public void goTo(boolean horizontal, int tx, Lock lock)
   {
-    System.out.println(tx*16 + ", x = " + x);
+    System.out.println(tx*16 + ", x = " + getX());
 
 
     if (horizontal)
     {
-      if (x>tx*16)
+      if (getX()>tx*16)
       {
         align(Face.LEFT, lock);
         walk(Face.LEFT, getTileX()-tx);
-      } else if (x<tx*16)
+      } else if (getX()<tx*16)
       {
         align(Face.RIGHT, lock);
         walk(Face.RIGHT, tx-getTileX(), lock);
@@ -693,6 +696,7 @@ public abstract class Player extends Entity implements Playable{
       if (enemy.getHitBox().intersects(future))
       {
         get[0] = true;
+        
       }
     }
 
@@ -704,6 +708,7 @@ public abstract class Player extends Entity implements Playable{
       if (enemy.getHitBox().intersects(future))
       {
         get[1] = true;
+        
       }
     }
 
@@ -735,14 +740,14 @@ public abstract class Player extends Entity implements Playable{
 
   public void overrideImproperMovements()
   {
-    if (x+dx<0)
+    if (getX()+dx<0)
     {
-      x = 0;
+      setX(0);
       dx = 0;
-    } else if (x+dx>Game.getMap().getWidth()*16 - sx)
+    } else if (getX()+dx>Game.getMap().getWidth()*16 - sx)
     {
       dx = 0;
-      x = Game.getMap().getHeight() * 16 - sx;
+      setX(Game.getMap().getHeight() * 16 - sx);
     }
 
     if (y+dy<0)
@@ -757,12 +762,12 @@ public abstract class Player extends Entity implements Playable{
 
     for (FireRingInstance ring: RingOfFire.allInstances())
     {
-      if (ring.intersectsCirc(new Rectangle((int)(x+dx),(int)(y+dy),sx,sy)))
+      if (ring.intersectsCirc(new Rectangle((int)(getX()+dx),(int)(y+dy),sx,sy)))
       {
         float[] center = ring.getCenter();
-        double ang = Map.angleOf(x, y, center[0], center[1]);
+        double ang = Map.angleOf(getX(), y, center[0], center[1]);
 
-        if (ring.inRing(new Rectangle((int)(x+dx),(int)(y+dy),sx,sy)))
+        if (ring.inRing(new Rectangle((int)(getX()+dx),(int)(y+dy),sx,sy)))
         {
           ang -= 180;
         }
@@ -770,9 +775,9 @@ public abstract class Player extends Entity implements Playable{
         float chgy = (float) Math.sin(ang * (Math.PI/180)) * 5;
 
         if (this instanceof Flannery)
-          inflictPain(0, chgx, chgy);
+          inflictPain(0, chgx, chgy, Enemy.emyProperty);
         else
-          inflictPain(ring.getDamage(), chgx, chgy);
+          inflictPain(ring.getDamage(), chgx, chgy, Enemy.emyProperty);
       }
     }
   }
@@ -781,17 +786,59 @@ public abstract class Player extends Entity implements Playable{
   {
     return area;
   }
-
-  public void inflictPain(int attack, float dx, float dy)
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+/////////////////////////////////////////////JASON USE THIS///////OK JASON////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////
+  //modified inflictPain method that takes in an attack's effectiveness to determine damage
+  public void inflictPain(int attack, float dx, float dy, ElementalProperty emyProperty)
   {
+	
     invincible = true;
     restoreMvmtX = false;
     restoreMvmtY = false;
 
     hurtCount = 40;
-
+    
     switch (dir)
-    {
+    	{
       case DOWN:
         hurtDownAni.resume();
         break;
@@ -806,25 +853,32 @@ public abstract class Player extends Entity implements Playable{
         break;
       default:
         break;
-
-    }
-
-    System.out.println("Damage = " + attack + " - " + getDefense(character) + "/2");
+    	}
+  	
+    attack = (int) (attack*charProperty.findEffectiveness(emyProperty,charProperty)+1);
+    		//System.out.println(attack);
+    //System.out.println("Damage = " + attack + " - " + getDefense(character) + "/2");
 
     if (attack - getDefense(character)/2 > 0)
     {
       health.health -= (int) (attack - (getDefense(character)/2));
     }
-    //Kills the enemy
-    if (health.health<=0)
+    else {  //always takes at least 1 damage if hit
+    	health.health -= 1;
+    }
+    
+    if (health.health<=0)	//if Player is dead
     {
       deathAni.resume();
       dying = true;
+     
     }
 
     this.dx = dx;
     this.dy = dy;
   }
+  
+  
 
   public boolean invincible()
   {
@@ -843,7 +897,7 @@ public abstract class Player extends Entity implements Playable{
 
   public void setLocation(float x, float y)
   {
-    this.x = x;
+    this.setX(x);
     this.y = y;
   }
 
@@ -997,16 +1051,16 @@ public abstract class Player extends Entity implements Playable{
   {
     switch (dir) {
       case DOWN:
-        downAni.playCam(x,y);
+        downAni.playCam(getX(),y);
         break;
       case UP:
-        upAni.playCam(x,y);
+        upAni.playCam(getX(),y);
         break;
       case LEFT:
-        leftAni.playCam(x,y);
+        leftAni.playCam(getX(),y);
         break;
       case RIGHT:
-        rightAni.playCam(x,y);
+        rightAni.playCam(getX(),y);
         break;
       default:
         break;
@@ -1017,6 +1071,8 @@ public abstract class Player extends Entity implements Playable{
   {
     return health.getHealth();
   }
+  
+  
 
 
 }

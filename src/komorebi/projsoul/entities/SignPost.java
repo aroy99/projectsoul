@@ -21,10 +21,10 @@ public class SignPost extends Entity {
     super(x, y, 16, 16);
     text = new SignHandler(this);
 
-    surround[0] = new Rectangle((int) this.x, (int) this.y+16, 16, 16);
-    surround[1] = new Rectangle((int) this.x + 16, (int) this.y, 16, 16);
-    surround[2] = new Rectangle((int) this.x, (int) this.y - 16, 16, 16);
-    surround[3] = new Rectangle((int) this.x - 16, (int) this.y, 16, 16);
+    surround[0] = new Rectangle((int) this.getX(), (int) this.y+16, 16, 16);
+    surround[1] = new Rectangle((int) this.getX() + 16, (int) this.y, 16, 16);
+    surround[2] = new Rectangle((int) this.getX(), (int) this.y - 16, 16, 16);
+    surround[3] = new Rectangle((int) this.getX() - 16, (int) this.y, 16, 16);
 
     this.message = message;
 
@@ -78,7 +78,7 @@ public class SignPost extends Entity {
     }
     
     if(EditorMap.getMode() == Modes.EVENT){
-      Draw.rect(x, y, sx, sy, 96, 0, 2);
+      Draw.rect(getX(), y, sx, sy, 96, 0, 2);
     }
   
   }

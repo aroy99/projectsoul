@@ -9,7 +9,6 @@ import static komorebi.projsoul.engine.KeyHandler.keyClick;
 import static komorebi.projsoul.engine.KeyHandler.keyDown;
 import static komorebi.projsoul.engine.MainE.HEIGHT;
 import static komorebi.projsoul.engine.MainE.WIDTH;
-
 import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
@@ -47,6 +46,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  *
  * @author Aaron Roy
  */
+@SuppressWarnings("unused")
 public class ConnectMode extends Mode {
 
   private ArrayList<ConnectMap> maps;

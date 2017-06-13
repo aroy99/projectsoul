@@ -1,7 +1,7 @@
 package komorebi.projsoul.entities.player;
 
 import static komorebi.projsoul.engine.KeyHandler.button;
-
+import komorebi.projsoul.attack.ElementalProperty;
 import komorebi.projsoul.attack.FireBall;
 import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.ProjectileAttack;
@@ -31,9 +31,8 @@ public class Flannery extends Player {
   public static int level = 1, xp = 0, nextLevelUp = 10;
 
   public Flannery(float x, float y) {
-
     super(x,y);
-
+    charProperty = ElementalProperty.FIRE;
     character = Characters.FLANNERY;
 
     upAni =    new Animation(6, 8, 12);
@@ -178,12 +177,12 @@ public class Flannery extends Player {
         currentAnimation.resume();
         magic.changeMagicBy(-10);
         
-        attack1.newAttack(x,y,aDx,aDy,dir,attack);
+        attack1.newAttack(getX(),y,aDx,aDy,dir,attack);
       }
       
       if (attack1 == ring)
       {
-        ring.newXMark(x+8, y+16);
+        ring.newXMark(getX()+8, y+16);
       }
     }
     
@@ -200,7 +199,7 @@ public class Flannery extends Player {
     } else if (KeyHandler.keyRelease(Key.X) && !isAttacking && magic.hasEnoughMagic(
         10) && attack1 == ring)
     {
-      //TODO: replace final 0 with atatck
+      //TODO: replace final 0 with attack
       ring.newAttack(0, 0, 0, 0, dir, attack);
       canMove = true;
       magic.changeMagicBy(-10);
@@ -225,7 +224,7 @@ public class Flannery extends Player {
   public void renderAttack() {
     if (attack1 == projectile)
     {
-      currentAnimation.playCam(x, y);
+      currentAnimation.playCam(getX(), y);
     }
   }
 

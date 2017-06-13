@@ -91,12 +91,12 @@ public class NPC extends Entity {
     text = new SpeechHandler();
     SpeechHandler.setSpeed(3);
 
-    surround[0] = new Rectangle((int) this.x, (int) this.y+24, 16, 24);
-    surround[1] = new Rectangle((int) this.x + 16, (int) this.y, 16, 24);
-    surround[2] = new Rectangle((int) this.x, (int) this.y - 24, 16, 24);
-    surround[3] = new Rectangle((int) this.x - 16, (int) this.y, 16, 24);
+    surround[0] = new Rectangle((int) this.getX(), (int) this.y+24, 16, 24);
+    surround[1] = new Rectangle((int) this.getX() + 16, (int) this.y, 16, 24);
+    surround[2] = new Rectangle((int) this.getX(), (int) this.y - 24, 16, 24);
+    surround[3] = new Rectangle((int) this.getX() - 16, (int) this.y, 16, 24);
 
-    future = new Rectangle((int) this.x, (int) this.y, 16, 24);
+    future = new Rectangle((int) this.getX(), (int) this.y, 16, 24);
 
     names[0] = "Top";
     names[1] = "Right";
@@ -222,7 +222,7 @@ public class NPC extends Entity {
       rightAni.hStop();
     }
     
-    x+=dx;
+    setX(getX() + dx);
     xTravelled+=dx;
 
     y+=dy;
@@ -269,16 +269,16 @@ public class NPC extends Entity {
       switch (direction)
       {
         case DOWN:
-          downAni.playCam(x,y);
+          downAni.playCam(getX(),y);
           break;
         case LEFT:
-          leftAni.playCam(x,y);
+          leftAni.playCam(getX(),y);
           break;
         case RIGHT:
-          rightAni.playCam(x,y);
+          rightAni.playCam(getX(),y);
           break;
         case UP:
-          upAni.playCam(x,y);
+          upAni.playCam(getX(),y);
           break;
         default:
           break;
@@ -577,7 +577,7 @@ public class NPC extends Entity {
    */
   public void setPixLocation(int x, int y)
   {
-    this.x = x;
+    this.setX(x);
     surround[0].setLocation(x, y+24);
     surround[1].setLocation(x+16, y);
     surround[2].setLocation(x, y-24);
@@ -616,7 +616,7 @@ public class NPC extends Entity {
 
   public int getTileX()
   {
-    return ((int) x)/16;
+    return ((int) getX())/16;
   }
 
   public int getTileY()
@@ -789,13 +789,13 @@ public class NPC extends Entity {
 
   public void move(float dx, float dy)
   {
-    x+=dx;
+    setX(getX() + dx);
     y+=dy;
 
-    surround[0].setLocation((int) x, (int) y+24);
-    surround[1].setLocation((int) x+16, (int) y);
-    surround[2].setLocation((int) x, (int) y-24);
-    surround[3].setLocation((int) x-16, (int) y);
+    surround[0].setLocation((int) getX(), (int) y+24);
+    surround[1].setLocation((int) getX()+16, (int) y);
+    surround[2].setLocation((int) getX(), (int) y-24);
+    surround[3].setLocation((int) getX()-16, (int) y);
   }
 
 
@@ -848,10 +848,10 @@ public class NPC extends Entity {
   {
     if (horizontal)
     {
-      if (x>tx*16)
+      if (getX()>tx*16)
       {
         walk(Face.LEFT, getTileX()-tx);
-      } else if (x<tx*16)
+      } else if (getX()<tx*16)
       {
         walk(Face.RIGHT, tx-getTileX(), lock);
       }

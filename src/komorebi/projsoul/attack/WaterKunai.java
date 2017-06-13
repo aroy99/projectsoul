@@ -5,13 +5,14 @@ import java.awt.Rectangle;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.player.Characters;
+import komorebi.projsoul.attack.ElementalProperty;
 
 public class WaterKunai extends Projectile {
 
   public WaterKunai(float x, float y, float dx, float dy, Face dir, int attack)
   {
     super(x,y,dx,dy,dir,attack);
-    
+    preAether=ElementalProperty.WATER;
     character = Characters.CASPIAN;
     
     downAttack = new Animation(4,8,12,false);
@@ -58,4 +59,6 @@ public class WaterKunai extends Projectile {
   {
     return new WaterKunai(x,y,dx,dy,dir,attack);
   }
+
+
 }

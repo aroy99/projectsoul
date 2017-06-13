@@ -56,22 +56,22 @@ public class Chaser extends Enemy {
     if(Death.playable)
     {
 
-      if (Map.distanceBetween(x,y,targetX,targetY)>maxClydeDist && (dx!=0 || dy!=0))
+      if (Map.distanceBetween(getX(),y,targetX,targetY)>maxClydeDist && (dx!=0 || dy!=0))
       {
         dx = 0;
         dy = 0;
       }
 
-      if (!invincible && Map.distanceBetween(x,y,targetX,targetY)<=maxClydeDist)
+      if (!invincible && Map.distanceBetween(getX(),y,targetX,targetY)<=maxClydeDist)
       {
-        float triX = Math.abs(targetX-x);
+        float triX = Math.abs(targetX-getX());
         float triY = Math.abs(targetY-y);
         float theta = (float)Math.atan(triY/triX);
 
-        if (targetX > x && triX > 12)
+        if (targetX > getX() && triX > 12)
         {
           dx = speed*(float)Math.cos(theta);
-        } else if (targetX < x)
+        } else if (targetX < getX())
         {
           dx = -speed*(float)Math.cos(theta);
         }
@@ -114,10 +114,10 @@ public class Chaser extends Enemy {
   public void render() {
     //TODO Better implementation
     if(EditorMap.getMode() == Modes.EVENT){
-      Draw.circ(x, y, maxClydeDist, red, blue, green, 64);
+      Draw.circ(getX(), y, maxClydeDist, red, blue, green, 64);
     }
     if(Map.isHitBox){
-      Draw.circCam(x, y, maxClydeDist, red, blue, green, 64);
+      Draw.circCam(getX(), y, maxClydeDist, red, blue, green, 64);
     }
 
     super.render();

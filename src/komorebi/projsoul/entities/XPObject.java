@@ -30,7 +30,7 @@ public class XPObject extends Entity {
 
   @Override
   public void update() {
-    x += dx;
+    setX(getX() + dx);
     y += dy;
     
     area.x += dx;
@@ -69,7 +69,7 @@ public class XPObject extends Entity {
 
   @Override
   public void render() {
-     Draw.rectCam(x, y, sx, sy, 1, 45, 9, 53, 11);
+     Draw.rectCam(getX(), y, sx, sy, 1, 45, 9, 53, 11);
   }
   
   public boolean destroyed()
@@ -85,16 +85,16 @@ public class XPObject extends Entity {
   public boolean withinRadius(Rectangle r)
   {
     
-    return (Map.distanceBetween(r.x, r.y, x+4, y+4)<GRAV_RADIUS) ||
-        (Map.distanceBetween(r.x+r.width, r.y, x+4, y+4)<GRAV_RADIUS) ||
-        (Map.distanceBetween(r.x+r.width, r.y+r.height, x+4, y+4)<GRAV_RADIUS) ||
-        (Map.distanceBetween(r.x, r.y+r.height, x+4, y+4)<GRAV_RADIUS);
+    return (Map.distanceBetween(r.x, r.y, getX()+4, y+4)<GRAV_RADIUS) ||
+        (Map.distanceBetween(r.x+r.width, r.y, getX()+4, y+4)<GRAV_RADIUS) ||
+        (Map.distanceBetween(r.x+r.width, r.y+r.height, getX()+4, y+4)<GRAV_RADIUS) ||
+        (Map.distanceBetween(r.x, r.y+r.height, getX()+4, y+4)<GRAV_RADIUS);
   }
   
   public void guide(float tarX, float tarY)
   {
-    if (x < tarX) dx = 1;
-    else if (x > tarX) dx = -1;
+    if (getX() < tarX) dx = 1;
+    else if (getX() > tarX) dx = -1;
     
     if (y < tarY) dy = 1;
     else if (y > tarY) dy = -1;

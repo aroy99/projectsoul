@@ -225,23 +225,18 @@ public class Pause extends State {
     	break;
       default:
         break;
-      
     }
-     
   }
 
   @Override
   public void update() {
-    
     pop.update();
   }
 
   @Override
   public void render() {
     Draw.rect(245, 3, 220, 75, 0, 0, 220, 59, 1, 6); //draws the menu
-    
     Draw.rect(5, 190, 50, 28, 100, 40, 101, 41, 6); //draws the top-left flat color
-    
     text.render();
     
     switch (pickIndex)
@@ -263,10 +258,6 @@ public class Pause extends State {
         break;
       default: break;
     }
-    
-    
-    
-    
     pop.render();
   }
   
@@ -315,5 +306,4 @@ public class Pause extends State {
     prevMon = Main.getGame().getMoney();
     prevConf = Main.getGame().getConfidence();
   }
-
 }

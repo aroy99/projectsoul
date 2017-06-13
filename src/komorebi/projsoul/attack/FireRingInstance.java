@@ -22,7 +22,7 @@ public class FireRingInstance implements AttackInstance {
   
   private Animation ani;
   private Rectangle[] flames;
-  
+  public static ElementalProperty priAether = ElementalProperty.FIRE;//Base type = Fire
   private FireRingInstance(float x, float y, int attack)
   {
     this.x = x-CTR_X;
@@ -48,7 +48,6 @@ public class FireRingInstance implements AttackInstance {
     
   }
   
-  @Override
   public AttackInstance build(float x, float y, float dx, float dy, Face dir,
       int attack) {
     return new FireRingInstance(x,y,attack);

@@ -45,7 +45,7 @@ public class TextHandler{
   }
 
   /**
-   * Renders the text in a style specified by the text handler's attributess
+   * Renders the text in a style specified by the text handler's attributes
    */
   public void render()
   {
@@ -68,14 +68,14 @@ public class TextHandler{
     {
 
       int under = 0, texUnder = 0;
-
+      
       if (letters[i]=='g' || letters[i] == 'j' || letters[i] == 'p' ||
           letters[i] == 'q' || letters[i] == 'y')
       {   
         under = size;
         texUnder = word.getFont().getFontPoint();
       } 
-
+		
 
       Draw.rect(horiz, vert-under, size, size+under, 
           word.getFont().getTexX(letters[i]), word.getFont().getTexY(letters[i]), 

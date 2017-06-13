@@ -7,6 +7,7 @@ import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.states.Game;
+import komorebi.projsoul.attack.ElementalProperty;
 
 public class Charge extends Melee {
  
@@ -16,10 +17,9 @@ public class Charge extends Melee {
   
   public Charge()
   {
-    
   }
-  
-  private Charge(float x, float y, float dx, float dy, Face dir, int attack)
+  @SuppressWarnings("unused")
+private Charge(float x, float y, float dx, float dy, Face dir, int attack)
   {
     this.x = x;
     this.y = y;
@@ -27,7 +27,7 @@ public class Charge extends Melee {
     this.dy = dy;
     this.currentDir = dir;
     this.attack = attack;
-    
+    perAether = ElementalProperty.EARTH;//Charge's base typing is EARTH
     character = Characters.BRUNO;
     
     rightAttack = new Animation(1,8,12);
@@ -47,7 +47,6 @@ public class Charge extends Melee {
   }
   
   
-  @Override
   public AttackInstance build(float x, float y, float dx, float dy, Face dir,
       int attack) {
     return new Charge(x,y,dx,dy,dir,attack);
@@ -63,31 +62,28 @@ public class Charge extends Melee {
     {
       if (enemy.getHitBox().intersects(future))
       {
-        enemy.inflictPain(attack, currentDir, Characters.BRUNO);
+        enemy.inflictPain(attack, currentDir, Characters.BRUNO, perAether);
         dx = -dx;
         dy = -dy;
       }
     }
-    
     this.x += dx;
     this.y += dy;
-    
     hitBox.x = (int) x;
     hitBox.y = (int) y;
-    
     if (dy > 0) dy -= 0.25;
     if (dy < 0) dy += 0.25;
     if (dx > 0) dx -= 0.25;
     if (dx < 0) dx += 0.25;
-    
-    attackIndex++;
-   
-    
+    attackIndex++;  
   }
-  
   public boolean isStopped()
   {
     return attackIndex >= 20;
   }
+
+
+
+
 
 }

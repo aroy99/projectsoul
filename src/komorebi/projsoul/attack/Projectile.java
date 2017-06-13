@@ -19,11 +19,12 @@ public abstract class Projectile implements AttackInstance {
 
   public Face currentDir;
   public Characters character;
-  
+  public ElementalProperty filler;
   public Rectangle area;
   
   public int attack;
   public boolean destroyMe;
+  public ElementalProperty preAether;
   
   public Projectile(float x, float y, float dx, float dy, Face dir, int attack) {
     this.x = x;
@@ -74,7 +75,8 @@ public abstract class Projectile implements AttackInstance {
           if (!enemy.invincible())
           {
             enemy.inflictPain(attack, currentDir, 
-                character);
+                character, preAether);
+           
           }
         }
         

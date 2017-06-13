@@ -1,5 +1,6 @@
 package komorebi.projsoul.entities.player;
 
+import komorebi.projsoul.attack.ElementalProperty;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.MagicBar;
@@ -11,9 +12,8 @@ public class Sierra extends Player {
   public static int level = 1, xp = 0, nextLevelUp = 10;
 
   public Sierra(float x, float y) {
-
     super(x,y);
-
+    charProperty = ElementalProperty.WIND;
     character = Characters.SIERRA;
 
     upAni =    new Animation(6, 8, 12);

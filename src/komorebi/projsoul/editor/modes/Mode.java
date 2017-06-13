@@ -4,7 +4,6 @@
 package komorebi.projsoul.editor.modes;
 
 import static komorebi.projsoul.engine.KeyHandler.controlDown;
-
 import komorebi.projsoul.editor.Palette;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.MainE;
@@ -26,6 +25,7 @@ import java.util.logging.Handler;
  * 
  * @author Aaron Roy
  */
+@SuppressWarnings("unused")
 public abstract class Mode implements Renderable{
   
   protected static boolean lButtonIsDown, lButtonWasDown;//Left Button Clicked

@@ -6,13 +6,14 @@ import java.awt.Rectangle;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.player.Characters;
+import komorebi.projsoul.attack.ElementalProperty;
 
 public class FireBall extends Projectile {
     
   public FireBall(float x, float y, float dx, float dy, Face dir, int attack)
   {    
     super(x,y,dx,dy,dir,attack);
-    
+    preAether=ElementalProperty.FIRE;
     character = Characters.FLANNERY;
     
     downAttack = new Animation(4,8,12,false);
@@ -58,4 +59,6 @@ public class FireBall extends Projectile {
   {
     return new FireBall(x,y,dx,dy,dir,attack);
   }
+
+
 }

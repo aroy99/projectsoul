@@ -6,12 +6,13 @@ package komorebi.projsoul.map;
 
 import static komorebi.projsoul.engine.Main.HEIGHT;
 import static komorebi.projsoul.engine.Main.WIDTH;
-
 import komorebi.projsoul.audio.AudioHandler;
 import komorebi.projsoul.audio.Song;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.engine.Save;
 import komorebi.projsoul.entities.NPC;
 import komorebi.projsoul.entities.NPCType;
 import komorebi.projsoul.entities.SignPost;
@@ -33,6 +34,7 @@ import komorebi.projsoul.script.Script;
 import komorebi.projsoul.script.TalkingScript;
 import komorebi.projsoul.script.WalkingScript;
 import komorebi.projsoul.script.WarpScript;
+import komorebi.projsoul.states.Game;
 
 import java.awt.Rectangle;
 import java.io.BufferedReader;
@@ -62,7 +64,7 @@ public class Map implements Playable{
   private ArrayList<SignPost> signs;
   private ArrayList<XPObject> xpObj;
   
-  private static Player play;
+  public static Player play;
   
   private static Caspian caspian;
   private static Flannery flannery;
@@ -73,7 +75,6 @@ public class Map implements Playable{
   private String title;                 //The in-game name of this map
   private Song song;                    //The song this map uses
   private boolean outside;
-
 
   //DEBUG Map Debug variables
   public static boolean isHitBox;
@@ -147,7 +148,7 @@ public class Map implements Playable{
       System.out.println("Title: " + title);
       System.out.println("Song: " + song);
       System.out.println(outside);
-      AudioHandler.play(song);
+      //AudioHandler.play(song); Commnted out bc menu music should play first. When left in, map music cuts off 
       
       for (int i = 0; i < tiles.length; i++) {
         String[] str = reader.readLine().split(" ");
@@ -261,17 +262,18 @@ public class Map implements Playable{
 
       reader.close();
       
-      caspian = new Caspian(tiles[0].length/2*16,0);
-      flannery = new Flannery(tiles[0].length/2*16,0);
-      sierra = new Sierra(tiles[0].length/2*16,0);
-      bruno = new Bruno(tiles[0].length/2*16,0);
+      caspian = new Caspian(Float.valueOf(Game.getSave().striX), Float.valueOf(Game.getSave().striY));
+      flannery = new Flannery(Float.valueOf(Game.getSave().striX), Float.valueOf(Game.getSave().striY));
+      sierra = new Sierra(Float.valueOf(Game.getSave().striX), Float.valueOf(Game.getSave().striY));
+      bruno = new Bruno(Float.valueOf(Game.getSave().striX), Float.valueOf(Game.getSave().striY));
       
-      play = caspian;
+      initalizePlayer();
       
       Camera.center(play.getX(), play.getY(), tiles[0].length*16, tiles.length*16);
 
     } catch (IOException | NumberFormatException e) {
       e.printStackTrace();
+     
     }
     
   }
@@ -732,25 +734,37 @@ public void switchPlayer()
     {
       case CASPIAN:
         flannery.setLocation(caspian.getX(), caspian.getY());
-        play = flannery;
+        play= flannery;
         break;
       case FLANNERY:
         sierra.setLocation(flannery.getX(), flannery.getY());
-        play = sierra;
+        play= sierra;
         break;
       case SIERRA:
         bruno.setLocation(sierra.getX(), sierra.getY());
-        play = bruno;
+        play= bruno;
         break;
       case BRUNO:
         caspian.setLocation(bruno.getX(), bruno.getY());
-        play = caspian;
+        play= caspian;
         break;
       default:
         break;
     }
   }
   
+public void initalizePlayer()
+	{
+	if (Game.getSave().chara.equals("CASPIAN"))
+  	  play =caspian;
+    else if (Game.getSave().chara.equals("FLANNERY"))
+  	  play =flannery;
+    else if (Game.getSave().chara.equals("SIERRA"))
+  	  play =sierra;
+    else if (Game.getSave().chara.equals("BRUNO"))
+  	  play =bruno;
+	}
+
   public static Characters currentPlayer()
   {
     return play.getCharacter();
@@ -866,6 +880,16 @@ public void switchPlayer()
   public String getTitle(){
     return title;
   }
+
+
+public int getDebugCount() {
+	return debugCount;
+}
+
+
+public void setDebugCount(int debugCount) {
+	this.debugCount = debugCount;
+}
 
 
 }

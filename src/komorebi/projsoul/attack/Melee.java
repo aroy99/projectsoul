@@ -12,6 +12,7 @@ public abstract class Melee implements AttackInstance {
   
   public float x, y, dx, dy;
   public int attack;
+  public ElementalProperty perAether;
   
   public Rectangle hitBox;
 
@@ -27,7 +28,7 @@ public abstract class Melee implements AttackInstance {
   {
   
   }
-  
+  //creates the attack's hitbox
   public Melee(float x, float y, Face dir, int attack)
   {
     this.x = x;
@@ -133,8 +134,4 @@ public abstract class Melee implements AttackInstance {
   {
     return y;
   }
-  
-
-  
-  
 }

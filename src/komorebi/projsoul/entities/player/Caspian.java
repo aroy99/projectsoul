@@ -1,7 +1,7 @@
 package komorebi.projsoul.entities.player;
 
 import static komorebi.projsoul.engine.KeyHandler.button;
-
+import komorebi.projsoul.attack.ElementalProperty;
 import komorebi.projsoul.attack.MeleeAttack;
 import komorebi.projsoul.attack.ProjectileAttack;
 import komorebi.projsoul.attack.WaterKunai;
@@ -28,12 +28,12 @@ public class Caspian extends Player {
   private Animation rightThrow;
   private Animation upThrow;
   private Animation downThrow;
-
+  
   private Animation currentAnimation; 
 
   public Caspian(float x, float y) {
     super(x, y);
-
+    charProperty = ElementalProperty.WATER;
     character = Characters.CASPIAN;
 
     upAni =    new Animation(6, 8, 11);
@@ -129,7 +129,7 @@ public class Caspian extends Player {
     {
       if (attack1 == melee)
       {
-        melee.update(x, y);
+        melee.update(getX(), y);
         
         if (!melee.playing())
         {
@@ -141,8 +141,8 @@ public class Caspian extends Player {
           if (melee.getAttackInstance().getHitBox().intersects(enemy.getHitBox()) 
               && !enemy.invincible())
           {
-            enemy.inflictPain((int) (Player.getAttack(Characters.CASPIAN)), dir,
-                Characters.CASPIAN);
+            enemy.inflictPain((int)(Player.getAttack(Characters.CASPIAN)), dir,
+                Characters.CASPIAN, charProperty);
           }
 
         }
@@ -205,7 +205,7 @@ public class Caspian extends Player {
 
       if (attack1 != null)
       {
-        attack1.newAttack(x,y,aDx,aDy,dir,attack);
+        attack1.newAttack(getX(),y,aDx,aDy,dir,attack);
       }
     }
   }
@@ -220,10 +220,10 @@ public class Caspian extends Player {
 
     if (attack1 == melee)
     {
-      melee.getAttackInstance().play(x, y);
+      melee.getAttackInstance().play(getX(), y);
     } else if (attack1 == proj)
     {
-      currentAnimation.playCam(x, y);
+      currentAnimation.playCam(getX(), y);
     }
 
   }

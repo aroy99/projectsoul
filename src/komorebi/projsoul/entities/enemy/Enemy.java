@@ -12,10 +12,12 @@ import komorebi.projsoul.entities.XPObject;
 import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.states.Game;
+import komorebi.projsoul.attack.ElementalProperty;
+
 
 public abstract class Enemy extends Entity {
 
-  private int attack, defense;
+  private int attack,defense;
   private int health;
   public Rectangle hitBox;
 
@@ -25,6 +27,7 @@ public abstract class Enemy extends Entity {
   private int hitCounter;
   
 
+  public static ElementalProperty emyProperty = ElementalProperty.FIRE; 
   private Animation hitAni;
   private Animation deathAni;
   
@@ -66,7 +69,7 @@ public abstract class Enemy extends Entity {
     hitBox = new Rectangle((int)x,(int)y,sx,sy);
     hitBy = new boolean[4];
     
-    attack = baseAttack() + level;
+    setAttack(baseAttack() + level);
     health = baseHealth() + level;
     defense = baseDefense() + level;
 
@@ -89,7 +92,7 @@ public abstract class Enemy extends Entity {
     if (dying && deathAni.lastFrame())
     {
       dead = true;
-      Game.getMap().addXPObject(new XPObject(x, y, xpPerLevel()*level, hitBy));
+      Game.getMap().addXPObject(new XPObject(getX(), y, xpPerLevel()*level, hitBy));
     } else if (dying)
     {
       dx = 0;
@@ -124,23 +127,23 @@ public abstract class Enemy extends Entity {
     
     for (FireRingInstance ring: RingOfFire.allInstances())
     {
-        if (ring.intersects(new Rectangle((int) (x+dx),(int) (y+dy),sx,sy)) && !invincible)
+        if (ring.intersects(new Rectangle((int) (getX()+dx),(int) (y+dy),sx,sy)) && !invincible)
         {          
           float[] coords = ring.getCenter();
-          inflictPain(ring.getDamage(), Map.angleOf(x, y, coords[0], coords[1]), 
-              Characters.FLANNERY);
+          inflictPain(ring.getDamage(), Map.angleOf(getX(), y, coords[0], coords[1]), 
+              Map.getPlayer().getCharacter(), FireRingInstance.priAether);
         }
     }
 
     //Update the enemy
-    x += dx;
+    setX(getX() + dx);
     y += dy;
-    hitBox.x = (int) x;
+    hitBox.x = (int) getX();
     hitBox.y = (int) y;
 
   }
   
-  public void inflictPain(int attack, Face dir, Characters c)
+  public void inflictPain(int attack, Face dir, Characters c, ElementalProperty filler)
   {
     int chgx = 0, chgy = 0;
     
@@ -166,63 +169,73 @@ public abstract class Enemy extends Entity {
         break;
     }
     
-    inflictPain(attack, chgx, chgy, c);
+    inflictPain(attack, chgx, chgy, c, filler);
   }
     
-  
-    
-  
-  private void inflictPain(int attack, float dx, float dy, Characters c)
+  //tells enemy how much damage to take in
+  private void inflictPain(int attack, float dx, float dy, Characters c, ElementalProperty Aether)
   {
-    health -= attack - (defense/2);
-    hitBy[c.getNumber()] = true;
+	  System.out.println(health);
+	hitBy[c.getNumber()] = true; //Now, hit by which character
+	attack=(int)(attack*emyProperty.findEffectiveness(Aether, emyProperty)+1);
+	System.out.println("before stab dmge "+attack);
+	
+	attack = (int)(attack*Aether.calcStab(Map.getPlayer().charProperty, Aether));//calcs stab
+	System.out.println("after stab dmge "+attack);
+	
+	if (attack-(defense/2) > 0){
+		health -= attack - (defense/2);
+	}
+	else{
+		health-=1;
+	}
+    System.out.println(health);
+     //getNumber returns the character that's attacking
     
     //Kills the enemy
     if (health<=0)
     {
       deathAni.resume();
       dying = true;
-    } else
+    } 
+    else
     {
       //Knocks back the enemy
       invincible = true;
       hitCounter = 50;
       hitAni.resume();
       
-      System.out.println(dx + " " + dy);
+      //System.out.println(dx + " " + dy);
       
       this.dx = dx;
       this.dy = dy;
     }
   }
-      
+ 
 
-  /**
-   * Updates whether the enemy is being hit
-   */
-  public void inflictPain(int attack, double ang, Characters c)
+  /** /////////////////////////////////////////////////////////////////////////////////////
+   * Updates whether the enemy is being hit 
+   */ /////////////////////////////////////////////////////////////////////////////////////
+  public void inflictPain(int attack, double ang, Characters c, ElementalProperty middleMan)
   {
     float chgx = (float) Math.cos(ang * (Math.PI/180)) * 5;
     float chgy = (float) Math.sin(ang * (Math.PI/180)) * 5;
     
-    inflictPain(attack, chgx, chgy, c);
+    inflictPain(attack, chgx, chgy, c,middleMan);
+    
   }
-
- 
-
-
 
   @Override
   public void render() {
     if (invincible)
     {
-      hitAni.playCam(x, y);
+      hitAni.playCam(getX(), y);
     } else if (dying)
     {
-      deathAni.playCam(x, y);
+      deathAni.playCam(getX(), y);
     } else
     {
-      Draw.rectCam(x, y, sx, sy, 0, 0, 16, 21, 0, 11);
+      Draw.rectCam(getX(), y, sx, sy, 0, 0, 16, 21, 0, 11);
     }
   }
 
@@ -254,14 +267,14 @@ public abstract class Enemy extends Entity {
    */
   public void overrideImproperMovements()
   {
-    if (x+dx<0)
+    if (getX()+dx<0)
     {
-      x = 0;
+      setX(0);
       dx = 0;
-    } else if (x+dx>Game.getMap().getWidth()*16 - sx)
+    } else if (getX()+dx>Game.getMap().getWidth()*16 - sx)
     {
       dx = 0;
-      x = Game.getMap().getHeight() * 16 - sx;
+      setX(Game.getMap().getHeight() * 16 - sx);
     }
 
     if (y+dy<0)
@@ -274,7 +287,7 @@ public abstract class Enemy extends Entity {
       y = Game.getMap().getHeight() * 16 - sy;
     }
 
-    Rectangle hypothetical = new Rectangle((int) (x+dx), (int) (y+dy),
+    Rectangle hypothetical = new Rectangle((int) (getX()+dx), (int) (y+dy),
         sx, sy);
 
     if (hypothetical.intersects(Map.getPlayer().getHitBox()))
@@ -282,16 +295,17 @@ public abstract class Enemy extends Entity {
       
       if (!Map.getPlayer().invincible())
       {
-        Map.getPlayer().inflictPain(30, KNOCKBACK*Math.signum(dx)*(float)Math.sqrt(Math.abs(dx)), 
-            KNOCKBACK*Math.signum(dy)*(float)Math.sqrt(Math.abs(dy)));
-
+    	  if (health>0){
+    		  Map.getPlayer().inflictPain(30, KNOCKBACK*Math.signum(dx)*(float)Math.sqrt(Math.abs(dx)), 
+    				  KNOCKBACK*Math.signum(dy)*(float)Math.sqrt(Math.abs(dy)),emyProperty);
+    	  }
       }
 
       dx = 0;
       dy = 0;
     }
     
-    boolean[] col = Game.getMap().checkCollisions(x,y,dx,dy);
+    boolean[] col = Game.getMap().checkCollisions(getX(),y,dx,dy);
 
     if(!col[0] || !col[2]){
       dy=0;
@@ -307,4 +321,17 @@ public abstract class Enemy extends Entity {
   {    
     return invincible;
   }
+public int getAttack() {
+	return attack;
+}
+public void setAttack(int attack) {
+	this.attack = attack;
+}
+public Face getHitDirection() {
+	return hitDirection;
+}
+public void setHitDirection(Face hitDirection) {
+	this.hitDirection = hitDirection;
+}
+
 }

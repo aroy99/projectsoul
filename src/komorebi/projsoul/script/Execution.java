@@ -291,6 +291,7 @@ public class Execution implements Runnable {
         taskStr = (TaskWithString) task;
         Game.setMap(new Map("res/maps/" + taskStr.getString() + ".map"));
         break;
+      //case LOAD_SAVE:  
       case RETILE:
         taskNumLoc = (TaskWithNumberAndLocation) task;
         Game.getMap().setTile(TileList.getTile(taskNumLoc.getNumber()), 

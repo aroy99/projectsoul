@@ -1,13 +1,12 @@
 /*
  * Main.java           Apr 27, 2016, 8:28:15 PM
  */
-
 package komorebi.projsoul.engine;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
@@ -35,10 +34,10 @@ import static org.lwjgl.opengl.GL11.glOrtho;
 import org.newdawn.slick.openal.SoundStore;
 
 import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.audio.Song;
 import komorebi.projsoul.states.Game;
-//import komorebi.projsoul.engine.Save;
-
-
+import komorebi.projsoul.states.State.States;
+import komorebi.projsoul.engine.Save;
 
 /**
  * Initializes everything and uses the game handler to start the game
@@ -50,24 +49,25 @@ import komorebi.projsoul.states.Game;
 public class Main {
 
   private GameHandler gamehandler;
-  public int scale;
-  private BufferedReader read;
-  private static BufferedReader readSave;
+  public static int scale=0;
+  //private BufferedReader read;
+  private BufferedReader readSave;
   
   public static final int WIDTH = 256;
   public static final int HEIGHT = 224;
   
-
+  
   public static void main(String[] args){
     new Main().run();
   }
-
+ 
 
   /**
    * Runs the game
    */
   private void run() {
-    try {
+  /* reads from the settings file 
+	  try {
       read = new BufferedReader(
           new FileReader(new File("res/settings")));
       String str;
@@ -88,33 +88,39 @@ public class Main {
       e.printStackTrace();
       scale = 1;
     }
-   // /* Reads from your save file
+    //*/
+   ///* Reads from the SettingS file
     try{
-    	readSave = new BufferedReader(new FileReader(new File("res/saves")));
+    	readSave = new BufferedReader
+    			(new FileReader(new File("res/settingsS")));
     	String str;
 
       while ((str = readSave.readLine()) != null) {
         if(str.equals("") || str.charAt(0) == '#'){
           continue;
-        }
-        if(scale == 0){
-          scale = Integer.parseInt(str);
-        } else if(Game.testLoc == null){
-          Game.testLoc = str;
-        }
+          }
+        if(Game.saveLoc == null){
+          Game.saveLoc = str;
+          Save savey = new Save(Game.saveLoc);  
+          }
+        /*
+        if(numberOfSaves==0 && ){
+        	
+        }*/
+        
     }}catch (IOException | NumberFormatException e) {
       e.printStackTrace();
-      scale = 1;
     }
-    // */
+    
     initDisplay();
-    initGL();
-
+    initGL(); 
     initGame();
+    GameHandler.switchState(States.MENU);
+	AudioHandler.play(Song.CHAOS, true);
     gameLoop();
     cleanUp();
+    
   }
-
 
   /**
    *  Initializes the Display using the Display Class, properly Scaling it
@@ -142,7 +148,6 @@ public class Main {
     AudioHandler.init();
   }
 
-
   private void getInput(){
     gamehandler.getInput();
   }
@@ -151,19 +156,13 @@ public class Main {
     gamehandler.update();
   }
 
-
-
 private void render(){
     glClear(GL_COLOR_BUFFER_BIT);   //clears the matrix with black
     glLoadIdentity();
-
     gamehandler.render();
-
     Display.update();   //updates the display with the changes
     Display.sync(60);   //makes up for lost time
-
   }
-
 
   /**
    *  Goes through the game loop, starting the music once
@@ -173,8 +172,9 @@ private void render(){
     while(!Display.isCloseRequested()){
       getInput();
       update();
+      render();
       SoundStore.get().poll(0);
-
+      
       if (!Keyboard.isCreated())
       {
         try {
@@ -186,7 +186,6 @@ private void render(){
       if(Keyboard.isKeyDown(Keyboard.KEY_F4)){
         break;
       }
-      
     }
   }
 
@@ -203,10 +202,10 @@ private void render(){
     glOrtho(0,WIDTH,0,HEIGHT,-1,1);     //creates a 3D space
     glMatrixMode(GL_MODELVIEW);
     glEnable(GL_TEXTURE_2D);       //enables Textures
-    glEnable (GL_BLEND);
+    glEnable(GL_BLEND);
 
     //Enables transparency
-    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glClearColor(0,0,0,1);         //sets the clearing color to black
 
@@ -222,13 +221,12 @@ private void render(){
     System.exit(0);
   }
 
-  public int getScale(){
+  public static Game getGame(){
+	return GameHandler.game;
+  }
+  
+  public static int getScale(){
     return scale;
   }
-
-  public static Game getGame(){
-    return GameHandler.game;
-  }
-
 
 }

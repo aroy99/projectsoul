@@ -10,7 +10,7 @@ public class WaterSword extends Melee {
   public WaterSword(float x, float y, Face dir, int attack)
   {
     super(x,y,dir,attack);
-    
+    perAether = ElementalProperty.WATER;
     downAttack = new Animation(5, 4, 11, false);
     downAttack.add(24, 0, 16, 46, 0, 0);
     downAttack.add(49, 14, 19, 41, 0, -8);
@@ -47,7 +47,6 @@ public class WaterSword extends Melee {
     super();
   }
   
-  @Override
   public AttackInstance build(float x, float y, float dx, float dy, Face dir,
       int attack) {
     return new WaterSword(x,y,dir,attack);
@@ -86,4 +85,5 @@ public class WaterSword extends Melee {
     // TODO Auto-generated method stub
     
   }
+
 }

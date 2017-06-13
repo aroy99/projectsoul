@@ -9,7 +9,6 @@ import static komorebi.projsoul.engine.KeyHandler.keyClick;
 import static komorebi.projsoul.engine.KeyHandler.keyDown;
 import static komorebi.projsoul.engine.MainE.HEIGHT;
 import static komorebi.projsoul.engine.MainE.WIDTH;
-
 import komorebi.projsoul.editor.Editable;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Draw;
@@ -60,6 +59,7 @@ import javax.swing.JTextField;
  * 
  * @author Aaron Roy
  */
+@SuppressWarnings("unused")
 public class EventMode extends Mode{
 
   private static ArrayList<NPC> npcs;

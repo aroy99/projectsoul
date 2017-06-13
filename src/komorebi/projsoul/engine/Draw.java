@@ -5,25 +5,6 @@
 package komorebi.projsoul.engine;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_QUADS;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLE_FAN;
-import static org.lwjgl.opengl.GL11.glBegin;
-import static org.lwjgl.opengl.GL11.glColor3f;
-import static org.lwjgl.opengl.GL11.glDisable;
-import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL11.glEnd;
-import static org.lwjgl.opengl.GL11.glPopMatrix;
-import static org.lwjgl.opengl.GL11.glPushMatrix;
-import static org.lwjgl.opengl.GL11.glRotatef;
-import static org.lwjgl.opengl.GL11.glScalef;
-import static org.lwjgl.opengl.GL11.glTexCoord2f;
-import static org.lwjgl.opengl.GL11.glTexParameteri;
-import static org.lwjgl.opengl.GL11.glTranslatef;
-import static org.lwjgl.opengl.GL11.glVertex2f;
-
 import komorebi.projsoul.gameplay.Camera;
 
 import org.newdawn.slick.opengl.Texture;
@@ -53,7 +34,7 @@ public class Draw {
   private static final int SPREADSHEET_ROW = 16;
   
   /** Holds all of the textures for this class.*/
-  private static Texture[] tex = new Texture[14];
+  private static Texture[] tex = new Texture[15];
   
   private static ArrayList<Texture> sheets = new ArrayList<Texture>();
 
@@ -108,6 +89,8 @@ public class Draw {
           new File("res/Shadow.png")));
       tex[13] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/Death.png")));
+      tex[14] = TextureLoader.getTexture("PNG", new FileInputStream(
+              new File("res/Title-Screen-Cuads.png")));
 
     } catch (Exception e) {
       e.printStackTrace();

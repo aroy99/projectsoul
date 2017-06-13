@@ -15,6 +15,7 @@ import org.lwjgl.opengl.Display;
  * @author Aaron Roy
  * @version 
  */
+@SuppressWarnings("unused")
 public class MoveMode extends Mode{
 
   private boolean[][] collision;

@@ -4,9 +4,12 @@
  */
 package komorebi.projsoul.states;
 
+import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.audio.Song;
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.Save;
 import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.entities.NPC;
@@ -33,6 +36,10 @@ import komorebi.projsoul.script.Task.TaskWithNumber;
 import komorebi.projsoul.script.Task.TaskWithString;
 import komorebi.projsoul.script.TextHandler;
 import komorebi.projsoul.script.Word;
+
+
+
+
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -76,14 +83,17 @@ public class Game extends State{
   public Lock lock;
   
   public static String testLoc;
+  public static String saveLoc;
   
   public HUD hud;
   public Death death;
-
+  public Song piedPiper = Song.CHAOS;
+  
   /**
    * Creates the player and loads the map
    */
   public Game(){
+	saveFile = new Save(saveLoc);  
     map = new Map("res/maps/"+testLoc);
     
     currMap = new TextHandler();
@@ -96,8 +106,6 @@ public class Game extends State{
     
     hud = new HUD(confidence); //TODO WHY KEVIN
     death = new Death();
-    
-
 
   }
 
@@ -145,15 +153,9 @@ public class Game extends State{
       } 
     }
               
-             
-
-
     //TODO Remove map debug features
     map.getInput();
   
-
-
-
     if (KeyHandler.keyClick(Key.LEFT))
     {
       if (hasChoice && KeyHandler.keyDown(Key.LEFT))
@@ -183,14 +185,21 @@ public class Game extends State{
     if ((KeyHandler.keyDown(Key.LCTRL) || KeyHandler.keyDown(Key.RCTRL)) &&
         KeyHandler.keyClick(Key.M))
     {
-      GameHandler.switchState(States.MENU);
+    GameHandler.switchState(States.MENU);
+  	AudioHandler.play(piedPiper, true);
     }
 
     if (KeyHandler.keyClick(Key.P))
     {
       GameHandler.switchState(States.PAUSE);
     }
-
+    
+    if ((KeyHandler.keyDown(Key.LCTRL) || KeyHandler.keyDown(Key.RCTRL)) &&
+            KeyHandler.keyClick(Key.N))
+    {
+    	GameHandler.switchState(States.SAVELIST);
+    	AudioHandler.play(Song.SIERRA, true);
+    }
   }
 
   /* (non-Javadoc)
@@ -251,7 +260,20 @@ public class Game extends State{
   {
     map = m;
   }
+  
+  /**
+   * @return The current Save File (.kom)
+   */
+  public static Save getSave(){
+	    return saveFile;
+	  }
 
+  public static void setSave(Save s)
+	  {
+	    saveFile = s;
+	  }
+  
+  
   public void setSpeaker(SpeechHandler talk)
   {
     this.speaker = talk;
@@ -383,4 +405,6 @@ public BufferedReader getRead() {
 public void setRead(BufferedReader read) {
 	this.read = read;
 }
+
+
 }

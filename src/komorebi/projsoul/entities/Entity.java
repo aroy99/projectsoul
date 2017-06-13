@@ -15,8 +15,8 @@ import komorebi.projsoul.map.EditorMap;
  * @author Aaron Roy
  */
 public abstract class Entity implements Renderable, Editable{
-  protected float x;
-  protected float y;
+  public float x;
+  public float y;
   
   protected int sx;
   protected int sy;
@@ -48,7 +48,7 @@ public abstract class Entity implements Renderable, Editable{
    * @param sy The height
    */
   public Entity(float x,float y,int sx,int sy){
-    this.x = x;
+    this.setX(x);
     this.y = y;
     this.sx = sx;
     this.sy = sy;
@@ -91,7 +91,7 @@ public abstract class Entity implements Renderable, Editable{
    * @param ty The tile y location of the bottom left corner of the NPC
    */
   public void setTileLocation(int tx, int ty){
-    this.x=tx*16+EditorMap.getX();
+    this.setX(tx*16+EditorMap.getX());
     this.y=ty*16+EditorMap.getY();
     
     this.tx = tx;
@@ -105,9 +105,13 @@ public abstract class Entity implements Renderable, Editable{
    */
   public void setPixLocation(int x, int y)
   {
-    this.x = x;
+    this.setX(x);
     this.y = y;
   }
+
+  public void setX(float x) {
+		this.x = x;
+	}
 
 
 

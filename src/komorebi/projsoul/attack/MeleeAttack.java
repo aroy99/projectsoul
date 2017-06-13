@@ -28,6 +28,11 @@ public class MeleeAttack<T extends Melee> extends Attack<T> {
    * Starts a new attack, begins the animation
    * @param dir The direction the player is facing when he/she starts the attack
    */
+  @SuppressWarnings("unchecked")
+public void newAttack(float x, float y, float dx, float dy, Face dir,
+	      int attack) {
+	      melee = (T) factory.build(x, y, dx, dy, dir, attack);
+	  }
 
 
   /**
@@ -68,18 +73,6 @@ public class MeleeAttack<T extends Melee> extends Attack<T> {
   {
     return melee;
   }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public void newAttack(float x, float y, float dx, float dy, Face dir,
-      int attack) {
-      melee = (T) factory.build(x, y, dx, dy, dir, attack);
-  }
-
-  
-  
-
-
 
 }
 
