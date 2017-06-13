@@ -20,7 +20,7 @@ public class ShopState extends State
 	static boolean sell = false;
 	private int index = 0;
 	private int index2 = 0;
-	Shop armorShop = new Shop("Armor Shop", 14);
+	Shop shop = new Shop("Armor Shop", 11);
 	int count2 = 50;
 	int count3 = 140;
 	int topindex;
@@ -38,20 +38,20 @@ public class ShopState extends State
 	{
 		if(count == 0)
 		{
-			armorShop.addShopItem("Health Potion");
-			armorShop.addShopItem("Mana Potion");
-			armorShop.addShopItem("MaxHealth Boost");
-			armorShop.addShopItem("XP Boost");
-			armorShop.addShopItem("Level Up Potion");
-			armorShop.addShopItem("Iron Helmet");
-			armorShop.addShopItem("Boots");
-			armorShop.addShopItem("Chestplate");
-			armorShop.addShopItem("Pants");
-			armorShop.addShopItem("Gauntlets");
-			armorShop.addShopItem("Leather Pants");
-			armorShop.addShopItem("Steel Chestplate");
-			armorShop.addShopItem("Super Duper MaxHealth Boost");
-			armorShop.addShopItem("Shitty Helmet");
+			shop.addShopItem("Health Potion");
+			shop.addShopItem("Mana Potion");
+			shop.addShopItem("MaxHealth Boost");
+			shop.addShopItem("XP Boost");
+			shop.addShopItem("Level Up Potion");
+			shop.addShopItem("Iron Helmet");
+			shop.addShopItem("Boots");
+			shop.addShopItem("Chestplate");
+			shop.addShopItem("Pants");
+			shop.addShopItem("Gauntlets");
+			//shop.addShopItem("Leather Pants");
+			//shop.addShopItem("Steel Chestplate");
+			//shop.addShopItem("Super Duper MaxHealth Boost");
+			shop.addShopItem("Shitty Helmet");
 			count++;
 		}
 
@@ -72,7 +72,7 @@ public class ShopState extends State
 					index2 = 0;
 					buy = false;
 				}
-				else armorShop.sellItem(armorShop.getShopItem(index2), 1);
+				else shop.sellItem(shop.getShopItem(index2), 1);
 			}
 
 			if(!buy && !sell)
@@ -112,10 +112,10 @@ public class ShopState extends State
 			text.write("General Shop", 100, 155, font);
 			text.write("Exit", 150, 90, font);
 
-			if(armorShop.items.length<=5)
+			if(shop.items.length<=5)
 			{
 				topindex = 0;
-				bottomindex = armorShop.items.length;
+				bottomindex = shop.items.length;
 				count3 = 140;
 			}
 
@@ -125,7 +125,7 @@ public class ShopState extends State
 				{
 					count3 = 140;
 				}
-				text.write(String.valueOf(armorShop.items[i]), count2, count3, font);
+				text.write(String.valueOf(shop.items[i]), count2, count3, font);
 				count3-=10;
 			}
 		}
@@ -159,7 +159,7 @@ public class ShopState extends State
 				index2++;
 				topindex++;
 				bottomindex++;
-				if(bottomindex>armorShop.items.length)
+				if(bottomindex>shop.items.length)
 				{
 					if(bottomindex == 0)
 					{
@@ -168,8 +168,8 @@ public class ShopState extends State
 					else
 					{
 						index++;
-						topindex = armorShop.items.length - 5;
-						bottomindex = armorShop.items.length;
+						topindex = shop.items.length - 5;
+						bottomindex = shop.items.length;
 					}
 				}
 
@@ -223,10 +223,10 @@ public class ShopState extends State
 		{
 			if(index > 5)index = 5;
 
-			if(armorShop.items.length > 4 && index > 4)
+			if(shop.items.length > 4 && index > 4)
 				index = 5;
 			else
-				if(index > armorShop.items.length)index = armorShop.items.length;
+				if(index > shop.items.length)index = shop.items.length;
 
 			if(index < 0)index = 0;
 
@@ -238,7 +238,7 @@ public class ShopState extends State
 			else if(index == 5)Draw.rect(147, 92, 2, 2, 48, 3, 50, 5,5);
 
 			if(index2 < 0)index2 = 0;
-			if(index2 > armorShop.items.length-1)index2 = armorShop.items.length-1;
+			if(index2 > shop.items.length)index2 = shop.items.length;
 		}
 
 		if(sell)

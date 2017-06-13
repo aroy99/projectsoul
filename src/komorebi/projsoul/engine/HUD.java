@@ -30,9 +30,9 @@ public class HUD implements Renderable
 		text.clear();
 		if(health >= 0)
 		{
-			text.write(String.valueOf(health), 7, 207, new EarthboundFont(1));
+			//text.write(String.valueOf(health), 7, 207, new EarthboundFont(1));
 		}
-		text.write(String.valueOf(wallet), 20, 194, new EarthboundFont(1));
+		text.write(String.valueOf(wallet), 25, 179, new EarthboundFont(1));
 
 		if(wallet == 0)
 			broke = true;
@@ -40,33 +40,31 @@ public class HUD implements Renderable
 			broke = false;
 
 		proportion = (double) this.magic/maxMagic;
-		text.write(String.valueOf(magic), 127, 207, new EarthboundFont(1));
+		//text.write(String.valueOf(magic), 127, 207, new EarthboundFont(1));
 	}
 	@Override
 	public void render() 
 	{
+		Draw.rect(5, 190, 147, 27, 0, 0, 147, 27, 17);
+		
 		//Health bar
 		if (health > 0)
 		{
-			Draw.rect(5, 205, (int) (health*(100 / (double) baseHealth)), 10, 53, 24, 54, 25, 2);
+			Draw.rect(46, 202, (int) (health*(100 / (double) baseHealth))-1, 8, 41, 34, 41, 41, 17);
 		}
-		Draw.rect(5, 204, 102, 2, 39, 46, 40, 47, 2);
-		Draw.rect(5, 215, 102, 2, 39, 46, 40, 47, 2);
-		Draw.rect(5, 205, 2, 10, 39, 46, 40, 47, 2);
-		Draw.rect(105, 205, 2, 10, 39, 46, 40, 47, 2);
-
+		
 		//Draws the currency symbol and the equals sign
-		Draw.rect(5, 193, (float) 8.5, 10, 80, 0, 88, 11, 14);
-		Draw.rect(14, 196, 5, 1, 80, 38, 85, 38, 5);
-		Draw.rect(14, 198, 5, 1, 80, 38, 85, 38, 5);
+		Draw.rect(10, 178, (float) 8.5, 10, 80, 0, 88, 11, 14);
+		Draw.rect(19, 181, 5, 1, 80, 38, 85, 38, 5);
+		Draw.rect(19, 183, 5, 1, 80, 38, 85, 38, 5);
 
 		//Magic Bar
-		Draw.rect(125, 205, (int) (proportion*BAR_WIDTH), 10, 41, 22, 42, 23, 2);
-		Draw.rect(125, 204, baseMagic+2, 2, 39, 46, 40, 47, 2);
-		Draw.rect(125, 215, baseMagic+2, 2, 39, 46, 40, 47, 2);
-		Draw.rect(125, 205, 2, 10, 39, 46, 40, 47, 2);
-		Draw.rect(baseMagic+125, 205, 2, 10, 39, 46, 40, 47, 2);
-
+		Draw.rect(37, 197, (int) (proportion*BAR_WIDTH) + 8, 4, 36, 43, 36, 47, 17);
+		
+		Draw.rect(34, 196, 6, 5, 30, 67, 36, 72, 17);
+		Draw.rect(37, 197, 1, 1, 33, 46, 33, 46, 17);
+		Draw.rect(144, 196, 2, 15, 139, 57, 141, 72, 17);
+		
 		text.render();
 	}
 	//Checks if the current player's health is full
@@ -97,6 +95,12 @@ public class HUD implements Renderable
 	public void addHealth(int add)
 	{
 		health+= add;
+	}
+	
+	//Subtracts a given amount from health
+	public void takeHealth(int sub)
+	{
+		health-=sub;
 	}
 
 	//Returns the amount of health

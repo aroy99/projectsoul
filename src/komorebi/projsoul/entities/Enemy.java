@@ -20,9 +20,9 @@ public abstract class Enemy extends Entity {
   protected boolean dying;
   public boolean dead;
   private int hitCounter;
+ 
   public Characters character;
   public HUD healths;
-  
 
   protected Animation hitAni;
   protected Animation deathAni;
@@ -83,11 +83,9 @@ public abstract class Enemy extends Entity {
     if (dying && deathAni.lastFrame())
     {
       dead = true;
-      //This needs to be moved in the future!
       character = Map.currentPlayer();
-      healths = Map.getPlayer().getCharacterHUD(character);
-      healths.giveMoney(10);
-      //^
+	  healths = Map.getPlayer().getCharacterHUD(character);
+	  healths.giveMoney(1);
       Game.getMap().addXPObject(new XPObject(x, y, xpPerLevel()*level, hitBy));
     } else if (dying)
     {

@@ -86,7 +86,7 @@ public class Shop
 				}
 				else if(myItem.indexOf("Iron Helmet")!=-1)
 				{
-					Helmet helm = new Helmet("Iron Helmet",60,numSold,8,20,"An sturdy, well forged Iron Helmet");
+					Helmet helm = new Helmet("Iron Helmet",60,numSold,8,5,"An sturdy, well forged Iron Helmet");
 					character = Map.currentPlayer();
 					if(Map.getPlayer().getCharacterHUD(character).hasEnoughMoney(60))
 					{

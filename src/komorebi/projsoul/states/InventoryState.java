@@ -30,7 +30,7 @@ public class InventoryState extends State
 	private int bottomindex = 5;
 	private int count = 50;
 	private int count2 = 140;
-	private int count4 = 0;
+	private int count4;
 	private static int count3 = 0;
 	private static CharacterItem[] items;
 	public Characters character;
@@ -109,7 +109,10 @@ public class InventoryState extends State
 									if(a.equipped)
 									{
 										Armor b = (Armor) Inventory.getInventoryItem(i);
-										if(b.equipped)b.unequip();
+										if(b.getEquippedCharacter() == a.getEquippedCharacter())
+										{
+											if(b.equipped)b.unequip();
+										}
 									}
 								}
 							}
@@ -120,7 +123,10 @@ public class InventoryState extends State
 									if(a.equipped)
 									{
 										Armor b = (Armor) Inventory.getInventoryItem(i);
-										if(b.equipped)b.unequip();
+										if(b.getEquippedCharacter() == a.getEquippedCharacter())
+										{
+											if(b.equipped)b.unequip();
+										}
 									}
 								}
 							}
@@ -131,7 +137,10 @@ public class InventoryState extends State
 									if(a.equipped)
 									{
 										Armor b = (Armor) Inventory.getInventoryItem(i);
-										if(b.equipped)b.unequip();
+										if(b.getEquippedCharacter() == a.getEquippedCharacter())
+										{
+											if(b.equipped)b.unequip();
+										}
 									}
 								}
 							}
@@ -142,7 +151,10 @@ public class InventoryState extends State
 									if(a.equipped)
 									{
 										Armor b = (Armor) Inventory.getInventoryItem(i);
-										if(b.equipped)b.unequip();
+										if(b.getEquippedCharacter() == a.getEquippedCharacter())
+										{
+											if(b.equipped)b.unequip();
+										}
 									}
 								}
 							}
@@ -153,7 +165,10 @@ public class InventoryState extends State
 									if(a.equipped)
 									{
 										Armor b = (Armor) Inventory.getInventoryItem(i);
-										if(b.equipped)b.unequip();
+										if(b.getEquippedCharacter() == a.getEquippedCharacter())
+										{
+											if(b.equipped)b.unequip();
+										}
 									}
 								}
 							}
@@ -164,7 +179,10 @@ public class InventoryState extends State
 									if(a.equipped)
 									{
 										Armor b = (Armor) Inventory.getInventoryItem(i);
-										if(b.equipped)b.unequip();
+										if(b.getEquippedCharacter() == a.getEquippedCharacter())
+										{
+											if(b.equipped)b.unequip();
+										}
 									}
 								}
 							}
@@ -175,6 +193,12 @@ public class InventoryState extends State
 					{
 						Consumable c = (Consumable) Inventory.getInventoryItem(index2);
 						c.useItem();
+						if(Inventory.checkRemoved() && bottomindex == items.length)
+						{
+							bottomindex--;
+							topindex--;
+							index2--;
+						}
 					}
 				}
 			}
@@ -204,11 +228,13 @@ public class InventoryState extends State
 					character = Map.currentPlayer();
 					healths = Map.getPlayer().getCharacterHUD(character);
 					healths.giveMoney(Inventory.getInventoryItem(index2).getResalePrice());
-					Inventory.removeItem(Inventory.getInventoryItem(index2));
+					Inventory.removeItem(Inventory.getInventoryItem(index2), index2);
 					refreshInventory();
 					if(Inventory.checkRemoved())
 					{
-						if(index!=index2)index2--;
+						//Under Revision!!!!
+						//if(index!=index2 || index2!=items.length-1)index2--;
+						if(index2>5 && index2!=items.length-1)index2--;
 						if(topindex!=0)
 						{
 							topindex--;
@@ -247,13 +273,29 @@ public class InventoryState extends State
 				if(Inventory.getInventoryItem(i) instanceof Armor)
 				{
 					Armor a = (Armor) Inventory.getInventoryItem(i);
-					if(a.equipped)
+					if(a.checkEquipped())
 					{
-						if(i == topindex)text.write("E", count+105, count4=140, font);
-						else if(i == topindex+1)text.write("E", count+105, count4=130, font);
-						else if(i == topindex+2)text.write("E", count+105, count4=120, font);
-						else if(i == topindex+3)text.write("E", count+105, count4=110, font);
-						else text.write("E", count+105, count4=100, font);
+						if(i == topindex)text.write("E", count+105, 140, font);
+						else if(i == topindex+1)text.write("E", count+105, 130, font);
+						else if(i == topindex+2)text.write("E", count+105, 120, font);
+						else if(i == topindex+3)text.write("E", count+105, 110, font);
+						else text.write("E", count+105, 100, font);
+					}
+					if(a.checkBroken())
+					{
+						if(i == topindex)text.write("Broken", count+115, 140, font);
+						else if(i == topindex+1)text.write("Broken", count+115, 130, font);
+						else if(i == topindex+2)text.write("Broken", count+115, 120, font);
+						else if(i == topindex+3)text.write("Broken", count+115, 110, font);
+						else text.write("Broken", count+115, 100, font);
+					}
+					else
+					{
+						if(i == topindex)text.write(String.valueOf(a.getDurability())+" /" +String.valueOf(a.maxDurability), count+115, 140, font);
+						else if(i == topindex+1)text.write(String.valueOf(a.getDurability())+" /" +String.valueOf(a.maxDurability), count+115, 130, font);
+						else if(i == topindex+2)text.write(String.valueOf(a.getDurability())+" /" +String.valueOf(a.maxDurability), count+115, 120, font);
+						else if(i == topindex+3)text.write(String.valueOf(a.getDurability())+" /" +String.valueOf(a.maxDurability), count+115, 110, font);
+						else text.write(String.valueOf(a.getDurability())+" /" +String.valueOf(a.maxDurability), count+115, 100, font);
 					}
 				}
 			}
@@ -285,8 +327,10 @@ public class InventoryState extends State
 		items = new CharacterItem[Inventory.numOfItems];
 		for(CharacterItem item: Inventory.items)
 		{
+			if(count3 == items.length)break;
 			items[count3] = item;
 			count3++;
+			
 		}		
 	}
 }

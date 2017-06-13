@@ -7,8 +7,6 @@ import komorebi.projsoul.items.CharacterItem;
 
 public abstract class Inventory 
 {
-	//ArrayList or Array????????????????????
-	//public static CharacterItem[] items = new CharacterItem[10];
 	public static ArrayList<CharacterItem> items = new ArrayList<CharacterItem>();
 	public static int numOfItems;
 	private static int checked = 0;
@@ -16,13 +14,24 @@ public abstract class Inventory
 	
 	public static void addItem(CharacterItem item)
 	{
+		if(numOfItems == 0)
+		{
+			checked = 0;
+		}
 		for(CharacterItem myItem: items)
 		{
 			if(myItem.getName().equals(item.getName()))
 			{
-				myItem.increaseQuantity(item.getQuantity());
-				checked++;
-				break;
+				if(!(item instanceof Armor))
+				{
+					myItem.increaseQuantity(item.getQuantity());
+					checked++;
+					break;
+				}
+				else
+				{
+					checked = 0;
+				}
 			}
 			else
 			{
@@ -34,12 +43,14 @@ public abstract class Inventory
 		if(checked == 0)
 		{
 			items.add(item);
+			//System.out.println("Item added");
+			numOfItems++;
 			checked++;
 		}
-		numOfItems = items.size();
 		
 	}
 	
+	//For removing an item with an unknown index
 	public static void removeItem(CharacterItem item)
 	{
 		for(int i=0; i<items.size(); i++)
@@ -48,14 +59,14 @@ public abstract class Inventory
 			{
 				if(item.getQuantity()==1)
 				{
-					items.remove(item);
-					numOfItems--;
-					removed = true;
 					if(item instanceof Armor)
 					{
 						Armor a = (Armor)item;
 						if(a.equipped)a.unequip();
 					}
+					items.remove(item);
+					numOfItems--;
+					removed = true;
 				}
 				else
 				{
@@ -67,6 +78,28 @@ public abstract class Inventory
 		}
 	}
 	
+	//For removing an item when you need to know the specific index in the Inventory
+	public static void removeItem(CharacterItem item, int index)
+	{
+		if(item.getQuantity()==1)
+		{
+			if(item instanceof Armor)
+			{
+				Armor a = (Armor)item;
+				if(a.equipped)a.unequip();
+			}
+			items.remove(index);
+			numOfItems--;
+			removed = true;
+		}
+		else
+		{
+			item.subQuantity();
+			removed = false;
+		}
+		System.out.println("1 " + item.getName() + "(s) were removed from your inventory");
+	}
+	
 	public static Boolean checkRemoved()
 	{
 		return removed;
@@ -75,14 +108,6 @@ public abstract class Inventory
 	public static CharacterItem getInventoryItem(int index)
 	{
 		return items.get(index);
-	}
-	
-	public void printInventoryContents()
-	{
-		for(CharacterItem myItem: items)
-		{
-			System.out.println(myItem.getName());
-		}
 	}
 
 }

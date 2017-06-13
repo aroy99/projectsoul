@@ -43,7 +43,6 @@ public class Chaser extends Enemy {
   public void update()
   {   
     super.update();
-    
     targetX = Map.getPlayer().getX();
     targetY = Map.getPlayer().getY();
    if(!Player.deathStuff)

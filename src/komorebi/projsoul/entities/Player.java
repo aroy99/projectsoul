@@ -18,9 +18,12 @@ import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Camera;
 import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.HUD;
+import komorebi.projsoul.engine.Inventory;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Playable;
+import komorebi.projsoul.items.Armor;
+import komorebi.projsoul.items.CharacterItem;
 import komorebi.projsoul.map.Map;
 import komorebi.projsoul.script.Execution;
 import komorebi.projsoul.script.Lock;
@@ -43,6 +46,8 @@ public abstract class Player extends Entity implements Playable{
 	private boolean pause;
 	private boolean guiding;
 	public static boolean deathStuff = false;
+	private int count;
+	CharacterItem items[];
 
 	private boolean dying;
 	private boolean dead; 
@@ -454,6 +459,19 @@ public abstract class Player extends Entity implements Playable{
 			//characterDeathAni.stop();
 			//if(characterDeathAni.lastFrame())
 			{
+				refreshInventory();
+				for(CharacterItem item: items)
+				{
+					if(item instanceof Armor)
+					{
+						Armor a = (Armor)item;
+						if(a.equipped)
+						{
+							if(a.getEquippedCharacter() == Map.currentPlayer())a.unequip();
+						}
+					}
+					
+				}
 				Map.switchPlayer();
 				deathStuff = false;	 
 			}
@@ -810,9 +828,23 @@ public abstract class Player extends Entity implements Playable{
 
 			//System.out.println("Damage = " + attack + " - " + 
 			// getDefense(character) + "/2");
-
-			health.health -= (int) (attack - (getDefense(character)/2));
-
+			
+			//If defense of character /2 is > enemy attack, player will gain health.
+			health.takeHealth((int)(attack - (getDefense(character)/2)));
+			refreshInventory();
+			for(CharacterItem item: items)
+			{
+				if(item instanceof Armor)
+				{
+					Armor a = (Armor)item;
+					if(a.equipped)
+					{
+						if(a.getEquippedCharacter() == Map.currentPlayer())a.damageArmor(11);
+					}
+				}
+				
+			}
+			
 			//Kills the enemy
 			if (health.health<=0)
 			{
@@ -1026,6 +1058,17 @@ public abstract class Player extends Entity implements Playable{
 	public int getHealth()
 	{
 		return health.getHealth();
+	}
+	
+	public void refreshInventory()
+	{
+		count = 0;
+		items = new CharacterItem[Inventory.numOfItems];
+		for(CharacterItem item: Inventory.items)
+		{
+			items[count] = item;
+			count++;
+		}		
 	}
 	
 
