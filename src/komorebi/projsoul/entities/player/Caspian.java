@@ -13,6 +13,8 @@ import komorebi.projsoul.engine.InitializableAnimation;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.KeyHandler.Control;
+import komorebi.projsoul.entities.NPCType;
+import komorebi.projsoul.entities.Person;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.sprites.NPCLoader;
 import komorebi.projsoul.entities.sprites.SpriteSet;
@@ -48,9 +50,9 @@ public class Caspian extends Player {
   private static final int SUPP_COOLDOWN = 50;
 
   public static final MeleeAttack<WaterSword>  melee = 
-                                  new MeleeAttack<WaterSword>(new WaterSword());     
+                                  new MeleeAttack<WaterSword>(new WaterSword());
   public static final ProjectileAttack<WaterKunai> proj = 
-                                  new ProjectileAttack<WaterKunai>(new WaterKunai()); 
+                                  new ProjectileAttack<WaterKunai>(new WaterKunai());
   public static final SingleAttack<WaterBarrier> support = 
                                   new SingleAttack<WaterBarrier>(new WaterBarrier());
   private Animation[] castAni = new Animation[4];
@@ -59,8 +61,11 @@ public class Caspian extends Player {
   
   private int suppCounter = SUPP_COOLDOWN;
 
-  private Animation currentAnimation; 
+  private Animation currentAnimation;
   private Animation currentThrowAni;
+  
+  //Debug
+  private int counter = 0;
 
   /**
    * Creates Caspian
@@ -108,57 +113,9 @@ public class Caspian extends Player {
   {
     super.update();
     
-    if(KeyHandler.keyClick(Key.J)){
-      sprites =       new SpriteSet(
-          //Left
-          new InitializableAnimation(4,16,16)
-          {
-            public void initialize() {
-              add(NPCLoader.SPRITES.get("doctor_13"), 3, 0);
-              add(NPCLoader.SPRITES.get("doctor_14"), -1, 0);
-              add(NPCLoader.SPRITES.get("doctor_15"), 3, 0);
-              add(NPCLoader.SPRITES.get("doctor_16"), -2, 0);
-
-              setPausedFrame(NPCLoader.SPRITES.get("doctor_01"), 3, 0);
-            } 
-          },
-          //Right
-          new InitializableAnimation(4,16,16)
-          {
-            public void initialize() {
-              add(NPCLoader.SPRITES.get("doctor_09"), 0, 0);
-              add(NPCLoader.SPRITES.get("doctor_10"), 3, 0);
-              add(NPCLoader.SPRITES.get("doctor_11"), 1, 0);
-              add(NPCLoader.SPRITES.get("doctor_12"), 3, 0);
-
-              setPausedFrame(NPCLoader.SPRITES.get("doctor_03"), 3, 0);
-            } 
-          },
-          //Up
-          new InitializableAnimation(4,16,16)
-          {
-            public void initialize() {
-              add(NPCLoader.SPRITES.get("doctor_17"), -1, 0);
-              add(NPCLoader.SPRITES.get("doctor_18"), 1, 1);
-              add(NPCLoader.SPRITES.get("doctor_19"), 2, 0);
-              add(NPCLoader.SPRITES.get("doctor_20"), 1, 1);
-
-              setPausedFrame(NPCLoader.SPRITES.get("doctor_04"), 1, 0);
-            } 
-          },
-          //Down
-          new InitializableAnimation(4,16,16)
-          {
-            public void initialize() {
-              add(NPCLoader.SPRITES.get("doctor_05"), -1, 0);
-              add(NPCLoader.SPRITES.get("doctor_06"), 1, 1);
-              add(NPCLoader.SPRITES.get("doctor_07"), 1, 0);
-              add(NPCLoader.SPRITES.get("doctor_08"), 1, 1);
-
-              setPausedFrame(NPCLoader.SPRITES.get("doctor_02"), 1, 0);
-            } 
-          }
-          );
+    if(KeyHandler.keyClick(Key.J)){      
+      counter++;
+      sprites = NPCType.values()[counter%NPCType.values().length].getNewSpriteSet();
 
     }
     

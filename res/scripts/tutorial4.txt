@@ -1,0 +1,12 @@
+branch main
+lock
+ask "You ready?" "Yes" "No"
+unlock
+
+branch Yes
+say Now your set, you have a long road \nahead of you so I'll keep this short. \nExplore, hunt, train, and survive. 
+say Do whatever it takes to get strong \nbecause you'll need it later on. Most \nimportantly, enjoy the game because \pwe enjoyed making it for you.
+say Good Luck!
+
+branch No
+say Yeah, I know it's a lot of info.

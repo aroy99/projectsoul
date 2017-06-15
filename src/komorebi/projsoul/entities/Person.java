@@ -10,10 +10,13 @@ import komorebi.projsoul.script.tasks.Task.Precedence;
 import komorebi.projsoul.script.tasks.TimedTask;
 import komorebi.projsoul.script.tasks.ToDoList;
 import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.Portrait;
 import komorebi.projsoul.script.text.SpeechHandler;
 
 public abstract class Person extends Entity {
 
+  public static final int ANI_SPEED = 8;
+  
   public enum ActionState {
     WALKING, JOGGING, PAUSED, NONE;
   }
@@ -29,6 +32,7 @@ public abstract class Person extends Entity {
 
   private ToDoList toDoList;
   protected Face dir;
+  protected Portrait portrait = Portrait.random();
 
   public Person(float x, float y, int sx, int sy) {
     super(x, y, sx, sy);
@@ -52,7 +56,7 @@ public abstract class Person extends Entity {
 
   private void updateAnimation() {
     if (moving()) {
-      sprites.setAniSpeed(8 / (int) movingSpeed());
+      sprites.setAniSpeed(ANI_SPEED / (int) movingSpeed());
     } else {
       if (!sprites.isCurrentStopped()) {
         sprites.stopCurrent();

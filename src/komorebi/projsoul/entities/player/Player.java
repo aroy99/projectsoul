@@ -59,7 +59,6 @@ public abstract class Player extends Person implements Playable{
   private int framesToGo;
   private boolean hasInstructions;
   
-  private static final int ANI_SPEED = 8;
   int aniSpeed = ANI_SPEED;
 
   public SpriteSet hurtSprites;
@@ -199,6 +198,8 @@ public abstract class Player extends Person implements Playable{
         if (!moving())
         {
           sprites.stopCurrent();
+          x = (float) Math.floor(x);
+          y = (float) Math.floor(y);
         }
       }
 
@@ -216,7 +217,7 @@ public abstract class Player extends Person implements Playable{
       if((up && (left || right)) || (down && (left || right))){
         dx *= Math.sqrt(2)/2;
         dy *= Math.sqrt(2)/2;
-        speed = (int)Math.round(speed / (Math.sqrt(2)/2));
+        aniSpeed = (int)Math.round(aniSpeed / (Math.sqrt(2)/2));
       }
        */
 

@@ -26,8 +26,9 @@ public class RetileCommand extends CommandNoSubject {
 
   @Override
   public void execute() {
+    //TODO Work with Layers
     MapHandler.getActiveMap().setTile(newTile, 
-        x, y);
+        x, y, 0);
 
   }
 }

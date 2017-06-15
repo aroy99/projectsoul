@@ -35,7 +35,7 @@ public class NPCLoader {
         
         SPRITES.put(split[0], new Sprite(tx, ty, sx, sy));
         
-        System.out.println("Loaded " + split[0]);
+//        System.out.println("Loaded " + split[0]);
       }
       
       reader.close();

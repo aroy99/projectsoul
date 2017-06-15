@@ -5,6 +5,8 @@ package komorebi.projsoul.script.text;
 
 import komorebi.projsoul.engine.Draw;
 
+import java.util.Random;
+
 /**
  * Holds the coordinates for all of the portraits
  *
@@ -21,15 +23,13 @@ public enum Portrait {
   int tx, ty;
   boolean isLeft = false;
   
+  private static final Random GEN = new Random();
+  
   static{
     for(int i = 0; i < Portrait.values().length; i++){
       Portrait p = Portrait.values()[i];
-      
-      
       p.tx = i%COLUMNS*WIDTH;
       p.ty = (i/3)*HEIGHT;
-      
-      System.out.println("Initiated " + p + "@ " + p.tx + ", " + p.ty);
     }
     
   }
@@ -60,5 +60,12 @@ public enum Portrait {
    */
   public boolean isLeft() {
     return isLeft;
+  }
+
+  /**
+   * @return a Random portrait
+   */
+  public static Portrait random() {
+    return Portrait.values()[GEN.nextInt(5) + 1];
   }
 }

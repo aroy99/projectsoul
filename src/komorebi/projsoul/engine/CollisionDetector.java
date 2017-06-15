@@ -79,10 +79,10 @@ public class CollisionDetector {
     
     boolean[] ret = new boolean[4];
         
-    ret[1] = xRIncSpd < collision[0].length-1; //East
-    ret[3] = xLIncSpd >= 0; //West
-    ret[0] = yTIncSpd < collision.length-1; //North
-    ret[2] = yBIncSpd >= 0; //South
+    ret[1] = xRIncSpd < collision[0].length; //East
+    ret[3] = xLIncSpd-1 >= 0; //West
+    ret[0] = yTIncSpd < collision.length; //North
+    ret[2] = yBIncSpd-1 >= 0; //South
 
     ret[0] = ret[0] && collision[yTIncSpd][xLNotIncSpd] &&
                         collision[yTIncSpd][xRNotIncSpd];  //North
@@ -168,16 +168,10 @@ public class CollisionDetector {
     
     boolean[] ret = new boolean[4];
 
-    if(!MapHandler.isOutside()){
-      ret[1] = xRIncSpd < collision[0].length; //East
-      ret[3] = xLIncSpd-1 >= 0; //West
-      ret[0] = yTIncSpd < collision.length; //North
-      ret[2] = yBIncSpd-1 >= 0; //South
-    }else{
-      for (int i = 0; i < ret.length; i++) {
-        ret[i] = true;
-      }
-    }
+    ret[1] = xRIncSpd < collision[0].length; //East
+    ret[3] = xLIncSpd-1 >= 0; //West
+    ret[0] = yTIncSpd < collision.length; //North
+    ret[2] = yBIncSpd-1 >= 0; //South
 
 
     //If player is moving into a wall but his sprite doesn't completely touch the wall

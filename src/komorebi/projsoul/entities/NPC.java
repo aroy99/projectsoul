@@ -60,6 +60,7 @@ public class NPC extends Person {
     setNPCType(type);
 
     text = new SpeechHandler();
+    text.setPortrait(portrait);
     SpeechHandler.setSpeed(3);
 
     surround[TOP] = new Rectangle(16, 24);

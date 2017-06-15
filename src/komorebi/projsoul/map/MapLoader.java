@@ -24,6 +24,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 /**
  * Loads maps
@@ -34,7 +35,7 @@ public class MapLoader {
 
   private MapLoader(){}
 
-  public static Map loadMap(String key, int offX, int offY){
+  public static Map loadMap(String key, int offX, int offY) throws IllegalStateException{
     try {
 
       //DEBUG Printing maps as they load
@@ -47,13 +48,15 @@ public class MapLoader {
           new File("res/maps/" + key)));
       int rows = Integer.parseInt(reader.readLine());
       int cols = Integer.parseInt(reader.readLine());
+      
+      System.out.format("Rows: %d, Cols: %d\n", rows, cols);
 
 
       String title;                 //The in-game name of this map
       Song song;                    //The song this map uses
 
       //instantiates the necessary arrays and arraylists
-      int[][] tiles = new int[rows][cols];
+      int[][][] tiles = new int[Map.LAYERS][rows][cols];
       boolean[][] collision = new boolean[rows][cols];
       ArrayList<NPC> npcs = new ArrayList<NPC>();
       ArrayList<AreaScript> scripts = new ArrayList<AreaScript>();
@@ -74,81 +77,139 @@ public class MapLoader {
       //      System.out.println(isOutside);
       AudioHandler.play(song);
 
-      for (int i = 0; i < tiles.length; i++) {
-        String[] str = reader.readLine().split(" ");
-        int index = 0;
-        for (int j = 0; j < cols; j++, index++) {
-          if(str[index].equals("")){
-            index++;  //pass this token, it's blank
+      int layer = -1;      
+      String read;
+      
+      while ((read = reader.readLine()) != null)
+      {
+        if (read.startsWith("#")) {
+          layer++;
+          
+          System.out.println("Incremented because: " + read);
+        } else if(read.startsWith("--")){
+          System.out.println("Moving to permissions");
+          break;
+        } else
+        {
+          String[] split = read.split(" ");
+          int i = rows - 1, j = 0;
+          
+          System.out.println(read);
+
+          for (String term: split)
+          {
+            if (term.isEmpty()) {
+              continue;
+            }
+
+            int times;
+            if (term.contains("^"))
+            {
+              times = Integer.valueOf(term.substring(term.indexOf("^") + 1));
+              term = term.substring(0, term.indexOf("^"));
+            } else {
+              times = 1;
+            }
+
+            for (int repeat = 0; repeat < times; repeat++)
+            {
+              tiles[layer][i][j] = Integer.parseInt(term);
+              j++;
+              if (j >= cols)
+              {
+                j = 0;
+                i--;
+              }
+            }
           }
-          //reads the tile makeup of the map
-          tiles[i][j] = Integer.parseInt(str[index]);
+
         }
       }
 
 
 
-      String s = reader.readLine();
+      int i = rows - 1, j = 0;
 
-      for (int i = 0; i < tiles.length; i++) {
-        if(s == null || s.startsWith("npc")){
+      while((read = reader.readLine()) != null){
+             
+        if(!Pattern.matches("(\\d+\\^?\\d+ )+", read)){
+          System.out.println(read + " didn't match");
           break;
         }
-        if(i != 0){
-          s = reader.readLine();
-        }
-        String[] str = s.split(" ");
-        int index = 0;
-        for (int j = 0; j < cols; j++, index++) {
-          if(str[index].equals("")){
-            index++;  //pass this token, it's blank
+
+        String[] terms = read.split(" ");
+
+        for (String term: terms)
+        {
+          int repetitions;
+
+          if (term.contains("^"))
+          {
+            repetitions = Integer.parseInt(term.substring(
+                term.indexOf("^")+1));
+            term = term.substring(0, term.indexOf("^"));
+          } else
+          {
+            repetitions = 1;
           }
-          collision[i][j]=str[index].equals("0")?true : false;
+
+          for (int rep = 0; rep < repetitions; rep++)
+          {
+            collision[i][j]= term.charAt(0) == '0'?true : false;
+
+            j++;
+            if (j >= cols)
+            {
+              j = 0;
+              i--;
+            }
+
+          }
         }
       }
 
       do {
-        if (s == null) {
+        if (read == null) {
           break;
         }
-        if (s.startsWith("npc")) {
-          s = s.replace("npc ", "");
+        if (read.startsWith("npc")) {
+          read = read.replace("npc ", "");
 
-          createNewNPC(npcs, s, currOffX + offX, currOffY + offY);
+          createNewNPC(npcs, read, currOffX + offX, currOffY + offY);
 
-        } else if (s.startsWith("script")) {
-          s = s.replace("script ", "");
-          String[] split = s.split(" ");
+        } else if (read.startsWith("script")) {
+          read = read.replace("script ", "");
+          String[] split = read.split(" ");
 
           int arg0 = Integer.parseInt(split[2]) + currOffX + offX;
           int arg1 = Integer.parseInt(split[1]) + currOffY + offY;
 
           scripts.add(new AreaScript(split[0], arg0, arg1));
-        } else if (s.startsWith("warp")) {
-          s = s.replace("warp ", "");
-          String[] split = s.split(" ");
+        } else if (read.startsWith("warp")) {
+          read = read.replace("warp ", "");
+          String[] split = read.split(" ");
 
           int arg0 = Integer.parseInt(split[2]) + currOffX + offX;
           int arg1 = Integer.parseInt(split[1]) + currOffY + offY;
 
 //          scripts.add(new WarpScript(split[0], arg1, arg0, false));
-        } else if (s.startsWith("enemy")) {
-          s = s.replace("enemy ", "");
+        } else if (read.startsWith("enemy")) {
+          read = read.replace("enemy ", "");
 
-          createNewEnemy(s, currOffX + offX, currOffY + offY);
+          createNewEnemy(read, currOffX + offX, currOffY + offY);
 
-        } else if (s.startsWith("sign")) {
-          s = s.replace("sign ", "");
-          String[] split = s.split(" ", 3);
+        } else if (read.startsWith("sign")) {
+          read = read.replace("sign ", "");
+          String[] split = read.split(" ", 3);
 
           int arg0 = Integer.parseInt(split[0]) + currOffX + offX;
           int arg1 = Integer.parseInt(split[1]) + currOffY + offY;
 
           signs.add(new SignPost(arg0 * 16, arg1 * 16, split[2]));
 
-        } else if (s.startsWith("connect")) {
-          s = s.replace("connect ", "");
-          String[] split = s.split(" ");
+        } else if (read.startsWith("connect")) {
+          read = read.replace("connect ", "");
+          String[] split = read.split(" ");
 
           int offsetX = Integer.parseInt(split[2]);
           int offsetY = Integer.parseInt(split[3]);
@@ -156,7 +217,7 @@ public class MapLoader {
           borderLocs.put(split[0] + ".map", new Location(offsetX, offsetY));
         }
       } 
-      while ((s = reader.readLine()) != null);
+      while ((read = reader.readLine()) != null);
 
       reader.close();
 
@@ -171,7 +232,7 @@ public class MapLoader {
       e.printStackTrace();
     }
 
-    return null;
+    throw new IllegalStateException();
   }
 
   private static void createNewNPC(ArrayList<NPC> npcs, String s, int offX, int offY) {

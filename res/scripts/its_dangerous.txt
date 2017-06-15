@@ -1,0 +1,4 @@
+branch main
+lock
+say Hey, it's dangerous here.\pYou should watch out for the three\ntypes of enemies: chasers, shooters, \nand tacklers.\pIt looks like the pathfinding enemies\nare taking a break, so that's a relief.
+unlock

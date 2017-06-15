@@ -1,0 +1,11 @@
+branch main
+lock
+ask "You ready?" "Yes" "No"
+unlock
+
+branch Yes
+say Okay, now that you have the basic \nmovements down it's time to fight. The battle system in this consists of \pusing mana to attack enemies and \nusing the movement keys together.
+say You can attack using X and switch \nyour abilities using A and S. Try out \nthe battle system on the enemy \pabove me and come back when your \nfinished.
+
+branch No
+say Okay, take your time, I understand \nthe difficulty in pressing a key.

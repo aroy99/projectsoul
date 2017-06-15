@@ -74,8 +74,8 @@ public class MapHandler {
   
   public static final float TOLERANCE = 0.5f;
   
-  private static int[][] border = {{226, 226},
-                                   {226, 226}};
+  private static int[][] border = {{512, 512},
+                                   {512, 512}};
   
   public static boolean isHitBox;
     
@@ -340,7 +340,7 @@ public class MapHandler {
       map.render();
     }
     
-    activeMap.render();
+    activeMap.renderFirstHalf();
     
     play.render();
 
@@ -353,6 +353,8 @@ public class MapHandler {
     {
       xp.render();
     }
+    
+    activeMap.renderSecondHalf();
     
     //DEBUG Draw Player hitbox
     if(isHitBox){
@@ -379,9 +381,10 @@ public class MapHandler {
     for (int i = -2; i < 16; i++) {
       for (int j = -2; j < 18; j++) {
         if(checkBorderTileNotInMap(j*SIZE, i*SIZE)){
-          Draw.rectScroll(j*SIZE, i*SIZE, SIZE, SIZE, 
-              Draw.getTexX(border[Math.abs(i%2)][Math.abs(j%2)]), 
-              Draw.getTexY(border[Math.abs(i%2)][Math.abs(j%2)]), 1);
+          int b = border[Math.abs(i%2)][Math.abs(j%2)];
+          
+          Draw.tileScroll(j*SIZE, i*SIZE, SIZE, SIZE, 
+              Draw.getTexX(b), Draw.getTexY(b), Draw.getTexture(b));
 
           //DEBUG Grid
           if(Map.isGrid){

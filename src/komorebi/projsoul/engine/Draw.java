@@ -253,11 +253,12 @@ public class Draw {
       int imgX = texture.getImageWidth();
       int imgY = texture.getImageHeight();
 
+      texture.bind();
+      
       glTranslatef((int)x, (int)y, 0);
       glRotatef(angle * RIGHT_ANGLE, 0.0f, 0.0f, 1.0f);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      texture.bind();
 
       glBegin(GL_QUADS);
       {
@@ -280,6 +281,31 @@ public class Draw {
 
   }
 
+  public static void rect(float x, float y, float sx, float sy, int texx,
+      int texy, int texsx, int texsy, Texture texture)
+  {
+    rect(x, y, sx, sy, texx, texy, texsx, texsy,
+        0, texture);
+  }
+
+  /**
+   * Draws a camera fixed sprite on the screen from the specified image, assumed the texsx
+   * and texsy are the same as sx and sy
+   * 
+   * @param x the X position on the screen, starting from the left         
+   * @param y the Y position on the screen, starting from the <i>bottom</i>
+   * @param sx the width                                                   
+   * @param sy the height                                                  
+   * @param texx X position on the picture, starting from the left         
+   * @param texy Y position on the picture, starting from the <i>top</i>   
+   * @param texID see {@link Draw#loadTextures() loadTextures}
+   */
+  public static void rectCam(float x, float y, float sx, float sy, int texx, 
+      int texy, int texID) {
+    rectCam(x, y, sx, sy, texx, texy, texx + (int)sx, texy + (int)sy, texID);
+  }
+
+  
   /**
    * Draws a camera fixed sprite on the screen from the specified image, with rotation.
    * 
@@ -307,30 +333,6 @@ public class Draw {
         0, texture);
   }
 
-  public static void rect(float x, float y, float sx, float sy, int texx,
-      int texy, int texsx, int texsy, Texture texture)
-  {
-    rect(x, y, sx, sy, texx, texy, texsx, texsy,
-        0, texture);
-  }
-
-  /**
-   * Draws a camera fixed sprite on the screen from the specified image, assumed the texsx
-   * and texsy are the same as sx and sy
-   * 
-   * @param x the X position on the screen, starting from the left         
-   * @param y the Y position on the screen, starting from the <i>bottom</i>
-   * @param sx the width                                                   
-   * @param sy the height                                                  
-   * @param texx X position on the picture, starting from the left         
-   * @param texy Y position on the picture, starting from the <i>top</i>   
-   * @param texID see {@link Draw#loadTextures() loadTextures}
-   */
-  public static void rectCam(float x, float y, float sx, float sy, int texx, 
-      int texy, int texID) {
-    rectCam(x, y, sx, sy, texx, texy, texx + (int)sx, texy + (int)sy, texID);
-  }
-
   /**
    * Draws a camera fixed sprite on the screen from the specified image, no rotation
    * 
@@ -348,22 +350,6 @@ public class Draw {
       int texy, int texsx, int texsy, int texID) {
     rectCam(x, y, sx, sy, texx, texy, texsx, texsy, 0, texID);
   }
-  /**
-   * Draws a sprite that loops around the screen (good for map border tiles).
-   * 
-   * @param x the X position on the screen, starting from the left           
-   * @param y the Y position on the screen, starting from the <i>bottom</i>  
-   * @param sx the width                                                     
-   * @param sy the height                                                    
-   * @param texx X position on the picture, starting from the left           
-   * @param texy Y position on the picture, starting from the <i>top</i>     
-   * @param texID see {@link Draw#loadTextures() loadTextures}
-   */
-  public static void rectScroll(float x, float y, float sx, float sy, int texx, 
-      int texy, int texID) {
-    rect(x-Camera.getX()%Map.SIZE, y-Camera.getY()%Map.SIZE, 
-        sx, sy, texx, texy, texID);
-  }
 
 
   public static void addSpreadsheetTexture(int png) throws IOException
@@ -380,12 +366,28 @@ public class Draw {
   }
   public static void tile(float x, float y, int texX, int texY, int texID)
   {
-    Draw.rect(x, y, 16, 16, texX, texY, texX+16, texY+16, sheets.get(texID));
+    Draw.rect(x, y, 16, 16, texX, texY, texX+Map.SIZE, texY+Map.SIZE, sheets.get(texID));
   }
 
   public static void tileCam(float x, float y, int texX, int texY, int texID)
   {
     Draw.tile(x-Camera.getX(), y-Camera.getY(), texX, texY, texID);
+  }
+  
+  /**
+   * Draws a sprite that loops around the screen (good for map border tiles).
+   * 
+   * @param x the X position on the screen, starting from the left           
+   * @param y the Y position on the screen, starting from the <i>bottom</i>  
+   * @param sx the width                                                     
+   * @param sy the height                                                    
+   * @param texx X position on the picture, starting from the left           
+   * @param texy Y position on the picture, starting from the <i>top</i>     
+   * @param texID see {@link Draw#loadTextures() loadTextures}
+   */
+  public static void tileScroll(float x, float y, float sx, float sy, int texx, 
+      int texy, int texID) {
+    tile(x-Camera.getX()%Map.SIZE, y-Camera.getY()%Map.SIZE, texx, texy, texID);
   }
 
   public static int getTexX(int id)

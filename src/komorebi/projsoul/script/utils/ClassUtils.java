@@ -37,8 +37,9 @@ public class ClassUtils {
     
     for (File file: inFolder)
     {
-      if (file.getName().equals(fileName))
+      if (file.getName().equals(fileName)) {
         return true;
+      }
     }
     
     return false;
@@ -47,8 +48,9 @@ public class ClassUtils {
   public static File findFile(File directory, String fileName) 
       throws FileNotFoundException
   {
-    if (!directory.isDirectory())
+    if (!directory.isDirectory()) {
       throw new RuntimeException(directory.getPath() + " is not a directory");
+    }
 
     File[] inFolder = directory.listFiles(new FileFilter()
     {
@@ -59,12 +61,12 @@ public class ClassUtils {
     
     for (File file: inFolder)
     {
-      if (file.getName().equals(fileName))
+      if (file.getName().equals(fileName)) {
         return file;
+      }
     }
     
-    throw new FileNotFoundException(fileName + " cannot be found within the directory "
-        + directory.getPath());
+    return new File(directory + "\\" + fileName);    
   }
 
 }

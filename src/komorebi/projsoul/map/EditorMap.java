@@ -187,10 +187,6 @@ public class EditorMap implements Playable, Serializable{
       }
     }*/
 
-    tileMode = new TileMode(curr.getTiles());
-    moveMode = new MoveMode(collision);
-    eventMode = new EventMode(npcs, scripts, warps, enemies, signs);
-
     layers = new LayerControl();
     history = new HistoryTab();
     tabs = new TabControl();
@@ -201,6 +197,11 @@ public class EditorMap implements Playable, Serializable{
 
     curr = layers.getFirst();
 
+    tileMode = new TileMode(curr.getTiles());
+    moveMode = new MoveMode(collision);
+    eventMode = new EventMode(npcs, scripts, warps, enemies, signs);
+
+    
     //connectMode = new ConnectMode(World.getWorld());
     //Mode.setMap(tiles);
     history.addRevision(new OpenRevision(name));
@@ -278,9 +279,9 @@ public class EditorMap implements Playable, Serializable{
 
       while ((read = subReader.readLine())!=null)
       {    
-        if (read.startsWith("#"))
+        if (read.startsWith("#")) {
           layerNum++;
-        else if (read.startsWith("~"))
+        } else if (read.startsWith("~"))
         {
           edit = new Sublayer(LayerType.layerNumber(layerNum), 
               read.replace("~", ""));
@@ -293,17 +294,18 @@ public class EditorMap implements Playable, Serializable{
 
           for (String term: split)
           {
-            if (term.isEmpty())
+            if (term.isEmpty()) {
               continue;
+            }
 
             int times;
             if (term.contains("^"))
             {
               times = Integer.valueOf(term.substring(term.indexOf("^") + 1));
               term = term.substring(0, term.indexOf("^"));
-            }
-            else
+            } else {
               times = 1;
+            }
 
             for (int repeat = 0; repeat < times; repeat++)
             {
@@ -333,7 +335,7 @@ public class EditorMap implements Playable, Serializable{
       }*/
 
 
-      while (!(read = reader.readLine()).equals("#movement permissions"))
+      while (!(read = reader.readLine()).equals("--movement permissions"))
       {
       }
       
@@ -362,9 +364,11 @@ public class EditorMap implements Playable, Serializable{
         {
           char[] chars = term.toCharArray();
 
-          for (int l = 0; l < MoveMode.NUM_MOVEMENT_LAYERS; l++)
-          {
-            collision[l][i][j] = Permission.interpret(chars[l]);
+          if(chars.length == MoveMode.NUM_MOVEMENT_LAYERS){
+            for (int l = 0; l < MoveMode.NUM_MOVEMENT_LAYERS; l++)
+            {
+              collision[l][i][j] = Permission.interpret(chars[l]);
+            }
           }
 
           j++;
@@ -660,7 +664,7 @@ public class EditorMap implements Playable, Serializable{
 
   @Override
   public void render() {
-    if (mode!=Modes.CONNECT)
+    if (mode != Modes.CONNECT)
     {      
       int widthInBounds = (Math.max((int) (Math.min(x+width*16, WIDTH) - x)/16, 0));
       
@@ -781,7 +785,7 @@ public class EditorMap implements Playable, Serializable{
           }
         }
 
-        mapWriter.println("#movement permissions\n" + 
+        mapWriter.println("--movement permissions\n" + 
             condenseData(collision));
 
         //The NPCs
@@ -815,7 +819,7 @@ public class EditorMap implements Playable, Serializable{
         saved = true;
         mapWriter.close();
         editorWriter.close();
-        if(name.substring(name.length()-4).equals(".map")){
+        if(name.length() > 4 && name.substring(name.length()-4).equals(".map")){
           Display.setTitle("Clyde\'s Editor - " + name);
         }else{
           Display.setTitle("Clyde\'s Editor - " + name + ".map");
@@ -1385,13 +1389,13 @@ public class EditorMap implements Playable, Serializable{
 
     for (int i = perms[0].length - 1; i >= 0; i--)
     {
-      for (int j = 0; j <perms[0][i].length; j++)
+      for (int j = 0; j < perms[0][i].length; j++)
       {
         curr = "";
 
         for (int l = 0; l < perms.length; l++)
         {
-          curr+=perms[l][i][j].asChar();
+          curr+=perms[l][j][i].asChar();
         }
 
         if (!prev.equals("") && !prev.equals(curr))
@@ -1444,7 +1448,7 @@ public class EditorMap implements Playable, Serializable{
   }
   
   public void defineSavePath(String fileNameNoExtension) throws
-    FileNotFoundException
+                                                          FileNotFoundException
   {
     try
     {

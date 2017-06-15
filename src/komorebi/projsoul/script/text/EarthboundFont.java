@@ -96,6 +96,8 @@ public class EarthboundFont extends Font {
   public int getTexUnder(char c) {
     switch(c)
     {
+      case ',':
+        return 2;
       case 'g': case 'j': case 'p': case 'q': case 'y': case '[': case ']': 
         return 3;
       default:

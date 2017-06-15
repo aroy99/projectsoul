@@ -31,10 +31,11 @@ import java.util.HashMap;
  */
 public class Map implements Playable{
 
-  private int[][] tiles;                //The Map itself
+  private int[][][] tiles;                //The Map itself
   private boolean[][] collision;
 
   public static final int SIZE = 16;  //Width and height of a tile
+  public static final int LAYERS = 4;
   
   private float drawOffsetX, drawOffsetY;
   
@@ -49,7 +50,7 @@ public class Map implements Playable{
 
   private Rectangle rectangle;
 
-  private HashMap<String, Location> borders;
+  private HashMap<String, Location> borders = new HashMap<String, Location>();
   private String address;
 
   //DEBUG Map Debug variables
@@ -63,7 +64,7 @@ public class Map implements Playable{
    * 
    * @param key The location of the map
    */  
-  public Map(int[][] tiles, boolean[][] collision, ArrayList<NPC> npcs, 
+  public Map(int[][][] tiles, boolean[][] collision, ArrayList<NPC> npcs, 
       ArrayList<AreaScript> scripts, ArrayList<SignPost> signs, String title,
       Song song){
     this.tiles = tiles;
@@ -77,14 +78,14 @@ public class Map implements Playable{
   
   @Override
   public void getInput() {
-    if(KeyHandler.keyClick(Key.G)){
+    if(KeyHandler.firstKeyClick(Key.G)){
       isGrid = !isGrid;
     }
   }
 
   @Override
   public void update() {
-      play = MapHandler.getPlayer();
+    play = MapHandler.getPlayer();
   
   
     updateNPCs();
@@ -98,7 +99,7 @@ public class Map implements Playable{
         npc.update();
 
         if (npc.isApproached(play.getArea(), play.getDirection()) && 
-            KeyHandler.keyClick(Key.C)) {
+            KeyHandler.firstKeyClick(Key.C)) {
           // DEBUG NPC turning
           npc.turn(play.getDirection().opposite());
           npc.approach();
@@ -136,20 +137,24 @@ public class Map implements Playable{
   @Override
   public void render() {
 
-    for (int i = 0; i < tiles.length; i++) {
-      for (int j = 0; j < tiles[0].length; j++) {
-        if (checkTileInBounds(drawOffsetX + j * SIZE, drawOffsetY + i * SIZE)) {
-          Draw.tileCam(drawOffsetX + j * SIZE, drawOffsetY + i * SIZE, 
-              Draw.getTexX(tiles[i][j]), Draw.getTexY(tiles[i][j]), 
-              Draw.getTexture(tiles[i][j]));
+    for(int l = 0; l < LAYERS; l++){
+      for (int i = 0; i < tiles[0].length; i++) {
+        for (int j = 0; j < tiles[0][0].length; j++) {
+          if (checkTileInBounds(drawOffsetX + j * SIZE, drawOffsetY + i * SIZE)) {
+            
+            if(tiles[l][i][j] != 0){
+              Draw.tileCam(drawOffsetX + j * SIZE, drawOffsetY + i * SIZE, 
+                  Draw.getTexX(tiles[l][i][j]), Draw.getTexY(tiles[l][i][j]), 
+                  Draw.getTexture(tiles[l][i][j]));
+            }
 
-          
-          // DEBUG Grid
-          if (isGrid) {
-            Draw.rectCam(drawOffsetX + j * SIZE, drawOffsetY + i * SIZE, SIZE,
-                SIZE, 0, 16, SIZE, 16 + SIZE, 2);
+            // DEBUG Grid
+            if (isGrid && l == LAYERS - 1) {
+              Draw.rectCam(drawOffsetX + j * SIZE, drawOffsetY + i * SIZE, SIZE,
+                  SIZE, 0, 16, SIZE, 16 + SIZE, 2);
+            }
+
           }
-
         }
       }
     }
@@ -170,6 +175,71 @@ public class Map implements Playable{
     }
 
   }
+  
+  /**
+   * Renders the bottom two layers of the map
+   */
+  public void renderFirstHalf() {
+    for(int l = 0; l < LAYERS/2; l++){
+      for (int i = 0; i < tiles[0].length; i++) {
+        for (int j = 0; j < tiles[0][0].length; j++) {
+          if (tiles[l][i][j] != 0 && 
+              checkTileInBounds(drawOffsetX + j * SIZE, drawOffsetY + i * SIZE)
+              ) {
+            
+            Draw.tileCam(drawOffsetX + j * SIZE, drawOffsetY + i * SIZE, 
+                Draw.getTexX(tiles[l][i][j]), Draw.getTexY(tiles[l][i][j]), 
+                Draw.getTexture(tiles[l][i][j]));
+          }
+        }
+      }
+    }
+
+    for (NPC npc : npcs) {
+      if (npc != null) {
+        npc.render();
+      }
+    }
+
+    for (SignPost sign : signs) {
+      sign.render();
+    }
+    
+    //DEBUG Render Scripts
+    for(AreaScript script: scripts){
+//      script.render();
+    }
+
+  }
+  
+  /**
+   * Renders the top two layers of the map
+   */
+  public void renderSecondHalf() {
+    for(int l = LAYERS/2; l < LAYERS; l++){
+      for (int i = 0; i < tiles[0].length; i++) {
+        for (int j = 0; j < tiles[0][0].length; j++) {
+          if (checkTileInBounds(drawOffsetX + j * SIZE, drawOffsetY + i * SIZE)) {
+            
+            if(tiles[l][i][j] != 0){
+              Draw.tileCam(drawOffsetX + j * SIZE, drawOffsetY + i * SIZE, 
+                  Draw.getTexX(tiles[l][i][j]), Draw.getTexY(tiles[l][i][j]), 
+                  Draw.getTexture(tiles[l][i][j]));
+            }
+
+            // DEBUG Grid
+            if (isGrid && l == LAYERS - 1) {
+              Draw.rectCam(drawOffsetX + j * SIZE, drawOffsetY + i * SIZE, SIZE,
+                  SIZE, 0, 16, SIZE, 16 + SIZE, 2);
+            }
+
+          }
+        }
+      }
+    }
+
+  }
+
 
   /**
    * 
@@ -207,7 +277,7 @@ public class Map implements Playable{
   public boolean checkTileInBounds(float x, float y) {
     x -= Camera.getX();
     y -= Camera.getY();
-
+    
     return x+32 > 0 && x < WIDTH && y+32 > 0 && y < HEIGHT;
   }
 
@@ -239,22 +309,22 @@ public class Map implements Playable{
     //  Scroll in that dimension until the edge
     //If clyde is not centered and Map > Screen -> don't move in that dimension until he is
 
-    ret[0] = tiles[0].length*16 > WIDTH && x+dx >= 0 && x+dx+WIDTH < tiles[0].length*16;
+    ret[0] = tiles[0][0].length*16 > WIDTH && x+dx >= 0 && x+dx+WIDTH < tiles[0][0].length*16;
 
     //Left
     if(dx < 0){
-      ret[0] = ret[0] && play.getX()-x < WIDTH/2-8 || x + WIDTH > tiles[0].length*16;
+      ret[0] = ret[0] && play.getX()-x < WIDTH/2-8 || x + WIDTH > tiles[0][0].length*16;
 
     }else if(dx > 0){ //Right
       ret[0] = ret[0] && play.getX()-x > WIDTH/2-8 || x < 0;
     }
 
-    ret[1] = y+dy >= 0 && y+dy+HEIGHT < tiles.length*16 && 
-        !(tiles.length*16 < HEIGHT);
+    ret[1] = y+dy >= 0 && y+dy+HEIGHT < tiles[0].length*16 && 
+        !(tiles[0].length*16 < HEIGHT);
 
     //Bottom
     if(dy < 0){
-      ret[1] = ret[1] && play.getY()-y < HEIGHT/2-12 || y + HEIGHT > tiles.length*16;
+      ret[1] = ret[1] && play.getY()-y < HEIGHT/2-12 || y + HEIGHT > tiles[0].length*16;
 
     }else if(dy > 0){ //Top
       ret[1] = ret[1] && play.getY()-y > HEIGHT/2-12 || y < 0;
@@ -264,24 +334,24 @@ public class Map implements Playable{
   }
 
   public int getTileWidth(){
-    return tiles[0].length;
+    return tiles[0][0].length;
   }
 
   public int getTileHeight(){
-    return tiles.length;
+    return tiles[0].length;
   }
   
   public int getPxWidth(){
-    return tiles[0].length*SIZE;
+    return tiles[0][0].length*SIZE;
   }
 
   public int getPxHeight(){
-    return tiles.length*SIZE;
+    return tiles[0].length*SIZE;
   }
 
-  public void setTile(int tile, int x, int y)
+  public void setTile(int tile, int x, int y, int layer)
   {
-    tiles[x][y] = tile;
+    tiles[layer][x][y] = tile;
   }
 
   public static Player getPlayer()
@@ -392,7 +462,7 @@ public class Map implements Playable{
     drawOffsetY = ty*SIZE;
     
     rectangle = new Rectangle((int)drawOffsetX, (int)drawOffsetY, 
-        tiles[0].length*SIZE, tiles.length*SIZE);
+        tiles[0][0].length*SIZE, tiles[0].length*SIZE);
   }
 
 }
