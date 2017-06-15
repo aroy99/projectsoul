@@ -8,6 +8,7 @@ import komorebi.projsoul.states.Game;
 import komorebi.projsoul.states.Menu;
 import komorebi.projsoul.states.Pause;
 import komorebi.projsoul.states.State.States;
+import komorebi.projsoul.states.SaveList;
 
 /**
  * Updates, renders and gets input depending on the current state
@@ -23,6 +24,7 @@ public class GameHandler implements Playable{
   public static Game game;
   private static Menu menu;
   private static Pause pause;
+  private static SaveList saveList;
 
   /**
    * Creates the GameHandler
@@ -32,6 +34,7 @@ public class GameHandler implements Playable{
     game = new Game();
     menu = new Menu();
     pause = new Pause();
+    saveList = new SaveList();
   }
   
   /**
@@ -62,6 +65,9 @@ public class GameHandler implements Playable{
       case PAUSE:
         pause.getInput();
         break;
+      case SAVELIST:
+      	saveList.getInput();
+      	break;
       default:
         break;
     }
@@ -81,6 +87,9 @@ public class GameHandler implements Playable{
       case PAUSE:
         pause.update();
         break;
+      case SAVELIST:
+    	saveList.update();
+    	break;
       default:
         break;
     }
@@ -101,6 +110,9 @@ public class GameHandler implements Playable{
         game.render();
         pause.render();
         break;
+      case SAVELIST:
+    	saveList.render();
+    	break;
       default:
         break;
     }

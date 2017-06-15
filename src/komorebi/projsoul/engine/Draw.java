@@ -60,7 +60,7 @@ public class Draw {
   private static final int SPREADSHEET_ROW = 16;
 
   /** Holds all of the textures for this class.*/
-  private static Texture[] tex = new Texture[17];
+  private static Texture[] tex = new Texture[18];
 
   private static ArrayList<Texture> sheets = new ArrayList<Texture>();
 
@@ -126,6 +126,8 @@ public class Draw {
           new File("res/Portraits.png")));
       tex[16] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/compressed_spritesheet.png")));
+      tex[17] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/Title-Screen-Cuads.png")));
 
     } catch (Exception e) {
       e.printStackTrace();

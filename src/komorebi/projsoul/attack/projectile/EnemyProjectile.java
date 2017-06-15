@@ -3,6 +3,7 @@
  */
 package komorebi.projsoul.attack.projectile;
 
+import komorebi.projsoul.attack.ElementalProperty;
 import komorebi.projsoul.attack.WaterBarrier;
 import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.entities.Face;
@@ -18,6 +19,8 @@ import java.awt.Rectangle;
  * @author Aaron Roy
  */
 public abstract class EnemyProjectile extends Projectile {
+  
+  private static final ElementalProperty TYPE = ElementalProperty.WATER;
 
   public EnemyProjectile(float x, float y, float dx, float dy, 
                             Face dir, int attack, ProjectileType type){    
@@ -37,7 +40,7 @@ public abstract class EnemyProjectile extends Projectile {
       destroyMe = true;
       if (!player.invincible())
       {
-        player.inflictPain(attack, dx, dy);
+        player.inflictPain(attack, dx, dy, TYPE);
       }
     }
     

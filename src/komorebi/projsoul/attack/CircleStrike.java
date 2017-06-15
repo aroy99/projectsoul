@@ -100,7 +100,7 @@ public class CircleStrike implements SingleInstance {
               if (distance < currRadius) {
                 double ang = Arithmetic.angleOf(xs[j], ys[i], ox, oy);
                 enemy.inflictPain((int) (endRad / distance * attack - attack),
-                    ang, Characters.SIERRA, KNOCKBACK);
+                    ang, Characters.SIERRA, KNOCKBACK, ElementalProperty.WIND);
                 break outer;
               }
             }

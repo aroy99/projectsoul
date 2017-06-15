@@ -12,7 +12,8 @@ package komorebi.projsoul.audio;
  */
 public class AudioHandler {
 
-  private static Song currentSong;
+  @SuppressWarnings("unused")
+private static Song currentSong;
 
   /**
    *  Initializes the audio

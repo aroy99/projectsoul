@@ -15,6 +15,7 @@ import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.engine.CollisionDetector;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.Main;
 import komorebi.projsoul.engine.Playable;
 import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.engine.ThreadHandler.TrackableThread;
@@ -28,6 +29,7 @@ import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.MagicBar;
 import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.states.Game;
+import komorebi.projsoul.attack.ElementalProperty;
 
 import org.lwjgl.input.Keyboard;
 
@@ -51,7 +53,7 @@ public abstract class Player extends Person implements Playable{
   private boolean dead; 
 
   public Characters character;
-
+  public ElementalProperty charProperty;
   public boolean isAttacking;
 
   protected boolean unlocked = true;
@@ -605,9 +607,9 @@ public abstract class Player extends Person implements Playable{
         float chgy = (float) Math.sin(ang * (Math.PI/180)) * 5;
 
         if (this instanceof Flannery) {
-          inflictPain(0, chgx, chgy);
+          inflictPain(0, chgx, chgy, Enemy.emyProperty);
         } else {
-          inflictPain(ring.getDamage(), chgx, chgy);
+          inflictPain(ring.getDamage(), chgx, chgy, Enemy.emyProperty);
         }
       }
     }
@@ -617,8 +619,9 @@ public abstract class Player extends Person implements Playable{
   {
     return area;
   }
-
-  public void inflictPain(int attack, float dx, float dy)
+  
+  //modified inflictPain method that takes in an attack's effectiveness to determine damage
+  public void inflictPain(int attack, float dx, float dy, ElementalProperty emyProperty)
   {
     invincible = true;
     restoreMvmtX = false;
@@ -631,6 +634,8 @@ public abstract class Player extends Person implements Playable{
     
     //DEBUG Velocity
     System.out.format("Velocity = %f, %f\n", dx, dy);
+    
+    attack = (int) (attack*charProperty.findEffectiveness(emyProperty,charProperty)+1);
 
     if (attack - getDefense(character)/2 > 0)
     {

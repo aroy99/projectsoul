@@ -4,7 +4,6 @@
 package komorebi.projsoul.editor.modes;
 
 import static komorebi.projsoul.engine.KeyHandler.controlDown;
-
 import komorebi.projsoul.editor.Editor;
 import komorebi.projsoul.editor.Palette;
 import komorebi.projsoul.engine.Key;

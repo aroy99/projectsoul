@@ -6,6 +6,7 @@ package komorebi.projsoul.states;
 
 import komorebi.projsoul.entities.player.Player;
 import komorebi.projsoul.map.Map;
+import komorebi.projsoul.engine.Save;
 
 /**
  * Represents a state in the game
@@ -21,7 +22,7 @@ public abstract class State{
    * @author Aaron Roy
    */
   public enum States{
-    GAME, EDITOR, MENU, PAUSE;
+    GAME, EDITOR, MENU, PAUSE, SAVELIST;
   }
 
   /**

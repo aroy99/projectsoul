@@ -19,7 +19,7 @@ public class WaterSword extends Melee {
   private WaterSword(float x, float y, Face dir, int attack)
   {
     super(x,y,dir,attack);
-    
+    perAether = ElementalProperty.WATER;
     character = Characters.CASPIAN;
     
     downAttack = new Animation(5, 4, 11, false);
@@ -96,7 +96,7 @@ public class WaterSword extends Melee {
       if (hitBox.intersects(enemy.getHitBox()) && !enemy.invincible())
       {
         enemy.inflictPain((int) (Player.getAttack(Characters.CASPIAN)), currentDir,
-            Characters.CASPIAN);
+            Characters.CASPIAN, ElementalProperty.WATER);
       }
 
     }

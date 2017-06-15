@@ -42,7 +42,7 @@ public class MeleeAttack<T extends Melee> extends Attack<T> {
    */
   public void update(float x, float y)
   {
-    melee.update((int) x, (int) y);
+      melee.update((int) x, (int) y);
   }
 
   public void update()

@@ -22,6 +22,7 @@ import komorebi.projsoul.script.text.TextHandler;
  * @author Aaron Roy
  * @version 
  */
+@SuppressWarnings("unused")
 public class MoveMode extends Mode{
 
   public static final int NUM_MOVEMENT_LAYERS = 3;

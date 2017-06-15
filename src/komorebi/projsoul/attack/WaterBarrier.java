@@ -84,7 +84,7 @@ public class WaterBarrier implements SingleInstance {
               if(distance < radius){
                 double ang = Arithmetic.angleOf(xs[j], ys[i], ox, oy);
                 enemy.inflictPain(attack, ang,
-                    Characters.CASPIAN, KNOCKBACK);
+                    Characters.CASPIAN, KNOCKBACK, ElementalProperty.WATER);
                 break outer;
               }
             }

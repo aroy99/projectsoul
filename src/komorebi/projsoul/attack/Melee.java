@@ -1,10 +1,10 @@
 package komorebi.projsoul.attack;
 
-import java.awt.Rectangle;
-
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.player.Characters;
+
+import java.awt.Rectangle;
 
 public abstract class Melee implements AttackInstance {
 
@@ -12,6 +12,7 @@ public abstract class Melee implements AttackInstance {
   
   public float x, y, dx, dy;
   public int attack;
+  public ElementalProperty perAether;
   
   public Rectangle hitBox;
 
@@ -130,8 +131,4 @@ public abstract class Melee implements AttackInstance {
   {
     return y;
   }
-  
-
-  
-  
 }

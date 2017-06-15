@@ -947,7 +947,7 @@ public class EditorMap implements Playable, Serializable{
   }
 
   /**
-   * Swtiches the state of the grid of every tile
+   * Switches the state of the grid of every tile
    */
   public static void changeGrid(){
     grid = !grid;

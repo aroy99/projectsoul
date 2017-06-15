@@ -1,0 +1,13 @@
+#The scale of the game, as an integer, resolution is 224x256, so you can scale it by changing the number below.
+4
+#The map the game is on, no quotes
+New_Forest.map
+#Curr Coor:
+126.84532,143.71425
+#Curr Char:
+CASPIAN
+#Char Data:
+CSPN-Level:0 XP:0 NextLevelUp:0
+FLNY-Level:0 XP:0 NextLevelUp:0
+SIRA-Level:0 XP:0 NextLevelUp:0
+BRNO-Level:0 XP:0 NextLevelUp:0

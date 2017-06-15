@@ -4,6 +4,19 @@
 
 package komorebi.projsoul.engine;
 
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.FileNotFoundException;
+
+import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.openal.AL;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
+
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
@@ -40,8 +53,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-
-
+import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.audio.Song;
+import komorebi.projsoul.states.Game;
+import komorebi.projsoul.states.State.States;
+import komorebi.projsoul.engine.Save;
 
 /**
  * Initializes everything and uses the game handler to start the game
@@ -53,9 +69,9 @@ import java.io.IOException;
 public class Main {
 
   private GameHandler gamehandler;
-  public int scale;
-  private BufferedReader read;
-  private static BufferedReader readSave;
+  public static int scale=1;
+  //private BufferedReader read;
+  private BufferedReader readSave;
   
   private static TextHandler handler;
   private static long lastFrame, lastFPS;
@@ -79,7 +95,8 @@ public class Main {
    * Runs the game
    */
   private void run() {
-    try {
+  /* reads from the settings file 
+	  try {
       read = new BufferedReader(
           new FileReader(new File("res/settings")));
       String str;
@@ -101,24 +118,29 @@ public class Main {
       scale = 1;
     }
    /* Reads from your save file
+    //*/
+   ///* Reads from the SettingS file
     try{
-    	readSave = new BufferedReader(new FileReader(new File("res/saves")));
-    	String str;
+      readSave = new BufferedReader(new FileReader(new File("res/settingsS")));
+      String str;
 
       while ((str = readSave.readLine()) != null) {
         if(str.equals("") || str.charAt(0) == '#'){
           continue;
         }
-        if(scale == 0){
-          scale = Integer.parseInt(str);
-        } else if(Game.testLoc == null){
-          Game.testLoc = str;
+        if(Game.saveLoc == null){
+          Game.saveLoc = str;
+          Save savey = new Save(Game.saveLoc);  
         }
-    }}catch (IOException | NumberFormatException e) {
+        /*
+        if(numberOfSaves==0 && ){
+
+        }*/
+
+      }}catch (IOException | NumberFormatException e) {
       e.printStackTrace();
       scale = 1;
     }
-     */
     initDisplay();
 
     initGL();
@@ -126,6 +148,8 @@ public class Main {
 
     initGame();
 
+    GameHandler.switchState(States.MENU);
+	  AudioHandler.play(Song.CHAOS, true);
     gameLoop();
     cleanUp();
   }

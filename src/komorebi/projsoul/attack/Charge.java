@@ -8,6 +8,7 @@ import komorebi.projsoul.entities.player.Characters;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.states.Game;
+import komorebi.projsoul.attack.ElementalProperty;
 
 import java.awt.Rectangle;
 
@@ -33,7 +34,7 @@ public class Charge extends Melee {
     this.dy = dy;
     this.currentDir = dir;
     this.attack = attack;
-    
+    perAether = ElementalProperty.EARTH;//Charge's base typing is EARTH
     character = Characters.BRUNO;
     
     rightAttack = new Animation(1,8,12);
@@ -80,18 +81,17 @@ public class Charge extends Melee {
     {
       if (enemy.getHitBox().intersects(future))
       {
-        enemy.inflictPain(attack, currentDir, Characters.BRUNO);
+        enemy.inflictPain(attack, currentDir, Characters.BRUNO, perAether);
         dx = -dx;
         dy = -dy;
       }
     }
-    
     this.x += dx;
     this.y += dy;
     
     hitBox.x = (int) x;
     hitBox.y = (int) y;
-    
+
     if (dy > 0){ 
       dy -= 0.25;
     }

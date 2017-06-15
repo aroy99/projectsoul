@@ -6,6 +6,7 @@ import komorebi.projsoul.attack.CircleStrike;
 import komorebi.projsoul.attack.SingleAttack;
 import komorebi.projsoul.attack.projectile.AirSlash;
 import komorebi.projsoul.attack.projectile.ProjectileAttack;
+import komorebi.projsoul.attack.ElementalProperty;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.KeyHandler.Control;
 import komorebi.projsoul.gameplay.HUD;
@@ -47,7 +48,7 @@ public class Sierra extends Player {
   public Sierra(float x, float y) {
 
     super(x,y);
-
+    charProperty = ElementalProperty.WIND;
     character = Characters.SIERRA;
 
     magic = new MagicBar(maxMagic);

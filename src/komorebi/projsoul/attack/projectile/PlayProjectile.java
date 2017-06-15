@@ -1,5 +1,6 @@
 package komorebi.projsoul.attack.projectile;
 
+import komorebi.projsoul.attack.ElementalProperty;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.player.Characters;
@@ -34,7 +35,7 @@ public abstract class PlayProjectile extends Projectile{
         destroyMe = true;
         if (!enemy.invincible())
         {
-          enemy.inflictPain(attack, currentDir, character);
+          enemy.inflictPain(attack, currentDir, character, ElementalProperty.WATER);
           //DEBUG Print out projectile attack on hit
           System.out.println(attack);
         }

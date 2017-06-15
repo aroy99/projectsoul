@@ -4,12 +4,14 @@
  */
 package komorebi.projsoul.states;
 
+import komorebi.projsoul.audio.AudioHandler;
+import komorebi.projsoul.audio.Song;
 import komorebi.projsoul.engine.GameHandler;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
+import komorebi.projsoul.engine.Save;
 import komorebi.projsoul.engine.ThreadHandler;
 import komorebi.projsoul.engine.ThreadHandler.TrackableThread;
-import komorebi.projsoul.entities.sprites.NPCLoader;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.Item;
@@ -43,14 +45,18 @@ public class Game extends State{
   public TrackableThread waiting;
 
   public static String testLoc;
+  public static String saveLoc;
 
   public HUD hud;
   public Death death;
-
+  public Song piedPiper = Song.CHAOS;
+  static Save saveFile;
+  
   /**
    * Creates the player and loads the map
    */
   public Game(){
+    saveFile = new Save(saveLoc);  
     MapHandler.initialize(testLoc);
 
     confidence = 0;
@@ -85,12 +91,21 @@ public class Game extends State{
         KeyHandler.keyClick(Key.M))
     {
       GameHandler.switchState(States.MENU);
+      AudioHandler.play(piedPiper, true);
     }
 
     if (KeyHandler.keyClick(Key.P))
     {
       GameHandler.switchState(States.PAUSE);
     }
+    
+    if ((KeyHandler.keyDown(Key.LCTRL) || KeyHandler.keyDown(Key.RCTRL)) &&
+        KeyHandler.keyClick(Key.N))
+    {
+      GameHandler.switchState(States.SAVELIST);
+      AudioHandler.play(Song.SIERRA, true);
+    }
+
     
     MapHandler.getInput();
 
@@ -131,7 +146,20 @@ public class Game extends State{
     Fader.render();
 
   }
+  
+  /**
+   * @return The current Save File (.kom)
+   */
+  public static Save getSave(){
+	    return saveFile;
+	  }
 
+  public static void setSave(Save s)
+	  {
+	    saveFile = s;
+	  }
+  
+  
   public void setSpeaker(SpeechHandler talk)
   {
     dialogue.setSpeaker(talk);

@@ -1,7 +1,7 @@
 package komorebi.projsoul.entities.player;
 
 import static komorebi.projsoul.engine.KeyHandler.button;
-
+import komorebi.projsoul.attack.ElementalProperty;
 import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.attack.projectile.FireBall;
@@ -49,9 +49,8 @@ public class Flannery extends Player {
    * @param y Y pixel location
    */
   public Flannery(float x, float y) {
-
     super(x,y);
-
+    charProperty = ElementalProperty.FIRE;
     character = Characters.FLANNERY;
     
     downThrow = new Animation(6,8,12,false);

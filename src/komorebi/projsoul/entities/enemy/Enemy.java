@@ -1,5 +1,6 @@
 package komorebi.projsoul.entities.enemy;
 
+import komorebi.projsoul.attack.ElementalProperty;
 import komorebi.projsoul.attack.FireRingInstance;
 import komorebi.projsoul.attack.RingOfFire;
 import komorebi.projsoul.editor.Editor;
@@ -40,6 +41,7 @@ public abstract class Enemy extends Entity {
   private boolean dead;
   private int hitCounter;
 
+  public static ElementalProperty emyProperty = ElementalProperty.FIRE; 
   //Animations
   protected final Animation regAni;
   protected final Animation hitAni;
@@ -171,7 +173,7 @@ public abstract class Enemy extends Entity {
       {          
         float[] coords = ring.getCenter();
         inflictPain(ring.getDamage(), Arithmetic.angleOf(x, y, coords[0], coords[1]), 
-            Characters.FLANNERY);
+            Characters.FLANNERY, FireRingInstance.priAether);
       }
     }
 
@@ -191,7 +193,7 @@ public abstract class Enemy extends Entity {
    * @param dir The direction to whack the enemy
    * @param c The character that hit the enemy (used for exp)
    */
-  public void inflictPain(int attack, Face dir, Characters c)
+  public void inflictPain(int attack, Face dir, Characters c, ElementalProperty prop)
   {
     int chgx = 0, chgy = 0;
 
@@ -217,7 +219,7 @@ public abstract class Enemy extends Entity {
         break;
     }
 
-    inflictPain(attack, chgx, chgy, c);
+    inflictPain(attack, chgx, chgy, c, prop);
   }
 
 
@@ -228,9 +230,9 @@ public abstract class Enemy extends Entity {
    * @param ang The angle to knock the enemy back (in degrees)
    * @param c The character that hit the enemy (used for exp)
    */
-  public void inflictPain(int attack, double ang, Characters c)
+  public void inflictPain(int attack, double ang, Characters c, ElementalProperty prop)
   {
-    inflictPain(attack, ang, c, DEFAULT_KNOCK);
+    inflictPain(attack, ang, c, DEFAULT_KNOCK, prop);
   }
   
   /**
@@ -241,12 +243,12 @@ public abstract class Enemy extends Entity {
    * @param c The character that hit the enemy (used for exp)
    * @param knock The custom knockback
    */
-  public void inflictPain(int attack, double ang, Characters c, int knock)
+  public void inflictPain(int attack, double ang, Characters c, int knock, ElementalProperty prop)
   {
     float chgx = (float) Math.cos(ang * (Math.PI/180)) * knock;
     float chgy = (float) Math.sin(ang * (Math.PI/180)) * knock;
 
-    inflictPain(attack, chgx, chgy, c);
+    inflictPain(attack, chgx, chgy, c, prop);
   }
 
   /**
@@ -257,8 +259,15 @@ public abstract class Enemy extends Entity {
    * @param dy The new y velocity of the target
    * @param c The character that hit the enemy (used for exp)
    */
-  public void inflictPain(int attack, float dx, float dy, Characters c)
+  public void inflictPain(int attack, float dx, float dy, Characters c, ElementalProperty prop)
   {
+  		attack=(int)(attack*emyProperty.findEffectiveness(prop, emyProperty)+1);
+	System.out.println("before stab dmge "+attack);
+	
+	attack = (int)(attack*prop.calcStab(MapHandler.getPlayer().charProperty, prop));//calcs stab
+	System.out.println("after stab dmge "+attack);
+  	
+  
     if(!invincible){
       health -= attack - (defense/2);
       hitBy[c.ordinal()] = true;
@@ -284,10 +293,6 @@ public abstract class Enemy extends Entity {
       }
     }
   }
-
- 
-
-
 
   @Override
   public void render() {
@@ -381,7 +386,7 @@ public abstract class Enemy extends Entity {
         System.out.println(dx + ", " + dy);
         MapHandler.getPlayer().inflictPain(attack, 
             DEFAULT_KNOCK*Math.signum(dx)*(float)Math.sqrt(Math.abs(dx)), 
-            DEFAULT_KNOCK*Math.signum(dy)*(float)Math.sqrt(Math.abs(dy)));
+            DEFAULT_KNOCK*Math.signum(dy)*(float)Math.sqrt(Math.abs(dy)), emyProperty);
         hittingPlayer = true;
         
       }

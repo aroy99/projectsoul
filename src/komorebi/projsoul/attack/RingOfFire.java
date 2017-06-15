@@ -24,7 +24,7 @@ public class RingOfFire extends Attack<FireRingInstance> {
   private boolean aiming;
   
   private static final int CENTER_X = 4;
-  private static final int SIZE_X = 7;
+  private static final int SIZE_X = 14;
   private static final int RANGE = 80;
   private static final float SPEED_X = (float) Math.sqrt(2);
   

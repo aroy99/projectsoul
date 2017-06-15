@@ -1,7 +1,7 @@
 package komorebi.projsoul.entities.player;
 
 import static komorebi.projsoul.engine.KeyHandler.button;
-
+import komorebi.projsoul.attack.ElementalProperty;
 import komorebi.projsoul.attack.MeleeAttack;
 import komorebi.projsoul.attack.SingleAttack;
 import komorebi.projsoul.attack.WaterBarrier;
@@ -66,7 +66,7 @@ public class Caspian extends Player {
   
   //Debug
   private int counter = 0;
-
+  
   /**
    * Creates Caspian
    * 
@@ -75,7 +75,7 @@ public class Caspian extends Player {
    */
   public Caspian(float x, float y) {
     super(x, y);
-
+    charProperty = ElementalProperty.WATER;
     character = Characters.CASPIAN;
 
     for(int i = 0; i < 3; i++){
@@ -135,8 +135,8 @@ public class Caspian extends Player {
           if (melee.getAttackInstance().getHitBox().intersects(enemy.getHitBox()) 
               && !enemy.invincible())
           {
-            enemy.inflictPain((int) (Player.getAttack(Characters.CASPIAN)), dir,
-                Characters.CASPIAN);
+            enemy.inflictPain((int)(Player.getAttack(Characters.CASPIAN)), dir,
+                Characters.CASPIAN, charProperty);
           }
 
         }

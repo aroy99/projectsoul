@@ -1,8 +1,8 @@
 package komorebi.projsoul.entities.player;
 
 import static komorebi.projsoul.engine.KeyHandler.button;
-
 import komorebi.projsoul.attack.Charge;
+import komorebi.projsoul.attack.ElementalProperty;
 import komorebi.projsoul.attack.MeleeAttack;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Key;
@@ -36,7 +36,7 @@ public class Bruno extends Player {
    */
   public Bruno(float x, float y) {
     super(x,y);
-
+    charProperty = ElementalProperty.EARTH;
     character = Characters.BRUNO;
 
     magic = new MagicBar(maxMagic);
@@ -51,7 +51,7 @@ public class Bruno extends Player {
   public void renderAttack() {
     if (attack1 == melee)
     {
-      melee.getAttackInstance().play(x, y);
+      melee.getAttackInstance().play(getX(), y);
     }
    
     
@@ -72,7 +72,7 @@ public class Bruno extends Player {
     if (isAttacking && attack1 == melee)
     {
       melee.update();
-      x = melee.getAttackInstance().getX();
+      setX(melee.getAttackInstance().getX());
       y = melee.getAttackInstance().getY();
       
       if (melee.getAttackInstance().isStopped())
@@ -108,7 +108,7 @@ public class Bruno extends Player {
       
       if (attack1 == melee)
       {
-        attack1.newAttack(x, y, aDx, aDy, dir, attack);
+        attack1.newAttack(getX(), y, aDx, aDy, dir, attack);
         isAttacking = true;
         
         magic.changeMagicBy(TACKLE_COST);

@@ -124,7 +124,7 @@ public class Encryptor {
           {
             tiles[i][j] = Integer.parseInt(m.substring(x, x+3));
           //DEBUG Print tiles?
-            System.out.println(i + ", " + j+ ": "+tiles[i][j]);
+            System.out.println(i + ", " + j + ": "+tiles[i][j]);
             
             j++;
             if (j>=tiles[0].length)
@@ -224,7 +224,7 @@ public class Encryptor {
       for (int j=0; j<width; j++)
       {
         array[i][j] = random.nextInt(1000);
-        //System.out.println(i + ", " + j+ ": "+array[i][j]);
+        //System.out.println(i + ", " + j + ": "+array[i][j]);
       }
     }
     
