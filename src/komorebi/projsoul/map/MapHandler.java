@@ -11,6 +11,7 @@ import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Main;
+import komorebi.projsoul.entities.BaseXPObject;
 import komorebi.projsoul.entities.XPObject;
 import komorebi.projsoul.entities.enemy.Enemy;
 import komorebi.projsoul.entities.enemy.SmartEnemy;
@@ -47,7 +48,7 @@ public class MapHandler {
   private static Bruno bruno;
   
   private static ArrayList<Enemy>  enemies = new ArrayList<Enemy>();     
-  private static ArrayList<XPObject> xpObj = new ArrayList<XPObject>();
+  private static ArrayList<BaseXPObject> xpObj = new ArrayList<BaseXPObject>();
   
   private static Map activeMap;
   private static ArrayList<Map> borderMaps;
@@ -199,7 +200,7 @@ public class MapHandler {
       switchPlayer();
     }
     
-    for (XPObject xp: xpObj)
+    for (BaseXPObject xp: xpObj)
     {
       if (xp.withinRadius(play.getHitBox()))
       {
@@ -219,9 +220,9 @@ public class MapHandler {
       
     }
     
-    for (Iterator<XPObject> it = xpObj.iterator(); it.hasNext();)
+    for (Iterator<BaseXPObject> it = xpObj.iterator(); it.hasNext();)
     {      
-      XPObject xp = it.next();
+      BaseXPObject xp = it.next();
       if (xp.destroyed())
       {
         it.remove();
@@ -349,7 +350,7 @@ public class MapHandler {
       enemy.render();
     }
 
-    for (XPObject xp: xpObj)
+    for (BaseXPObject xp: xpObj)
     {
       xp.render();
     }
@@ -509,7 +510,7 @@ public class MapHandler {
     return play.getCharacter();
   }
 
-  public static void addXPObject(XPObject xp) {
+  public static void addXPObject(BaseXPObject xp) {
     xpObj.add(xp);
   }
 

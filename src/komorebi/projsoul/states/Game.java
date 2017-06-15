@@ -47,7 +47,6 @@ public class Game extends State{
   public static String testLoc;
   public static String saveLoc;
 
-  public HUD hud;
   public Death death;
   public Song piedPiper = Song.CHAOS;
   static Save saveFile;
@@ -62,7 +61,6 @@ public class Game extends State{
     confidence = 0;
     money = 15;
 
-    hud = new HUD(confidence); //TODO WHY KEVIN
     death = new Death();
 
     dialogue = new DialogueBox();
@@ -105,6 +103,20 @@ public class Game extends State{
       GameHandler.switchState(States.SAVELIST);
       AudioHandler.play(Song.SIERRA, true);
     }
+    
+    if(KeyHandler.keyClick(Key.Y))
+    {
+    	GameHandler.switchState(States.BANKSTATE);
+    }
+    else if(KeyHandler.keyClick(Key.V))
+    {
+    	GameHandler.switchState(States.SHOPSTATE);
+    }
+    else if(KeyHandler.keyClick(Key.I))
+    {
+    	GameHandler.switchState(States.INVENTORYSTATE);
+    }
+    
 
     
     MapHandler.getInput();
@@ -113,7 +125,6 @@ public class Game extends State{
 
   @Override
   public void update() {
-    hud.update();
     death.update();
     Camera.update();
 

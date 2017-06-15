@@ -3,311 +3,187 @@ package komorebi.projsoul.gameplay;
 
 import komorebi.projsoul.engine.Draw;
 import komorebi.projsoul.engine.Renderable;
+import komorebi.projsoul.script.text.EarthboundFont;
+import komorebi.projsoul.script.text.TextHandler;
 
 public class HUD implements Renderable
 {
-  public int baseHealth;
-  //Max health is 250?
+  public boolean broke;
   public int health;
-  public int hundreds;
-  public int tens; 
-  public int ones;
-  private double healthProportion;
+  public int baseHealth;
+  public int wallet;  
+  public int magic;
+  public int maxMagic;
+  double proportion;
+  TextHandler text = new TextHandler();
+  public int baseMagic = 100;
+  static final int BAR_WIDTH = 100;
 
-
-  public HUD(int initHealth)
+  public HUD(int initHealth, int initMoney, int initMagic)
   {
-    baseHealth = health = initHealth; 
+    //Possible limit on wallet size?
+    wallet = initMoney;
+    baseHealth = health = initHealth;
+    maxMagic = magic = initMagic;
   }
+  @Override
+  public void update() 
+  {
+    //Updates the HUD according to the player's health, currency and magic as it is lost or gained
+    text.clear();
+    if(health >= 0)
+    {
+      //text.write(String.valueOf(health), 7, 207, new EarthboundFont(1));
+    }
+    text.write(String.valueOf(wallet), 25, 179, new EarthboundFont(1));
 
-  @Override
-  public void update() {
-    // TODO Auto-generated method stub
-    //Updates the player's health as it is lost or gained
-    if (health>99)
-    {
-      this.displayHealthHundreds();
-    }
-    else if (health > 9)
-    {
-      this.displayHealthTens();
-    }
-    else 
-      this.displayHealthOnes(); 
+    if(wallet == 0)
+      broke = true;
+    else
+      broke = false;
+
+    proportion = (double) this.magic/maxMagic;
+    //text.write(String.valueOf(magic), 127, 207, new EarthboundFont(1));
   }
   @Override
-  public void render() {
-    // TODO Auto-generated method stub
+  public void render() 
+  {
+    Draw.rect(5, 190, 147, 27, 0, 0, 147, 27, 17);
+
     //Health bar
     if (health > 0)
     {
-      Draw.rect(5, 205, (int) (health*(100 / (double) baseHealth)), 10, 53, 24, 54, 25, 2);
-    }
-    //Border
-    Draw.rect(5, 204, 102, 2, 39, 46, 40, 47, 2);
-    Draw.rect(5, 215, 102, 2, 39, 46, 40, 47, 2);
-    Draw.rect(5, 205, 2, 10, 39, 46, 40, 47, 2);
-    Draw.rect(105, 205, 2, 10, 39, 46, 40, 47, 2);
-    // When Player levels up, health must be added to baseHealth as well!
-    //Drawing Text
-    if (health>99)
-    {
-      this.displayHealthHundreds();
-    }
-    else if (health>9)
-    {
-      this.displayHealthTens();
-    }
-    else 
-    {
-      this.displayHealthOnes();
+      Draw.rect(46, 202, (int) (health*(100 / (double) baseHealth))-1, 8, 41, 34, 41, 41, 17);
     }
 
+    //Draws the currency symbol and the equals sign
+    Draw.rect(10, 178, (float) 8.5, 10, 80, 0, 88, 11, 14);
+    Draw.rect(19, 181, 5, 1, 80, 38, 85, 38, 5);
+    Draw.rect(19, 183, 5, 1, 80, 38, 85, 38, 5);
 
+    //Magic Bar
+    Draw.rect(37, 197, (int) (proportion*BAR_WIDTH) + 8, 4, 36, 43, 36, 47, 17);
 
+    Draw.rect(34, 196, 6, 5, 30, 67, 36, 72, 17);
+    Draw.rect(37, 197, 1, 1, 33, 46, 33, 46, 17);
+    Draw.rect(144, 196, 2, 15, 139, 57, 141, 72, 17);
 
+    text.render();
   }
-  public void displayHealthHundreds()
+  //Checks if the current player's health is full
+  public boolean fullHealth()
   {
-    hundreds = health / 100;
-    tens = (health - (hundreds * 100)) / 10;
-    ones = health - ((hundreds * 100) + (tens * 10));
-    if (hundreds == 1)
-    {
-      Draw.rect(7, 207, 8, 7, 80, 16, 86, 24, 5);     
-    }
-    else if (hundreds == 2)
-    {
-      Draw.rect(7, 207, 8, 7, 96, 16, 101, 24, 5);
-    }
-    else if (hundreds == 3)
-    {
-      Draw.rect(7, 207, 8, 7, 112, 16, 117, 24, 5);
-    }
-    if (tens == 0)
-    {
-      Draw.rect(14, 207, 8, 7, 64, 16, 69, 24, 5);
-    }
-    else if (tens == 1)
-    {
-      Draw.rect(14, 207, 8, 7, 80, 16, 86, 24, 5);
-    }
-    else if (tens == 2)
-    {
-      Draw.rect(14, 207, 8, 7, 96, 16, 101, 24, 5);
-    }
-    else if (tens == 3)
-    {
-      Draw.rect(14, 207, 8, 7, 112, 16, 117, 24, 5);
-    }
-    else if (tens == 4)
-    {
-      Draw.rect(14, 207, 8, 7, 128, 16, 133, 24, 5);
-    }
-    else if (tens == 5)
-    {
-      Draw.rect(14, 207, 8, 7, 144, 16, 149, 24, 5);
-    }
-    else if (tens == 6)
-    {
-      Draw.rect(14, 207, 8, 7, 160, 16, 165, 24, 5);
-    }
-    else if (tens == 7)
-    {
-      Draw.rect(14, 207, 8, 7, 176, 16, 181, 24, 5);
-    }
-    else if (tens == 8)
-    {
-      Draw.rect(14, 207, 8, 7, 0, 32, 5, 40, 5);
-    }
-    else if (tens == 9)
-    {
-      Draw.rect(14, 207, 8, 7, 16, 32, 21, 40, 5);
-    }
-
-    if (ones == 0)
-    {
-      Draw.rect(21, 207, 8, 7, 64, 16, 69, 24, 5);
-    }
-    else if (ones == 1)
-    {
-      Draw.rect(21, 207, 8, 7, 80, 16, 86, 24, 5);
-    }
-    else if (ones == 2)
-    {
-      Draw.rect(21, 207, 8, 7, 96, 16, 101, 24, 5);
-    }
-    else if (ones == 3)
-    {
-      Draw.rect(21, 207, 8, 7, 112, 16, 117, 24, 5);
-    }
-    else if (ones == 4)
-    {
-      Draw.rect(21, 207, 8, 7, 128, 16, 133, 24, 5);
-    }
-    else if (ones == 5)
-    {
-      Draw.rect(21, 207, 8, 7, 144, 16, 149, 24, 5);
-    }
-    else if (ones == 6)
-    {
-      Draw.rect(21, 207, 8, 7, 160, 16, 165, 24, 5);
-    }
-    else if (ones == 7)
-    {
-      Draw.rect(21, 207, 8, 7, 176, 16, 181, 24, 5);
-    }
-    else if (ones == 8)
-    {
-      Draw.rect(21, 207, 8, 7, 0, 32, 5, 40, 5);
-    }
-    else if (ones == 9)
-    {
-      Draw.rect(21, 207, 8, 7, 16, 32, 21, 40, 5);
-    }
-
+    if(health == baseHealth)
+      return true;
+    else
+      return false;
   }
-  public void displayHealthTens()
+
+  //Checks if current player's magic is full
+  public boolean fullMagic()
   {
-    tens = health/10;
-    ones = health - (tens * 10); 
-    if (tens == 1)
-    {
-      Draw.rect(7, 207, 8, 7, 80, 16, 86, 24, 5);
-    }
-    else if (tens == 2)
-    {
-      Draw.rect(7, 207, 8, 7, 96, 16, 101, 24, 5);
-    }
-    else if (tens == 3)
-    {
-      Draw.rect(7, 207, 8, 7, 112, 16, 117, 24, 5);
-    }
-    else if (tens == 4)     
-    {
-      Draw.rect(7, 207, 8, 7, 128, 16, 133, 24, 5);
-    }
-    else if (tens == 5)
-    {
-      Draw.rect(7, 207, 8, 7, 144, 16, 149, 24, 5);
-    }
-    else if (tens == 6)
-    {
-      Draw.rect(7, 207, 8, 7, 160, 16, 165, 24, 5);
-    }
-    else if (tens == 7)
-    {
-      Draw.rect(7, 207, 8, 7, 176, 16, 181, 24, 5);
-    }
-    else if (tens == 8)
-    {
-      Draw.rect(7, 207, 8, 7, 0, 32, 5, 40, 5);
-    }
-    else if (tens == 9)
-    {
-      Draw.rect(7, 207, 8, 7, 16, 32, 21, 40, 5);
-    }
-    if (ones == 0)
-    {
-      Draw.rect(14, 207, 8, 7, 64, 16, 69, 24, 5);
-    }
-    else if (ones == 1)
-    {
-      Draw.rect(14, 207, 8, 7, 80, 16, 86, 24, 5);
-    }
-    else if (ones == 2)
-    {
-      Draw.rect(14, 207, 8, 7, 96, 16, 101, 24, 5);
-    }
-    else if (ones == 3)
-    {
-      Draw.rect(14, 207, 8, 7, 112, 16, 117, 24, 5);
-    }
-    else if (ones == 4)
-    {
-      Draw.rect(14, 207, 8, 7, 128, 16, 133, 24, 5);
-    }
-    else if (ones == 5)
-    {
-      Draw.rect(14, 207, 8, 7, 144, 16, 149, 24, 5);
-    }
-    else if (ones == 6)
-    {
-      Draw.rect(14, 207, 8, 7, 160, 16, 165, 24, 5);
-    }
-    else if (ones == 7)
-    {
-      Draw.rect(14, 207, 8, 7, 176, 16, 181, 24, 5);
-    }
-    else if (ones == 8)
-    {
-      Draw.rect(14, 207, 8, 7, 0, 32, 5, 40, 5);
-    }
-    else if (ones == 9)
-    {
-      Draw.rect(14, 207, 8, 7, 16, 32, 21, 40, 5);
-    }
+    if(magic == maxMagic)
+      return true;
+    else
+      return false;
   }
-  public void displayHealthOnes()
-  {
-    ones = health;
-    if (ones == 0)
-    {
-      Draw.rect(7, 207, 8, 7, 64, 16, 69, 24, 5);
-    }
-    else if (ones == 1)
-    {
-      Draw.rect(7, 207, 8, 7, 80, 16, 86, 24, 5);
-    }
-    else if (ones == 2)
-    {
-      Draw.rect(7, 207, 8, 7, 96, 16, 101, 24, 5);
-    }
-    else if (ones == 3)
-    {
-      Draw.rect(7, 207, 8, 7, 112, 16, 117, 24, 5);
-    }
-    else if (ones == 4)
-    {
-      Draw.rect(7, 207, 8, 7, 128, 16, 133, 24, 5);
-    }
-    else if (ones == 5)
-    {
-      Draw.rect(7, 207, 8, 7, 144, 16, 149, 24, 5);
-    }
-    else if (ones == 6)
-    {
-      Draw.rect(7, 207, 8, 7, 160, 16, 165, 24, 5);
-    }
-    else if (ones == 7)
-    {
-      Draw.rect(7, 207, 8, 7, 176, 16, 181, 24, 5);
-    }
-    else if (ones == 8)
-    {
-      Draw.rect(7, 207, 8, 7, 0, 32, 5, 40, 5);
-    }
-    else if (ones == 9)
-    {
-      Draw.rect(7, 207, 8, 7, 16, 32, 21, 40, 5);
-    }
-
-  }
-  
+  //Adds a given amount to the max health
   public void addToMaxHealth(int add)
   {
     baseHealth += add;
     health += add;
   }
-  
+
+  //Adds a given amount to health
+  public void addHealth(int add)
+  {
+    health+= add;
+  }
+
+  //Subtracts a given amount from health
+  public void takeHealth(int sub)
+  {
+    health-=sub;
+  }
+
+  //Returns the amount of health
   public int getHealth()
   {
     return health;
   }
 
+  //Returns the MaxHealth
+  public int getMaxHealth()
+  {
+    return baseHealth;
+  }
+
+  //Adds a given amount of money
+  public void giveMoney(int add)
+  {
+    wallet += add;
+  }
+
+  //Subtracts a give amount of money
+  public void takeMoney(int subtract)
+  {
+    if(wallet - subtract >= 0)
+    {
+      wallet -= subtract;
+    }
+    else
+    {
+      System.out.println("Not enough cash");
+    }
+  }
+
+  public boolean hasEnoughMoney(int moneyNeeded)
+  {
+    return wallet>=moneyNeeded;
+  }
+
+  //Returns max magic
+  public int getMaxMagic()
+  {
+    return maxMagic;
+  }
+
+  //Returns current amount of magic
+  public int getMagic()
+  {
+    return magic;
+  }
+
+  //Returns the amount of money
+  public int getMoney()
+  {
+    return wallet;
+  }
+
+  /**
+   * Adjusts the amount of magic left in the magic bar
+   * @param dMagic The change in magic (- to decrease magic)
+   */
+  public void changeMagicBy(int dMagic)
+  {
+    magic += dMagic;
+
+    if (magic<0) magic = 0;
+  }
+
+  /**
+   * @param magicNeeded The amount of magic needed to perform an attack/task
+   * @return Whether the magic bar currently has enough magic to perform that
+   * attack/task
+   */
+  public boolean hasEnoughMagic(int magicNeeded)
+  {
+    return magic>=magicNeeded;
+  }
+
+  public void addToMaxMagic(int add)
+  {
+    maxMagic += add;
+    magic += add;
+  }
 }
-
-
-
-
-

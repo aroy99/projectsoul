@@ -21,7 +21,7 @@ import komorebi.projsoul.gameplay.MagicBar;
 public class Sierra extends Player {
 
   public static int attack = 50,  defense = 45, 
-                 maxHealth = 45, maxMagic = 60;    
+                 maxHealth = 45, maxMagic = 60, money = 0;;    
   public static int level = 1, xp = 0, nextLevelUp = 10;
   
   //Magic Cost
@@ -51,9 +51,13 @@ public class Sierra extends Player {
     charProperty = ElementalProperty.WIND;
     character = Characters.SIERRA;
 
-    magic = new MagicBar(maxMagic);
-    health = new HUD(maxHealth);
+    characterDeathAni = new Animation(3,45,12,false);
+
+    characterDeathAni.add(582,615,20,24,0,false);
+    characterDeathAni.add(807,529,42,14,0,false);
     
+    health = new HUD(maxHealth, money, maxMagic);
+
     attack1 = proj;
     attack2 = aoe;
     
@@ -112,7 +116,7 @@ public class Sierra extends Player {
     }
     
     if (button(Control.ATTACK) && !isAttacking){        
-      if (attack1 == aoe  && magic.hasEnoughMagic(-CIRCLE_COST)){
+      if (attack1 == aoe  && health.hasEnoughMagic(-CIRCLE_COST)){
         isAttacking = true;
         //      canMove = false;
         dx = 0;
@@ -120,7 +124,7 @@ public class Sierra extends Player {
         
         sprites.stopCurrent();
         
-        magic.changeMagicBy(CIRCLE_COST);
+        health.changeMagicBy(CIRCLE_COST);
         index = dir.getFaceNum();
         castAni[index].resume();
 
@@ -162,7 +166,7 @@ public class Sierra extends Player {
 
         castAni[index].resume();
         
-        magic.changeMagicBy(PROJ_COST);
+        health.changeMagicBy(PROJ_COST);
         attack1.newAttack(aX,aY,aDx,aDy,dir,attack*2);
 
       }
@@ -194,7 +198,7 @@ public class Sierra extends Player {
     maxMagic += nMag;
     maxHealth += nHth;
 
-    magic.addToMaxMagic(nMag);
+    health.addToMaxMagic(nMag);
     health.addToMaxHealth(nHth);
 
   }
@@ -208,4 +212,15 @@ public class Sierra extends Player {
       levelUp();
     }
   }
+  
+  public static void addDefense(int def)
+  {
+    defense+=def;
+  }
+  
+  public static void subDefense(int def)
+  {
+    defense-=def;
+  }
+
 }

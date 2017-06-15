@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 branch main
 lock
 align
@@ -22,3 +23,30 @@ fadeout
 fadein
 fadeout
 fadein
+=======
+lock
+align
+say Caspian: Uhhh, I think you are on fire.
+call talking, running, flash
+call finishing
+unlock
+end
+
+branch talking
+say Ash: AHHHHHHHHHHHHHHHHHHHH!
+sync
+
+branch running
+jog up up left left down down right right
+sync
+
+branch finishing
+say Caspian: I got you covered. Here's some water.
+
+branch flash
+fadeout
+fadein
+fadeout
+fadein
+sync
+>>>>>>> refs/remotes/origin/Death/Bank

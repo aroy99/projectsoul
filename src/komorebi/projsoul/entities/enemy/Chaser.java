@@ -122,6 +122,32 @@ public class Chaser extends Enemy{
     if(MapHandler.isHitBox){
       Draw.circCam(x, y, maxPlayDist, red, blue, green, 64);
     }
+    
+
+    
+    if (invincible)
+    {
+      if(health>=0)
+      {
+        Draw.rectCam(this.getX()-2, this.getY()+23, (int) (health*0.41), 2, 5, 2, 7, 2, 11);
+      }
+      Draw.rectCam(this.getX()-3, this.getY()+22, 22, 4, 0, 317, 22, 321, 11);
+      hitAni.playCam(x, y);
+    } else if (dying)
+    {
+      deathAni.playCam(x, y);
+    } else
+    {
+      Draw.rectCam(x, y, sx, sy, 0, 0, 16, 21, 0, 11);
+      Draw.rectCam(this.getX()-3, this.getY()+22, 22, 4, 0, 317, 22, 321, 11);
+      if(health>=0)
+      {
+        Draw.rectCam(this.getX()-2, this.getY()+23, (int) (health*0.41), 2, 5, 2, 7, 2, 11);
+      }
+    }
+      
+    
+  
 
     super.render();
   }

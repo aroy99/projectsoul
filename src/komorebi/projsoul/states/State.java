@@ -22,7 +22,7 @@ public abstract class State{
    * @author Aaron Roy
    */
   public enum States{
-    GAME, EDITOR, MENU, PAUSE, SAVELIST;
+    GAME, EDITOR, MENU, PAUSE, SAVELIST, DEATH, BANKSTATE, SHOPSTATE, INVENTORYSTATE;
   }
 
   /**

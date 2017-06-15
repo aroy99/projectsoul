@@ -66,7 +66,7 @@ public class FindExistingWorldDialog extends JDialog {
         selWorld = World.findWorldContainingMap(worldList.getSelectedValue());
         cancelled = false;
         
-        lock.unlock();
+//        lock.unlock();
       }
 
 

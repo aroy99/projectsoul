@@ -12,7 +12,9 @@ import komorebi.projsoul.entities.Entity;
 import komorebi.projsoul.entities.Face;
 import komorebi.projsoul.entities.XPObject;
 import komorebi.projsoul.entities.player.Characters;
+import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.map.EditorMap;
+import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.MapHandler;
 
 import java.awt.Rectangle;
@@ -37,9 +39,13 @@ public abstract class Enemy extends Entity {
 
   public boolean hurt;
   public boolean invincible;
-  private boolean dying;
+  protected boolean dying;
   private boolean dead;
   private int hitCounter;
+  
+  public Characters character;
+  public HUD healths;
+
 
   public static ElementalProperty emyProperty = ElementalProperty.FIRE; 
   //Animations
@@ -130,6 +136,9 @@ public abstract class Enemy extends Entity {
     deathAni.add(0, 82);
     deathAni.add(0, 103);
     deathAni.add(0, 124);
+    
+    healths = new HUD(0,0,0);
+
   }
 
   /**
@@ -141,6 +150,11 @@ public abstract class Enemy extends Entity {
     {
       dead = true;
       MapHandler.addXPObject(new XPObject(x, y, xpPerLevel()*level, hitBy));
+      
+      character = MapHandler.currentPlayer();
+      healths = MapHandler.getPlayer().getCharacterHUD(character);
+      healths.giveMoney(1);
+    
     } else if (dying)
     {
       dx = 0;
@@ -487,4 +501,6 @@ public abstract class Enemy extends Entity {
   public void switchDirection(Face newDir){
     direction = newDir;
   }
+  
+
 }

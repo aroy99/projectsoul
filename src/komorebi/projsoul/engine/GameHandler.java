@@ -4,11 +4,15 @@
 
 package komorebi.projsoul.engine;
 
+import komorebi.projsoul.states.BankState;
+import komorebi.projsoul.states.Death;
 import komorebi.projsoul.states.Game;
+import komorebi.projsoul.states.InventoryState;
 import komorebi.projsoul.states.Menu;
 import komorebi.projsoul.states.Pause;
-import komorebi.projsoul.states.State.States;
 import komorebi.projsoul.states.SaveList;
+import komorebi.projsoul.states.ShopState;
+import komorebi.projsoul.states.State.States;
 
 /**
  * Updates, renders and gets input depending on the current state
@@ -25,6 +29,11 @@ public class GameHandler implements Playable{
   private static Menu menu;
   private static Pause pause;
   private static SaveList saveList;
+  public static Death death;
+  public static BankState bank;
+  public static ShopState shop;
+  public static InventoryState inventory;
+
 
   /**
    * Creates the GameHandler
@@ -35,8 +44,12 @@ public class GameHandler implements Playable{
     menu = new Menu();
     pause = new Pause();
     saveList = new SaveList();
+    death = new Death();
+    bank = new BankState();
+    shop = new ShopState();
+    inventory = new InventoryState();
   }
-  
+
   /**
    * Creates the GameHandler
    */
@@ -48,7 +61,7 @@ public class GameHandler implements Playable{
     pause = new Pause();
   }
 
-  
+
   /**
    * @see komorebi.projsoul.engine.Playable#getInput()
    */
@@ -66,8 +79,20 @@ public class GameHandler implements Playable{
         pause.getInput();
         break;
       case SAVELIST:
-      	saveList.getInput();
-      	break;
+        saveList.getInput();
+        break;
+      case DEATH:
+        death.getInput();
+        break;
+      case BANKSTATE:
+        bank.getInput();
+        break;
+      case SHOPSTATE:
+        shop.getInput();
+        break;
+      case INVENTORYSTATE:
+        inventory.getInput();
+        break;
       default:
         break;
     }
@@ -88,8 +113,23 @@ public class GameHandler implements Playable{
         pause.update();
         break;
       case SAVELIST:
-    	saveList.update();
-    	break;
+        saveList.update();
+        break;
+      case DEATH:
+        death.update();
+        break;
+      case BANKSTATE:
+        game.update();
+        bank.update();
+        break;
+      case SHOPSTATE:
+        game.update();
+        shop.update();
+        break;
+      case INVENTORYSTATE:
+        game.update();
+        inventory.update();
+        break;
       default:
         break;
     }
@@ -111,8 +151,23 @@ public class GameHandler implements Playable{
         pause.render();
         break;
       case SAVELIST:
-    	saveList.render();
-    	break;
+        saveList.render();
+        break;
+      case DEATH:
+        death.render();
+        break;
+      case BANKSTATE:
+        game.render();
+        bank.render();
+        break;
+      case SHOPSTATE:
+        game.render();
+        shop.render();
+        break;
+      case INVENTORYSTATE:
+        game.render();
+        inventory.render();
+        break;
       default:
         break;
     }

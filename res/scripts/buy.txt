@@ -5,4 +5,9 @@ say Let's go.
 fadeout
 freeze 100
 fadein
+<<<<<<< HEAD
 unlock
+=======
+unlock
+end
+>>>>>>> refs/remotes/origin/Death/Bank

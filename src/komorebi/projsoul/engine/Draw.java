@@ -60,7 +60,7 @@ public class Draw {
   private static final int SPREADSHEET_ROW = 16;
 
   /** Holds all of the textures for this class.*/
-  private static Texture[] tex = new Texture[18];
+  private static Texture[] tex = new Texture[22];
 
   private static ArrayList<Texture> sheets = new ArrayList<Texture>();
 
@@ -128,6 +128,15 @@ public class Draw {
           new File("res/compressed_spritesheet.png")));
       tex[17] = TextureLoader.getTexture("PNG", new FileInputStream(
           new File("res/Title-Screen-Cuads.png")));
+      tex[18] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/fontnumbers-currency.png")));
+      tex[19] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/NumberBox.png")));
+      tex[20] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/Arrow.png")));
+      tex[21] = TextureLoader.getTexture("PNG", new FileInputStream(
+          new File("res/hp_bar.png")));
+
 
     } catch (Exception e) {
       e.printStackTrace();

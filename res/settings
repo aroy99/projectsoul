@@ -3,4 +3,8 @@
 2
 
 #The location of the game to test, no quotes
+<<<<<<< HEAD
 New_Forest.map
+=======
+Test_Map_7.5.map
+>>>>>>> refs/remotes/origin/Death/Bank

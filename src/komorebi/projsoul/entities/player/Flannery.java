@@ -34,7 +34,7 @@ public class Flannery extends Player {
 
   //Stats
   public static int    attack = 60,  defense = 50, 
-                    maxHealth = 50, maxMagic = 40; 
+                    maxHealth = 50, maxMagic = 40, money = 0;; 
   public static int level = 1, xp = 0, nextLevelUp = 10;
   
   //Magic costs
@@ -85,8 +85,10 @@ public class Flannery extends Player {
     upThrow.add(333,180,18,32);
     upThrow.add(313,180,16,32);
 
-    magic = new MagicBar(maxMagic);
-    health = new HUD(maxHealth);
+    characterDeathAni = new Animation(2,30,12,false);
+    characterDeathAni.add(101,6,15,32,1,false);
+    
+    health = new HUD(maxHealth, money, maxMagic);
 
     projectile = new ProjectileAttack<FireBall>(new FireBall());
     ring = new RingOfFire(new FireRingInstance());
@@ -108,7 +110,7 @@ public class Flannery extends Player {
       currentAnimation = null;
     }
 
-    if (button(Control.ATTACK) && !isAttacking && magic.hasEnoughMagic(
+    if (button(Control.ATTACK) && !isAttacking && health.hasEnoughMagic(
         5))
     {              
       if (attack1 == projectile)
@@ -142,7 +144,7 @@ public class Flannery extends Player {
         }
 
         currentAnimation.resume();
-        magic.changeMagicBy(PROJ_COST);
+        health.changeMagicBy(PROJ_COST);
         
         attack1.newAttack(x,y,aDx,aDy,dir,attack);
       }
@@ -153,7 +155,7 @@ public class Flannery extends Player {
       }
     }
     
-    if (KeyHandler.keyDown(Key.X) && !isAttacking && magic.hasEnoughMagic(
+    if (KeyHandler.keyDown(Key.X) && !isAttacking && health.hasEnoughMagic(
         10) && attack1 == ring)
     {
       unlocked = false;
@@ -163,12 +165,12 @@ public class Flannery extends Player {
       
       ring.getInput();
       ring.update();
-    } else if (KeyHandler.keyRelease(Key.X) && !isAttacking && magic.hasEnoughMagic(
+    } else if (KeyHandler.keyRelease(Key.X) && !isAttacking && health.hasEnoughMagic(
         8) && attack1 == ring)
     {
       ring.newAttack(0, 0, 0, 0, dir, attack);
       unlocked = true;
-      magic.changeMagicBy(RING_COST);
+      health.changeMagicBy(RING_COST);
     }
     
 
@@ -213,7 +215,7 @@ public class Flannery extends Player {
     maxMagic += nMag;
     maxHealth += nHth;
 
-    magic.addToMaxMagic(nMag);
+    health.addToMaxMagic(nMag);
     health.addToMaxHealth(nHth);
 
   }
@@ -226,5 +228,16 @@ public class Flannery extends Player {
       levelUp();
     }
   }
+  
+  public static void addDefense(int def)
+  {
+    defense+=def;
+  }
+  
+  public static void subDefense(int def)
+  {
+    defense-=def;
+  }
+
 
 }

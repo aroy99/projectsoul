@@ -37,7 +37,7 @@ public class Caspian extends Player {
 
   //Stats
   public static int attack = 50,  defense = 50, 
-                 maxHealth = 50, maxMagic = 50;
+                 maxHealth = 50, maxMagic = 50, money = 0;;
   public static int level = 1, xp = 0, nextLevelUp = 10;
   
   //Magic cost
@@ -96,14 +96,17 @@ public class Caspian extends Player {
 
     castAni[3] = castAni[2].getFlipped();
     
-    magic = new MagicBar(maxMagic);
-    health = new HUD(maxHealth);
-
     attack1 = melee;
     attack2 = proj; 
     attack3 = support;
     
     initializeSprites();
+    
+    characterDeathAni = new Animation(2,30,11,false);
+    characterDeathAni.add(8,162,16,35,1,false);
+
+    health = new HUD(maxHealth, money, maxMagic);
+
     
     System.out.println("In caspian "+sprites.getCurrent().hasCustomFrame());
   }
@@ -164,7 +167,7 @@ public class Caspian extends Player {
 
     //System.out.println(button(Control.ATTACK) +" and "+ !isAttacking +" and "+ magic.hasEnoughMagic(10));
     
-    if (button(Control.ATTACK) && !isAttacking && magic.hasEnoughMagic(2))
+    if (button(Control.ATTACK) && !isAttacking && health.hasEnoughMagic(2))
     {        
 
       isAttacking = true;
@@ -175,7 +178,7 @@ public class Caspian extends Player {
       {
         sprites.stopCurrent();
 
-        magic.changeMagicBy(SWORD_COST);
+        health.changeMagicBy(SWORD_COST);
         
         attack1.newAttack(x,y,aDx,aDy,dir,attack);
       } else if (attack1 == proj)
@@ -193,7 +196,7 @@ public class Caspian extends Player {
         index = dir.getFaceNum();
         castAni[index].resume();
         
-        magic.changeMagicBy(PROJ_COST);
+        health.changeMagicBy(PROJ_COST);
         
         attack1.newAttack(x,y + castAni[index].getCurrSY()/2+
             castAni[index].getCurrOffY(),aDx,aDy,dir,attack);
@@ -203,7 +206,7 @@ public class Caspian extends Player {
         
         sprites.stopCurrent();
 
-        magic.changeMagicBy(SUPP_COST);
+        health.changeMagicBy(SUPP_COST);
         
         index = dir.getFaceNum();
         castAni[index].resume();
@@ -253,7 +256,7 @@ public class Caspian extends Player {
     maxMagic += nMag;
     maxHealth += nHth;
 
-    magic.addToMaxMagic(nMag);
+    health.addToMaxMagic(nMag);
     health.addToMaxHealth(nHth);
   }
 
@@ -265,6 +268,15 @@ public class Caspian extends Player {
     {
       levelUp();
     }
+  }
+  public static void addDefense(int def)
+  {
+    defense+=def;
+  }
+  
+  public static void subDefense(int def)
+  {
+    defense-=def;
   }
 
 

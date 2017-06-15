@@ -21,7 +21,7 @@ import komorebi.projsoul.gameplay.MagicBar;
 public class Bruno extends Player {
 
   public static int attack = 45, defense = 60, 
-      maxHealth = 55, maxMagic = 40;
+      maxHealth = 55, maxMagic = 40, money = 0;
   public static int level = 1, xp = 0, nextLevelUp = 10;
   
   public static final int TACKLE_COST = -2;
@@ -39,8 +39,11 @@ public class Bruno extends Player {
     charProperty = ElementalProperty.EARTH;
     character = Characters.BRUNO;
 
-    magic = new MagicBar(maxMagic);
-    health = new HUD(maxHealth);
+    characterDeathAni = new Animation(3,45,12,false);
+    characterDeathAni.add(195,654,32,32,1,false);
+    characterDeathAni.add(165,654,25,32,1,false);
+      
+    health = new HUD(maxHealth, money, maxMagic);
 
     attack1 = melee;
     
@@ -111,7 +114,7 @@ public class Bruno extends Player {
         attack1.newAttack(getX(), y, aDx, aDy, dir, attack);
         isAttacking = true;
         
-        magic.changeMagicBy(TACKLE_COST);
+        health.changeMagicBy(TACKLE_COST);
       }
       
     }
@@ -136,7 +139,7 @@ public class Bruno extends Player {
     maxMagic += nMag;
     maxHealth += nHth;
 
-    magic.addToMaxMagic(nMag);
+    health.addToMaxMagic(nMag);
     health.addToMaxHealth(nHth);
   }
 
@@ -154,4 +157,15 @@ public class Bruno extends Player {
   {
     return noContact && isAttacking;
   }
+  
+  public static void addDefense(int def)
+  {
+    defense+=def;
+  }
+  
+  public static void subDefense(int def)
+  {
+    defense-=def;
+  }
+
 }

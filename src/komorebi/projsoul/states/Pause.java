@@ -60,7 +60,7 @@ public class Pause extends State {
         case ITEMS:
           Draw.rect(5, 5, 200, 200, 0, 60, 200, 260, 6);
           int x=10, y=180;
-          
+/*          
           for (Item item: Main.getGame().getItems())
           {
             item.render(x, y);
@@ -71,6 +71,7 @@ public class Pause extends State {
             text.write(item.type().getNiftyTidbit(), x+44, y, new EarthboundFont(1));
             y-=40;
           }
+*/
           break;
         case OPTIONS:
           Draw.rect(5, 5, 200, 200, 0, 60, 200, 260, 6);
@@ -172,8 +173,8 @@ public class Pause extends State {
     text.write(Main.getGame().getConfidence() + " conf", 6, 205, new EarthboundFont(1));
     pickIndex = 1;
     
-    prevMon = Main.getGame().getMoney();
-    prevConf = Main.getGame().getConfidence();
+//    prevMon = Main.getGame().getMoney();
+ //   prevConf = Main.getGame().getConfidence();
     
     pop = PopUp.NONE;
   }
@@ -297,12 +298,12 @@ public class Pause extends State {
   
   public void reload()
   {
-    text.replace(prevMon + " Cs", 
+/*    text.replace(prevMon + " Cs", 
         Main.getGame().getMoney() + " Cs");
     text.replace(prevConf + " conf", 
         Main.getGame().getConfidence() + " conf");
     
     prevMon = Main.getGame().getMoney();
-    prevConf = Main.getGame().getConfidence();
+    prevConf = Main.getGame().getConfidence();*/
   }
 }

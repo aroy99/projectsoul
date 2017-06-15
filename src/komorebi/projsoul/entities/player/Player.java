@@ -13,6 +13,8 @@ import komorebi.projsoul.attack.projectile.ProjectileAttack;
 import komorebi.projsoul.engine.Animation;
 import komorebi.projsoul.engine.Arithmetic;
 import komorebi.projsoul.engine.CollisionDetector;
+import komorebi.projsoul.engine.GameHandler;
+import komorebi.projsoul.engine.Inventory;
 import komorebi.projsoul.engine.Key;
 import komorebi.projsoul.engine.KeyHandler;
 import komorebi.projsoul.engine.Main;
@@ -27,8 +29,12 @@ import komorebi.projsoul.entities.sprites.SpriteSet;
 import komorebi.projsoul.gameplay.Camera;
 import komorebi.projsoul.gameplay.HUD;
 import komorebi.projsoul.gameplay.MagicBar;
+import komorebi.projsoul.items.Armor;
+import komorebi.projsoul.items.CharacterItem;
+import komorebi.projsoul.map.Map;
 import komorebi.projsoul.map.MapHandler;
 import komorebi.projsoul.states.Game;
+import komorebi.projsoul.states.State.States;
 import komorebi.projsoul.attack.ElementalProperty;
 
 import org.lwjgl.input.Keyboard;
@@ -49,6 +55,11 @@ public abstract class Player extends Person implements Playable{
   private boolean pause;
   private boolean guiding;
 
+  public static boolean deathStuff = false;
+  private int count;
+  CharacterItem items[];
+
+
   private boolean dying;
   private boolean dead; 
 
@@ -60,11 +71,13 @@ public abstract class Player extends Person implements Playable{
 
   private int framesToGo;
   private boolean hasInstructions;
-  
+
   int aniSpeed = ANI_SPEED;
 
   public SpriteSet hurtSprites;
   public Animation deathAni;
+  public Animation characterDeathAni;
+
 
   private int hurtCount;
   public static int INVINCIBILITY = 60;
@@ -77,9 +90,8 @@ public abstract class Player extends Person implements Playable{
 
   public Rectangle future;
 
-  public MagicBar magic;
   public HUD health;
-  
+
   private TrackableThread waiting;
 
   protected boolean noContact;
@@ -92,7 +104,7 @@ public abstract class Player extends Person implements Playable{
    */
   public Player(float x, float y) {
     super(x, y, 16, 24);
-    
+
     restoreMvmtX = true;
     restoreMvmtY = true;
 
@@ -104,16 +116,16 @@ public abstract class Player extends Person implements Playable{
     deathAni.add(0, 82);
     deathAni.add(0, 103);
     deathAni.add(0, 124);
-    
-    
+
+
   }
-  
+
   protected void initializeSprites()
   {
     sprites = character.getNewWalkingSprites();
     hurtSprites = character.getNewHurtSprites();
   }
-  
+
   public void getInput(){
 
     if (unlocked)
@@ -137,82 +149,95 @@ public abstract class Player extends Person implements Playable{
    */
   @Override
   public void update() {
-    
+
     super.update();
-    
-    int aniSpeed = 8;
 
-    if (unlocked) {
-
-      if (!guiding && restoreMvmtX && restoreMvmtY)
+    health.update();
+    if(health.health<=0)
+    {
+      deathStuff = true;
+      if(MapHandler.allPlayersDead())
       {
-        if(left){
-          dx = -SPEED;
+        GameHandler.switchState(States.DEATH);
+      }
+    }
 
-          if (!isAttacking)
+
+    int aniSpeed = 8;
+    if(!deathStuff){
+
+      if (unlocked) {
+
+        if (!guiding && restoreMvmtX && restoreMvmtY)
+        {
+          if(left){
+            dx = -SPEED;
+
+            if (!isAttacking)
+            {
+              turn(Face.LEFT);
+              resumeAnimationIfStopped();
+            }
+          }
+          if(right){
+            dx = SPEED;
+            if (!isAttacking)
+            {
+              turn(Face.RIGHT);
+              resumeAnimationIfStopped();
+            }
+          }
+
+          if(!(left || right)){
+            dx = 0;
+          }
+
+          if(down){
+            dy = -SPEED;
+            if (!isAttacking)
+            {
+              turn(Face.DOWN);
+              resumeAnimationIfStopped();
+            }
+          }
+          if(up){
+            dy = SPEED;
+            if (!isAttacking)
+            {
+              turn(Face.UP);
+              resumeAnimationIfStopped();
+            }
+          }
+
+          if(!(up || down)){
+            dy = 0;
+          }
+
+          if(run){
+            dx *=2;
+            dy *=2;
+            aniSpeed = ANI_SPEED/2;
+          }else{
+            aniSpeed = ANI_SPEED;
+          }
+
+          if (!moving())
           {
-            turn(Face.LEFT);
-            resumeAnimationIfStopped();
+            sprites.stopCurrent();
+            x = (float) Math.floor(x);
+            y = (float) Math.floor(y);
           }
         }
-        if(right){
-          dx = SPEED;
-          if (!isAttacking)
-          {
-            turn(Face.RIGHT);
-            resumeAnimationIfStopped();
-          }
-        }
-        
-        if(!(left || right)){
+
+        if (blockedByNpc()[0] || blockedByEnemy()[0])
+        {
           dx = 0;
-        }
+        } 
 
-        if(down){
-          dy = -SPEED;
-          if (!isAttacking)
-          {
-            turn(Face.DOWN);
-            resumeAnimationIfStopped();
-          }
-        }
-        if(up){
-          dy = SPEED;
-          if (!isAttacking)
-          {
-            turn(Face.UP);
-            resumeAnimationIfStopped();
-          }
-        }
-
-        if(!(up || down)){
+        if (blockedByNpc()[1] || blockedByEnemy()[1])
+        {
           dy = 0;
         }
-
-        if(run){
-          dx *=2;
-          dy *=2;
-          aniSpeed = ANI_SPEED/2;
-        }else{
-          aniSpeed = ANI_SPEED;
-        }
-        
-        if (!moving())
-        {
-          sprites.stopCurrent();
-          x = (float) Math.floor(x);
-          y = (float) Math.floor(y);
-        }
-      }
-
-      if (blockedByNpc()[0] || blockedByEnemy()[0])
-      {
-        dx = 0;
-      } 
-
-      if (blockedByNpc()[1] || blockedByEnemy()[1])
-      {
-        dy = 0;
       }
 
       /*
@@ -226,8 +251,8 @@ public abstract class Player extends Person implements Playable{
 
 
       sprites.setAniSpeed(aniSpeed);
-      
-      if (invincible)
+
+      if (!deathStuff && invincible)
       {
         hurtCount--;
 
@@ -271,7 +296,7 @@ public abstract class Player extends Person implements Playable{
 
       //DEBUG God Mode
       if(!KeyHandler.keyDown(Key.G)){
-        
+
         //Guide only if the player is not going diagonally
         if((up || down) ^ (left || right)){
           CollisionDetector.guidePlayer(x, y, dx, dy);
@@ -307,7 +332,7 @@ public abstract class Player extends Person implements Playable{
 
     area.x += dx;
     area.y += dy;
-    
+
     if (hasInstructions)
     {
       if (dx != 0) 
@@ -332,19 +357,19 @@ public abstract class Player extends Person implements Playable{
 
     future.x = (int) x;
     future.y = (int) y;
-    
+
     guiding = false;
 
-    magic.update();
+    health.update();
 
     ProjectileAttack.update();
     RingOfFire.updateAll();
-    
+
     CircleStrike aoe = Sierra.aoe.getAttackInstance();
     if(aoe != null && aoe.playing()){
       aoe.update();
     }
-    
+
     WaterBarrier barr = Caspian.support.getAttackInstance();
     if(barr != null && barr.playing()){
       barr.update();
@@ -372,7 +397,7 @@ public abstract class Player extends Person implements Playable{
       switchAttack(true);
     }
   }
-  
+
   private void resumeAnimationIfStopped()
   {
     if (sprites.isCurrentStopped())
@@ -381,7 +406,7 @@ public abstract class Player extends Person implements Playable{
     }
   }
 
-  
+
   //TODO Use inheritance with this, since doing this with static variables is a drag
   public abstract void levelUp();
 
@@ -389,9 +414,9 @@ public abstract class Player extends Person implements Playable{
     for (Characters c: Characters.values()){
       System.out.println(c + ": ");
       System.out.println("Att: " + Player.getAttack(c) + 
-                       "\tDef: " + Player.getDefense(c));
+          "\tDef: " + Player.getDefense(c));
       System.out.println("Mag: " + Player.getMaxMagic(c)+ 
-                       "\tHth: " + Player.getMaxHealth(c));
+          "\tHth: " + Player.getMaxHealth(c));
       System.out.println("XP: " + Player.getXP(c) + " / " + 
           Player.getXPToNextLevel(c) + "\tLevel " + Player.getLevel(c) + "\n");
     }
@@ -402,35 +427,64 @@ public abstract class Player extends Person implements Playable{
    */
   @Override
   public void render() {
-    
-    if (!invincible)
-    {
-      if (!isAttacking) {
-        playWalk();
+    if(!deathStuff){
+      if (!invincible)
+      {
+        if (!isAttacking) {
+          playWalk();
+        } else
+        {
+          renderAttack();
+        }
       } else
       {
-        renderAttack();
+        hurtSprites.renderCurrent(x, y);
       }
-    } else
+
+      ProjectileAttack.play();
+      RingOfFire.play();
+
+      CircleStrike aoe = Sierra.aoe.getAttackInstance();
+      if(aoe != null && aoe.playing()){
+        aoe.play();
+      }
+
+      WaterBarrier barr = Caspian.support.getAttackInstance();
+      if(barr != null && barr.playing()){
+        barr.play();
+      }
+    }
+    else
     {
-      hurtSprites.renderCurrent(x, y);
+      characterDeathAni.playCam(Map.getPlayer().getX(),Map.getPlayer().getY());
+      //This still bombs it out, possible bug with frames? But why collision?
+      //Because it returns true, it tries to switch characters outside the bounds of the map.
+      //If I put a stop before it checks, no crash but the character still flies off the screen.
+      //characterDeathAni.stop();
+      //if(characterDeathAni.lastFrame())
+      {
+        refreshInventory();
+        for(CharacterItem item: items)
+        {
+          if(item instanceof Armor)
+          {
+            Armor a = (Armor)item;
+            if(a.equipped)
+            {
+              if(a.getEquippedCharacter() == MapHandler.currentPlayer())a.unequip();
+            }
+          }
+
+        }
+        MapHandler.switchPlayer();
+        deathStuff = false;  
+      }
+
     }
 
-    ProjectileAttack.play();
-    RingOfFire.play();
-    
-    CircleStrike aoe = Sierra.aoe.getAttackInstance();
-    if(aoe != null && aoe.playing()){
-      aoe.play();
-    }
-    
-    WaterBarrier barr = Caspian.support.getAttackInstance();
-    if(barr != null && barr.playing()){
-      barr.play();
-    }
   }
 
- 
+
 
   public void align(Face dir, NPC npc)
   {
@@ -438,7 +492,7 @@ public abstract class Player extends Person implements Playable{
     hasInstructions=true;
 
     Rectangle r = npc.getSurroundingRectangle(dir);
-    
+
     goToPixX(r.x);
     goToPixY(r.y);
 
@@ -447,12 +501,12 @@ public abstract class Player extends Person implements Playable{
   public void align(NPC npc)
   {
     waiting = ThreadHandler.currentThread();
-    
+
     Rectangle r = npc.intersectedHitbox(area);
-    
+
     goToPixX(r.x);
     goToPixY(r.y);
-    
+
     dir = npc.faceMe(area);
     turn(dir);
   }
@@ -477,7 +531,7 @@ public abstract class Player extends Person implements Playable{
     return dir;
   }
 
-  
+
 
   public void stop()
   {
@@ -619,7 +673,7 @@ public abstract class Player extends Person implements Playable{
   {
     return area;
   }
-  
+
   //modified inflictPain method that takes in an attack's effectiveness to determine damage
   public void inflictPain(int attack, float dx, float dy, ElementalProperty emyProperty)
   {
@@ -631,10 +685,10 @@ public abstract class Player extends Person implements Playable{
 
     hurtSprites.turn(dir);
     hurtSprites.resumeCurrent();
-    
+
     //DEBUG Velocity
     System.out.format("Velocity = %f, %f\n", dx, dy);
-    
+
     attack = (int) (attack*charProperty.findEffectiveness(emyProperty,charProperty)+1);
 
     if (attack - getDefense(character)/2 > 0)
@@ -643,13 +697,27 @@ public abstract class Player extends Person implements Playable{
     }else if(attack < 0){
       health.health--;
     }
-    
+
+    refreshInventory();
+    for(CharacterItem item: items)
+    {
+      if(item instanceof Armor)
+      {
+        Armor a = (Armor)item;
+        if(a.equipped)
+        {
+          if(a.getEquippedCharacter() == MapHandler.currentPlayer())a.damageArmor(11);
+        }
+      }
+
+    }
+
     //Kills the player
     if (health.health <= 0)
     {
       deathAni.resume();
       dying = true;
-      
+
       //DEBUG Kill teh player
       System.out.println(character.getNameFormatted() + " ded");
     }
@@ -661,11 +729,6 @@ public abstract class Player extends Person implements Playable{
   public boolean invincible()
   {
     return invincible;
-  }
-
-  public MagicBar magicBar()
-  {
-    return magic;
   }
 
   public Characters getCharacter()
@@ -681,7 +744,6 @@ public abstract class Player extends Person implements Playable{
 
   public void renderHUD()
   {
-    magic.render();
     health.render();
   }
 
@@ -848,24 +910,39 @@ public abstract class Player extends Person implements Playable{
   {
     return health.getHealth();
   }
-  
+
   public int getRequiredExp(int level){
     return (int)(level*level + 10*level + 10);
   }
-  
-  
+
+
   public boolean canMove(float dx, float dy)
   {
     future = new Rectangle((int) (x + dx), (int) (y + dy), 
         sx, sy);
-        
+
     return !MapHandler.getActiveMap().willIntersectNPCs(future);
   }
-  
+
   public boolean isLocked()
   {
     return !unlocked;
   }
 
+  public void refreshInventory()
+  {
+    count = 0;
+    items = new CharacterItem[Inventory.numOfItems];
+    for(CharacterItem item: Inventory.items)
+    {
+      items[count] = item;
+      count++;
+    }   
+  }
+  
+  public HUD getCharacterHUD(Characters c)
+  {
+    return health;  
+  }
 
 }
