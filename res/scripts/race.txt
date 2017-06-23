@@ -1,0 +1,22 @@
+branch main
+lock
+ask "I challenge you to a race, do you accept?" "Hell yeah!" "Oh Hell naw"
+
+branch Hell yeah!
+say First one to the trees at the other end wins
+call run
+
+branch Oh Hell naw
+ask "Why, afraid you'll lose?" "Alright, lets go" "Later nerd"
+
+branch Alright, lets go
+say First one to the tress at the other end wins
+call run
+
+branch Later nerd
+say Shut up loser!
+unlock
+
+branch run
+unlock
+walk right right right right right right right right right right right right right 

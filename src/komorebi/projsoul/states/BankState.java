@@ -212,14 +212,14 @@ public class BankState extends State
     //Arrows
     if(withdraw)
     {
-      Draw.rect(56, 132, 7, 12, 0, 0, 7, 12,16);
-      Draw.rect(164, 132, 7, 12, 0, 0, 7, 12,16);
+      Draw.rect(56, 132, 7, 12, 0, 0, 7, 12,20);
+      Draw.rect(164, 132, 7, 12, 0, 0, 7, 12,20);
       if(index == 6)Draw.rect(61, 85, 2, 2, 48, 3, 50, 5, 5);
     }
     if(deposit)
     {
-      Draw.rect(70, 146, 7, 12, 0, 0, 7, 12, 2, 16);
-      Draw.rect(171, 146, 7, 12, 0, 0, 7, 12, 2, 16);
+      Draw.rect(70, 146, 7, 12, 0, 0, 7, 12, 2, 20);
+      Draw.rect(171, 146, 7, 12, 0, 0, 7, 12, 2, 20);
       if(index == 6)Draw.rect(71, 85, 2, 2, 48, 3, 50, 5, 5);
     }
 
@@ -229,17 +229,17 @@ public class BankState extends State
       //(Deposit/Withdraw)
       for (int i = 110; i<156; i+=9)
       {
-        Draw.rect(i, 133, 8, 12, 0, 0, 8, 9, 15);
+        Draw.rect(i, 133, 8, 12, 0, 0, 8, 9, 19);
       }
       //(Balance)
       for (int i = 110; i<156; i+=9)
       {
-        Draw.rect(i, 113, 8, 12, 0, 0, 8, 9, 15);
+        Draw.rect(i, 113, 8, 12, 0, 0, 8, 9, 19);
       }
       //(On-Hand)
       for (int i = 110; i<156; i+=9)
       {
-        Draw.rect(i, 148, 8, 12, 0, 0, 8, 9, 15);
+        Draw.rect(i, 148, 8, 12, 0, 0, 8, 9, 19);
       }
 
       //Index markers

@@ -11,10 +11,10 @@ say out of my head, and not from a script \nthat the makers of this game \ncreat
 say Now that we have that settled let me \nintroduce you to some of the basic \ncontrols. First we have set the \pmovement keys to the UP DOWN LEFT \nRIGHT keys respectively.
 
 
-say Now I'm not going to say anything about \nthat, but the word around the \ncorner is that other companies use \pW A S D. You should check out...
+say Now I'm not going to say anything \nabout that, but the word around the \ncorner is that other companies use \pW A S D. You should check out...
 
 
-say I have been informed to stop talking \nabout other games and to focus on \nteaching you about this was, so \pmy apologies.
+say I have been informed to stop talking \nabout other games and to focus on \nteaching you about this one, so \pmy apologies.
 
 
 say Alright you can try out moving by \npressing the UP DOWN LEFT RIGHT \nkeys, talk to me again when you \pwant to progress.

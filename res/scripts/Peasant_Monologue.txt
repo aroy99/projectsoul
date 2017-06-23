@@ -1,0 +1,7 @@
+branch main
+lock
+say I know I'm poor and am lower than you, but I swear that I'm not a bad guy.
+say Everyone just walks by like they don't see me and it hurts. I used to be like you once, full of spirit, but now i see the world as the harshness that it is.
+say Just take the this advice and be sure make the right decisions.
+unlock
+

@@ -1,0 +1,7 @@
+branch main
+lock
+say How are you doing this fine morning? \nI'm doing great because of how \nbeautiful the sky looks.
+say I enjoy picking those nice, white and \nyellow flowers that you may have \nseen around town.
+say Do you like my dress, I have had it for \na couple weeks now. My mom told me \nthat it was hers when she was my \page and I absolutely love it.
+say I don't really know how much it is, but \nit is probably worth a fortune. I have \nto go eat dinner now, thanks for \ptalking to me!
+unlock

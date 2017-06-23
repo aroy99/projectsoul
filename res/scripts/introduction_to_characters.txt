@@ -1,0 +1,18 @@
+branch main
+lock
+
+say Welcome to the World of Project Soul.\nMy name is George and I'll give you \nsome information about the game. \p
+say Let's start off with you.\pYou are currently playing as Caspian \nand you have a very special water\nability.\pYou have a water sword, a water \nshuriken, and a water shield \p
+say You can make these spells last \nlonger by leveling up. \pWe'll talk about how to do that later.
+
+say Now let's talk about Flannery. \pHis speciality involves fire. He has \n3 spells: flame pillars, fire beam, and \nring of fire. \p
+say He is a very strong fighter, and is \nthe most powerful compared to the \nother 3 characters. \p
+
+say Sierra is quiet, but she is also very \nstrong. She specializes with air. \pHer spells include wind slash, circle \nstrike, and levitation.
+say Lastly, is Brock. He has the ability to \ncontrol earth. \pThese abilities consist of earth impact, \nearth rumble, and crack in ground. 
+
+say You will learn all of these moves as \nyou advance through the game\p 
+say Now that I gave you a basic \nintroduction of these characters, you \nshould head over to the school and \p
+say talk to the professor. He will teach you \nhow to perform some of your abilities \nin combat.
+
+unlock

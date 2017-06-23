@@ -31,7 +31,7 @@ public abstract class Person extends Entity {
   protected SpriteSet sprites;
 
   private ToDoList toDoList;
-  protected Face dir;
+  protected Face dir = Face.DOWN;
   protected Portrait portrait = Portrait.random();
 
   public Person(float x, float y, int sx, int sy) {

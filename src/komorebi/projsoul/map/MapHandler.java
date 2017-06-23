@@ -74,6 +74,8 @@ public class MapHandler {
   static boolean isOutside;
   
   public static final float TOLERANCE = 0.5f;
+
+  private static final int TEXT_X = 5;
   
   private static int[][] border = {{512, 512},
                                    {512, 512}};
@@ -87,10 +89,10 @@ public class MapHandler {
     
     activeMap = MapLoader.loadMap(firstMap, 0, 0);
     
-    caspian = new Caspian(0,0);
-    flannery = new Flannery(0,0);
-    sierra = new Sierra(0,0);
-    bruno = new Bruno(0,0);
+    caspian = new Caspian(32,32);
+    flannery = new Flannery(32,32);
+    sierra = new Sierra(32,32);
+    bruno = new Bruno(32,32);
     
     play = caspian;
     
@@ -107,7 +109,7 @@ public class MapHandler {
     createCollision();
        
     currMap = new TextHandler();
-    currMap.write(MapHandler.getActiveMap().getTitle(), 5, Main.HEIGHT-13);
+    currMap.write(MapHandler.getActiveMap().getTitle(), TEXT_X, Main.HEIGHT-13);
     
   }
 
@@ -365,9 +367,9 @@ public class MapHandler {
     play.renderHUD();
     
     if(mapDisplayCount > 0 || displayY > 0){
-      Draw.rect(2, Main.HEIGHT-displayY, 100, 12, 1, 1, 2, 2, 6);
+      Draw.rect(TEXT_X-3, Main.HEIGHT-displayY, 100, 12, 1, 1, 2, 2, 6);
       currMap.render(new Word(activeMap.getTitle(), 
-          5, Main.HEIGHT-displayY+2, new EarthboundFont(1)));
+          TEXT_X, Main.HEIGHT-displayY+2, new EarthboundFont(1)));
       mapDisplayCount--;
       
       if(mapDisplayCount < 0){

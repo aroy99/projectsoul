@@ -1,0 +1,27 @@
+main branch
+lock
+
+ask "Who are you?" "Caspian" "I don't know"
+
+branch Caspian
+say Ah, I have heard of you. My name is \nProfessor Flade.\p
+say I am going to introduce to you \nyour 3 unique spells\p
+say First is your water sword. This \nattacks forward.\p
+say The range on the sword is pretty low \nbut, you may increase it by gaining \nmore experience in the game. \p
+say Next, is your water shruiken. \p
+say You would use this spell to attack \nenemies from afar. \p
+say You increase the amount of shruikens \nby leveling up. \p
+say Lastly is your water shield. \p
+say It can protect you from enemy projectiles.\p
+say You are able to switch spells by \npressing "a" or "s" on the keyboard.\p
+say You may execute each spell by \npressing "x".
+unlock
+
+
+branch I don't know
+say Ok, let me continue my work.
+
+unlock
+
+
+ 

@@ -50,7 +50,7 @@ public class Game extends State{
   public Death death;
   public Song piedPiper = Song.CHAOS;
   static Save saveFile;
-  
+
   /**
    * Creates the player and loads the map
    */
@@ -96,29 +96,29 @@ public class Game extends State{
     {
       GameHandler.switchState(States.PAUSE);
     }
-    
+
     if ((KeyHandler.keyDown(Key.LCTRL) || KeyHandler.keyDown(Key.RCTRL)) &&
         KeyHandler.keyClick(Key.N))
     {
       GameHandler.switchState(States.SAVELIST);
       AudioHandler.play(Song.SIERRA, true);
     }
-    
+
     if(KeyHandler.keyClick(Key.Y))
     {
-    	GameHandler.switchState(States.BANKSTATE);
+      GameHandler.switchState(States.BANKSTATE);
     }
     else if(KeyHandler.keyClick(Key.V))
     {
-    	GameHandler.switchState(States.SHOPSTATE);
+      GameHandler.switchState(States.SHOPSTATE);
     }
     else if(KeyHandler.keyClick(Key.I))
     {
-    	GameHandler.switchState(States.INVENTORYSTATE);
+      GameHandler.switchState(States.INVENTORYSTATE);
     }
-    
 
-    
+
+
     MapHandler.getInput();
 
   }
@@ -157,20 +157,20 @@ public class Game extends State{
     Fader.render();
 
   }
-  
+
   /**
    * @return The current Save File (.kom)
    */
   public static Save getSave(){
-	    return saveFile;
-	  }
+    return saveFile;
+  }
 
   public static void setSave(Save s)
-	  {
-	    saveFile = s;
-	  }
-  
-  
+  {
+    saveFile = s;
+  }
+
+
   public void setSpeaker(SpeechHandler talk)
   {
     dialogue.setSpeaker(talk);

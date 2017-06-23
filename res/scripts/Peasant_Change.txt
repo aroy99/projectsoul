@@ -1,0 +1,12 @@
+branch main
+lock
+ask "Hey do  you have any spare change? I'll gladly show you a magic trick." "Yes" "No"
+unlock
+
+branch Yes
+say No way really!? Okay pay close attention to this. I can make it disappear and vanish into thin air.
+say Close your eyes for around 10 seconds and it will be gone. Alright Ready, Set, Go!
+
+branch No
+say Fine then, don't like to help the needy. I get it.
+

@@ -1,13 +1,13 @@
 #The scale of the game, as an integer, resolution is 224x256, so you can scale it by changing the number below.
 2
 #The map the game is on, no quotes
-deathland.map
+New_New_Test.map
 #Curr Coor:
-126.84532,143.71425
+101.0,113.0
 #Curr Char:
-BRUNO
+CASPIAN
 #Char Data:
-CSPN-Level:11 XP:3 NextLevelUp:20
-FLNY-Level:11 XP:18 NextLevelUp:20
-SIRA-Level:10 XP:0 NextLevelUp:10
-BRNO-Level:23 XP:10 NextLevelUp:40
+CSPN-Level:0 XP:0 NextLevelUp:0
+FLNY-Level:0 XP:0 NextLevelUp:0
+SIRA-Level:0 XP:0 NextLevelUp:0
+BRNO-Level:0 XP:0 NextLevelUp:0

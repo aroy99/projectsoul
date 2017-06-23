@@ -1,0 +1,11 @@
+branch main
+lock
+ask "Want to trade gear?" "Sure" "No Thanks"
+unlock
+
+branch Sure
+say I can spare a chestplate if you have anything for it. I honestly have no use for it.
+say I'll gladly take anything you have to be honest.
+
+branch No Thanks
+say Your loss buddy.

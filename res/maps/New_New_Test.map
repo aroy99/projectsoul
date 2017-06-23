@@ -1,6 +1,6 @@
 32
 32
-New New Test Map
+A New New Test Map
 A Travelling Song
 1
 #Terrain
@@ -13,3 +13,12 @@ A Travelling Song
 0^1024 
 --movement permissions
 100^16 000^2 100^30 000^2 100^16 000^28 100^4 000^28 100^4 000^28 100^4 000^28 100^4 000^28 100^4 000^5 100^6 000^17 100^4 000^5 100^6 000^9 100 000^7 100^4 000^5 100^6 000^9 100 000^7 100^4 000^5 100^6 000^9 100 000^7 100^4 000^5 100^6 000^3 900^2 000^3 100^3 000^6 100^4 000^14 100^2 000^12 100^4 000^28 100^4 000^25 900^2 000 100^4 000^25 100^2 000 100^2 000^5 900^2 000^30 100^2 000^25 100^2 000^28 100^4 000^28 100^4 000^28 100^4 000^21 900^2 000^5 100^4 000^14 100^6 000 100^2 000^5 100^4 000^14 100^6 000^8 100^4 000^7 900^2 000^5 100^6 000^8 100^4 000^7 100^2 000^5 100^6 000^8 100^4 000^14 100^6 000^8 100^4 000^28 100^4 000^28 100^4 000^28 100^18 000^2 100^30 000^2 100^14 
+npc claudius 8 16 MAYOR do_nothing introduction_part1
+npc george 10 10 PEASANT do_nothing introduction_to_characters
+npc jenna 12 10 KID_GIRL walk_left_and_right Kid_Girl_Rant
+npc guard 5 3 GUARD walk_left_and_right tutorial
+npc guar 7 3 CELIA walk_left_and_right tutorial2
+npc guad 9 3 PROFESSOR walk_left_and_right tutorial3
+npc gurd 11 3 BANKTELLER walk_left_and_right tutorial4
+npc kid 6 18 KID_BOY do_nothing race
+connect New_Forest right -20 4

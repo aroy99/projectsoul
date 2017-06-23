@@ -1,0 +1,135 @@
+branch main
+
+lock 
+
+
+say Hello user. Welcome to the town. \p My name is Claudius and I will \n be showing you around the town.
+
+ask "First I would like to ask for your name." "Caspian" "..."
+
+
+
+branch Caspian
+
+say Oh, that's a cool name! \p Now, time to give you a tour of the \n map! \p Follow me!
+
+
+
+
+
+call npc_walk, caspian_walk
+
+branch npc_walk
+walk left left left
+turn right
+walk up up up
+
+
+
+branch caspian_walk
+
+@walk left left left
+@turn right
+@walk up up up
+
+
+
+
+
+say So over here is Pond Swood. Nothing \n really happens here. But maybe there are \n some fish in there! \p Let's go over to your house
+
+
+
+call npc_walktohouse, caspian_walktohouse
+
+
+
+branch npc_walktohouse
+turn right right
+walk down down right right right right right right right right right 
+turn left 
+walk up up
+
+
+branch caspian_walktohouse
+
+@turn right right
+@walk down down right right right right right right right right right 
+@turn left
+@walk up up
+
+
+say This is where you live. Obviously. \p But, you don't have the keys to your house, \n so looks like you're locked out. \p Now lets go over to the store
+
+
+
+
+
+call npc_walktostore, caspian_walktostore
+
+
+branch npc_walktostore
+turn right right
+walk down down down down 
+turn left 
+walk right right right
+turn right
+walk down down down down down
+turn left 
+walk left left left
+turn up
+
+branch caspian_walktostore
+@turn right right
+@walk down down down down 
+@turn left 
+@walk right right right
+@turn right
+@walk down down down down down
+@turn left
+@walk left left left
+@turn up
+ 
+
+say This is the C-Store. Basically, you are \n able to buy clothes, potions, \n accessories, and more stuff! \p Make sure you have enough money to \n pay for them! \p Now let's check out the hospital.
+
+call npc_walktohospital, caspian_walktohospital
+
+branch npc_walktohospital
+turn left
+walk left left left left left left left left
+turn up 
+
+
+branch caspian_walktohospital
+@turn left
+@walk left left left left left left left left
+@turn up 
+
+say This is the hospital. Whenever you \n get hurt, go here so that you can \n restore your health back to normal! \p If you need me to go over any of this \n stuff again, I'll be in the same spot \n where you found me.   
+say Caspian: What just happened?
+unlock
+
+call npc_walkbacktooriginal
+branch npc_walkbacktooriginal
+turn left
+walk left left left 
+turn right 
+walk up up up up up up 
+turn right
+walk right right right right right 
+
+
+
+branch ...
+
+say Ah, so you're shy huh? \p That's perfectly fine! I'll show you around \n anyway!
+
+
+
+call npc_walk, caspian_walk
+
+
+
+
+unlock

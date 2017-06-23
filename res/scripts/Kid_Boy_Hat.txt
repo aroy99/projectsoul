@@ -1,0 +1,21 @@
+branch main
+lock
+say Hey there my dude! By any chance have you seen my hat,
+ask "I have been looking for it for the longest time now?" "Um, you're wearing it" "No*giggle*"
+unlock
+
+branch Um, you're wearing it
+say oh, welp my bad. Sorry the inconveniece I guess. Wait a minute...
+say Aren't you Caspian?
+say Oh my God you are, I heard that your training in the water arts. I myself like fire, but that's just me.
+say I want to be like you in a way when I'm older and pursue in what your doing. I may be a kid now, but I'll get stronger when I grow up.
+sat I can't believe I am metting the Caspian. Sorry fpr the fan-girling I just like what your doing. Alright I'll be on my way, I have some homework to do.
+
+branch No*giggle*
+say Hey what's so funny? This is no laughing matter. I honestly don't know where my hat is. My mom said that if I lose it, it's my responsibility to find it again and she won't even help me.
+say I can't believe you think this is a joke, I'm telling my mom your bullying me and we'll see who is laughing now. Just you wait. I...
+say Um, it's on my head isn't it.
+say Oh my God, I can't explain how sorry I am.
+say I'll head over there sorry for the inconvience.
+
+ 

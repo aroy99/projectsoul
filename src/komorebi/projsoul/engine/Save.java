@@ -177,7 +177,7 @@ public class Save {
           continue;
         }
         //	Gets Scale 
-        if(Main.scale==0 && isNumeric(stri)){
+        if(Main.scale==1 && isNumeric(stri)){
           Main.scale=Integer.parseInt(stri); 
         }
         //	Gets Map

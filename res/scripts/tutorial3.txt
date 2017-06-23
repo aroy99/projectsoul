@@ -1,11 +1,16 @@
 branch main
 lock
 ask "You ready?" "Yes" "No"
+unlock
 
 branch Yes
-say Now that you have the fundamentals \ndown, there is one more aspect of the \ngame that is important. Being able to \phit thing is one more aspect of this \ngame that is important.
-say By pressing P you will be able to \naccess the menu screen. Here you can \nset up the equipment your character \phas and use items to help during battles.
-say You can also select a different \nset of abilities and most importantly \nsave the game. Everyone has been
-say there once when you forget to save \nand have to to restart from a \nprevious checkpoint.
+say Now that you have the fundamentals \ndown, there is one more aspect of the \ngame that is important. Being able to \phit things is one thing, but hitting \nthings harder is another.
+say By pressing P you will be able to \naccess the menu screen. Here you can \nset up the equipment your character \phas and use items to help during \nbattles.
+say You can also select a different \nset of abilities and most importantly \nsave the game. Everyone has been \pthere once when you forget to save \nand have to to restart from a \nprevious checkpoint.
 say You can change your options here and \nswitch the arrangement of your party \nand check their stats. The menu \pscreen is your best friend and I hope \nyou enjoy using it.
-say Mess with that and talk to me one \nfinal time when your done.
+say Mess with that and talk to me again \nwhen your done.
+
+branch No
+say Alright, enjoy killing more enemies \nthat don't hit back to make you feel \nbetter about yourself.
+
+

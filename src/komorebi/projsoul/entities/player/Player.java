@@ -57,7 +57,7 @@ public abstract class Player extends Person implements Playable{
 
   public static boolean deathStuff = false;
   private int count;
-  CharacterItem items[];
+  CharacterItem[] items;
 
 
   private boolean dying;

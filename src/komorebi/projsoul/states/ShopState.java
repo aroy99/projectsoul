@@ -196,7 +196,7 @@ public class ShopState extends State
       }
     }
 
-    if(KeyHandler.keyClick(Key.V))
+    if(KeyHandler.keyClick(Key.W))
     {
       GameHandler.switchState(States.GAME);
     }

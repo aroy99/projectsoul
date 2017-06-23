@@ -87,7 +87,12 @@ public class Draw {
    *    13: You Ded Screen<br>
    *    14: Menu Font<br>
    *    15: Portraits<br>
-   *    16: Justin, Mike, and Anthony's NPCs
+   *    16: Justin, Mike, and Anthony's NPCs<br>
+   *    17: Cuad's Title Screen<br>
+   *    18: Currency Numbers<br>
+   *    19: Bank Box<br>
+   *    20: Up Arrow<br>
+   *    21: Anthony's HP Bar<br>
    */
   public static void loadTextures() {
     try {
